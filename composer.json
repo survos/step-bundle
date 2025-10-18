@@ -4,8 +4,11 @@
   "type": "symfony-bundle",
   "license": "MIT",
   "require": {
-    "php": ">=8.2",
-    "symfony/http-kernel": "^6.4 || ^7.0"
+    "php": "^8.4",
+    "symfony/http-kernel": "^7.3",
+    "symfony/dependency-injection": "^7.3",
+    "symfony/config": "^7.3",
+    "twig/twig": "^3.21"
   },
   "autoload": {
     "psr-4": {

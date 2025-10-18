@@ -1,0 +1,25 @@
+{% extends '@Twig/exception_full.html.twig' ignore missing %}
+{% block title %}Castor Steps{% endblock %}
+
+{% block body %}
+  <div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
+    <h1>Available Castor Runners</h1>
+
+    {% if slideshows is empty %}
+      <p>No <code>*.castor.php</code> files found (searched one level above the app).</p>
+    {% else %}
+      <ul>
+        {% for s in slideshows %}
+          <li style="margin: .5rem 0;">
+            <code>{{ s.code }}</code>
+            &nbsp;—&nbsp;
+            <a href="{{ path('survos_step_slides', { code: s.code }) }}">Slideshow</a>
+            &nbsp;|&nbsp;
+            <a href="{{ path('survos_step_json',   { code: s.code }) }}" target="_blank">JSON</a>
+            <div style="color:#777; font-size:.9em;">{{ s.path }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{% endblock %}
