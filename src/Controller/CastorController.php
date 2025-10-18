@@ -25,11 +25,10 @@ final class CastorController extends AbstractController
     }
 
     #[Route('/steps/{code}.json', name: 'survos_step_json', methods: ['GET'])]
-    public function json(string $code): JsonResponse
+    public function castorJson(string $code): JsonResponse
     {
         $deck = $this->exporter->exportSteps($code);
 
-        return new JsonResponse($deck);
         return $this->json($deck, 200, [
             'Cache-Control' => 'public, max-age=60',
         ]);

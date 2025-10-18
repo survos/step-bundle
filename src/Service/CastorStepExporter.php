@@ -26,9 +26,10 @@ final class CastorStepExporter
     {
         $files = $this->findCastorFiles();
         $out = [];
-        foreach ($files as $file) {
+        foreach ($files as $fileCode => $file) {
             $out[] = [
-                'code' => pathinfo($file->getFilename(), PATHINFO_FILENAME),
+                'fileCode' => $fileCode,
+                'code' => basename($file->getFilename(), '.castor.php'),
                 'path' => $file->getRealPath() ?: '',
             ];
         }
@@ -125,17 +126,20 @@ final class CastorStepExporter
 
         $finder = new Finder();
         $finder->files()
-            ->in($root)
+            ->in($this->projectDir)
             ->name($this->glob)
-            ->depth('== ' . $this->depth);
-
+            ->depth('== ' . $this->depth)
+        ;
+        return iterator_to_array($finder);
+//        dd($root, $this->glob);
         return iterator_to_array($finder, false);
     }
 
     private function findCastorFileByCode(string $code): ?string
     {
-        $root = \dirname($this->projectDir);
-        $path = $root . '/' . $code . '.castor.php';
+//        $root = \dirname($this->projectDir);
+        $path = $this->projectDir . '/' . $code . '.castor.php';
+
 
         return \is_file($path) ? $path : null;
     }
