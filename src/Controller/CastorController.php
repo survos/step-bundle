@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+// File: src/Controller/CastorController.php
 
 namespace Survos\StepBundle\Controller;
 
@@ -29,6 +30,7 @@ final class CastorController extends AbstractController
     {
         $deck = $this->exporter->exportSteps($code);
 
+        // Let clients cache briefly; server-side rendering uses the same exporter anyway.
         return $this->json($deck, 200, [
             'Cache-Control' => 'public, max-age=60',
         ]);
@@ -37,17 +39,19 @@ final class CastorController extends AbstractController
     #[Route('/slides/{code}', name: 'survos_step_slides', methods: ['GET'])]
     public function slides(string $code): Response
     {
-        // We can pass JSON inline or let front-end fetch from /steps/{code}.json.
-        // Here we render server-side sections from data to keep it simple.
+        // Export the deck server-side so Twig can render slides directly.
         $deck = $this->exporter->exportSteps($code);
-        // for json decoding consistence
-        $deck = json_decode(json_encode($deck), false);
+
+        // Normalize for Twig: hand it what the template expects.
+        $normalizedCode = (string)($deck['code'] ?? $code);
+        $tasks          = $deck['tasks'] ?? [];
 
         return $this->render('@SurvosStep/step/slides.html.twig', [
-            'code' => $code,
-            'deck' => $deck,
-            // A client-side fetch alternative:
-            'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
+            'code'     => $normalizedCode,
+            'tasks'    => $tasks, // <-- key fix: provide `tasks` so the template's `{% for task in tasks %}` works
+            'json_url' => $this->generateUrl('survos_step_json', ['code' => $normalizedCode]),
+            // still pass deck if you need richer data for future customizations
+            'deck'     => $deck,
         ]);
     }
 }

@@ -7,10 +7,7 @@
     "php": "^8.4",
     "symfony/http-kernel": "^7.3",
     "symfony/dependency-injection": "^7.3",
-    "symfony/config": "^7.3",
-    "twig/twig": "^3.21",
-    "survos/installer": "^2.1",
-    "symfony/framework-bundle": "^7.3"
+    "symfony/config": "^7.3"
   },
   "autoload": {
     "psr-4": {
@@ -20,11 +17,6 @@
   "extra": {
     "symfony": {
       "bundle": "Survos\\StepBundle\\SurvosStepBundle"
-    }
-  },
-  "config": {
-    "allow-plugins": {
-      "survos/installer": true
     }
   }
 }

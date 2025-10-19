@@ -102,7 +102,7 @@ final class CastorStepExporter
     private function findCastorFiles(): array
     {
         // Search one level above the Symfony app (as before)
-        $root = $this->projectDir;
+        $root = $this->projectDir . '/castor';
 
         $finder = new Finder();
         $finder->files()

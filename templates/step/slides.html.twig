@@ -1,54 +1,96 @@
-# templates/step/slides.html.twig
-cat > templates/step/slides.html.twig <<'TWIG'
+{# File: templates/step/slides.html.twig #}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{ code }} — Slides</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/black.css" id="theme">
-  <style>
-    .reveal pre code.language-bash {
-      font-size: .9em;
-      line-height: 1.4;
-      text-align: left;
-    }
-    .reveal ul { text-align: left; }
-  </style>
+  <title>{{ code|default('Steps') }} — Slides</title>
+
+  {# Reveal CSS (CDN) #}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
+
+  {# Bundle CSS (published at /bundles/survosstep/steps.css) #}
+  <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
 </head>
 <body>
 <div class="reveal">
   <div class="slides">
-    {% for t in deck.tasks %}
+
+    {# Title #}
+    <section>
+      <div class="slide-shell">
+        <header class="slide-header">
+          <h1 class="slide-title">{{ code|default('Steps')|replace({'-':' '})|title }}</h1>
+          {% if app is defined %}
+            <a class="back-link" href="{{ path('app_home') }}">← Back to Home</a>
+          {% endif %}
+        </header>
+
+        <div class="slide-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <p>A Castor-powered slideshow</p>
+        </div>
+
+        <footer class="slide-footer"><span>Use ← → • <kbd>F</kbd> fullscreen</span></footer>
+      </div>
+    </section>
+
+    {# Slides — controller passes `tasks` #}
+    {% for task in tasks %}
+      {% set taskTitle = task.title|default(task.name|default(task.code|default('Step'))) %}
+      {% set taskName  = task.name|default(task.code|default('')) %}
       <section>
-        <h2>{{ t.title }}</h2>
+        <div class="slide-shell">
+          <header class="slide-header">
+            <h2 class="slide-title">{{ taskTitle }}</h2>
+          </header>
 
-        {% if t.bullets %}
-          <ul>
-            {% for b in t.bullets %}
-              <li>{{ b }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
+          <div class="slide-content">
+            {% if task.description %}<p class="slide-description">{{ task.description }}</p>{% endif %}
+            {% if task.bullets %}<ul>{% for b in task.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
 
-        {% for a in t.actions %}
-          {{ render_action(a) }}
-        {% endfor %}
+            {% if task.actions %}
+              {% for a in task.actions %}
+                <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+                  {{ render_action(a)|raw }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
 
-        <div class="meta">
-          Task: <code>{{ t.name }}</code>
+          <footer class="slide-footer">
+            {% if taskName %}<span>Run: <code>castor {{ taskName }}</code></span>{% endif %}
+          </footer>
         </div>
       </section>
     {% endfor %}
+
+    <section>
+      <div class="slide-shell">
+        <header class="slide-header"><h2 class="slide-title">Done ✔</h2></header>
+        <div class="slide-content" style="display:flex;align-items:center;justify-content:center;"><p>Questions?</p></div>
+        <footer class="slide-footer"><span>Thanks!</span></footer>
+      </div>
+    </section>
+
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+{# Reveal JS (CDN) #}
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
 <script>
-  const deck = new Reveal({ hash: true, slideNumber: true });
-  deck.initialize();
+  Reveal.initialize({
+    hash: true,
+    slideNumber: true,
+    controls: true,
+    progress: true,
+    center: false, // we use sticky header/footer
+    transition: 'slide',
+    plugins: [ RevealHighlight ]
+  });
 </script>
 </body>
 </html>
-TWIG
