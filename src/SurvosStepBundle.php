@@ -4,6 +4,7 @@ namespace Survos\StepBundle;
 
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Service\CastorStepExporter;
+use Survos\StepBundle\Twig\StepRuntimeExtension;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -35,6 +36,11 @@ final class SurvosStepBundle extends AbstractBundle
             ->setAutoconfigured(true)
             ->addTag('controller.service_arguments')
             ->addTag('controller.service_subscriber');
+
+        // inside SurvosStepBundle::loadExtension()
+        $builder->autowire(StepRuntimeExtension::class)
+            ->addTag('twig.extension');
+
     }
 
     public function configure(DefinitionConfigurator $definition): void

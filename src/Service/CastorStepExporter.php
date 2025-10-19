@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+// src/Service/CastorStepExporter.php
+
 namespace Survos\StepBundle\Service;
 
 use Castor\Attribute\AsTask;
@@ -7,6 +9,9 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionFunction;
 use Survos\StepBundle\Metadata\Step;
+use Survos\StepBundle\Metadata\Actions\{
+    ComposerRequire, ImportmapRequire, RequirePackage
+};
 use Symfony\Component\Finder\Finder;
 
 final class CastorStepExporter
@@ -19,6 +24,7 @@ final class CastorStepExporter
 
     /**
      * Lists available castor files as slideshows.
+     * NOTE: codes are URL-safe slugs (no dots), e.g. "basic.demo.castor.php" → "basic-demo"
      *
      * @return array<int, array{code:string, path:string}>
      */
@@ -26,10 +32,10 @@ final class CastorStepExporter
     {
         $files = $this->findCastorFiles();
         $out = [];
-        foreach ($files as $fileCode => $file) {
+        foreach ($files as $file) {
+            $filename = $file->getFilename(); // e.g. basic.demo.castor.php
             $out[] = [
-                'fileCode' => $fileCode,
-                'code' => basename($file->getFilename(), '.castor.php'),
+                'code' => $this->slugFromFilename($filename),   // e.g. basic-demo
                 'path' => $file->getRealPath() ?: '',
             ];
         }
@@ -38,53 +44,27 @@ final class CastorStepExporter
 
     /**
      * Export a given castor file (by {code}) into a slideshow-ready deck structure.
-     *
-     * @return array{
-     *   code:string,
-     *   path:string,
-     *   tasks: list<array{
-     *     name:string,
-     *     function:string,
-     *     title:string,
-     *     description:string,
-     *     bullets:list<string>,
-     *     website:?string,
-     *     image:?string,
-     *     notes:list<string>,
-     *     actions:list<array{
-     *       type:string,
-     *       note:?string,
-     *       cwd:?string
-     *     }>
-     *   }>
-     * }
      */
     public function exportSteps(string $code): array
     {
-        $file = $this->findCastorFileByCode($code);
+        $file = $this->resolveFileByCode($code);
         if (!$file) {
             throw new \RuntimeException("Slideshow '{$code}' not found");
         }
 
-        // Capture user-defined functions before/after we require the castor file.
         $before = get_defined_functions()['user'] ?? [];
         require_once $file;
-        $after = get_defined_functions()['user'] ?? [];
-
+        $after  = get_defined_functions()['user'] ?? [];
         $newFns = array_values(array_diff($after, $before));
-        $tasks = [];
 
+        $tasks = [];
         foreach ($newFns as $fnName) {
             $rf = new ReflectionFunction($fnName);
-
-            // Only include functions that have both #[AsTask] and #[Step]
             $taskAttrs = $rf->getAttributes(AsTask::class, ReflectionAttribute::IS_INSTANCEOF);
-            $stepAttrs = $rf->getAttributes(Step::class, ReflectionAttribute::IS_INSTANCEOF);
-
+            $stepAttrs = $rf->getAttributes(Step::class,    ReflectionAttribute::IS_INSTANCEOF);
             if ($taskAttrs === [] || $stepAttrs === []) {
                 continue;
             }
-
             /** @var AsTask $asTask */
             $asTask = $taskAttrs[0]->newInstance();
             /** @var Step $step */
@@ -103,7 +83,7 @@ final class CastorStepExporter
             ];
         }
 
-        // Sort tasks by numeric prefix if present (e.g., "0-...", "1-...")
+        // Sort: numeric prefix first, then alpha
         usort($tasks, static function ($a, $b) {
             $na = $a['name']; $nb = $b['name'];
             $pa = preg_match('/^\d+/', $na, $ma) ? (int)$ma[0] : PHP_INT_MAX;
@@ -121,32 +101,58 @@ final class CastorStepExporter
     /** @return \Symfony\Component\Finder\SplFileInfo[] */
     private function findCastorFiles(): array
     {
-        // Heuristic: search one level above the Symfony app (like your draft).
-        $root = \dirname($this->projectDir);
+        // Search one level above the Symfony app (as before)
+        $root = $this->projectDir;
 
         $finder = new Finder();
         $finder->files()
-            ->in($this->projectDir)
+            ->in($root)
             ->name($this->glob)
-            ->depth('== ' . $this->depth)
-        ;
-        return iterator_to_array($finder);
-//        dd($root, $this->glob);
+            ->depth('== ' . $this->depth);
+
         return iterator_to_array($finder, false);
     }
 
-    private function findCastorFileByCode(string $code): ?string
+    /**
+     * Map a clean URL code back to an actual *.castor.php file.
+     * Accepts codes without dots: "basic-demo" will match "basic.demo.castor.php".
+     */
+    private function resolveFileByCode(string $code): ?string
     {
-//        $root = \dirname($this->projectDir);
-        $path = $this->projectDir . '/' . $code . '.castor.php';
-
-
-        return \is_file($path) ? $path : null;
+        foreach ($this->findCastorFiles() as $file) {
+            if ($this->slugFromFilename($file->getFilename()) === $code) {
+                return $file->getRealPath() ?: null;
+            }
+        }
+        return null;
     }
 
     /**
-     * Flatten action objects to simple arrays (safe to JSON-encode).
-     * For closures or complex objects, we emit a hint rather than raw data.
+     * Convert filename -> URL-safe code.
+     * Rules:
+     *   1) strip final ".php"
+     *   2) strip trailing ".castor" token if present
+     *   3) replace any non-alnum with "-"
+     *   4) trim extra dashes, lowercase
+     *
+     * Examples:
+     *   "basic.demo.castor.php" -> "basic-demo"
+     *   "demo.castor.php"       -> "demo"
+     *   "my_demo.castor.php"    -> "my-demo"
+     */
+    private function slugFromFilename(string $filename): string
+    {
+        $base = pathinfo($filename, PATHINFO_FILENAME);        // e.g. basic.demo.castor
+        $base = preg_replace('/\.castor$/i', '', $base) ?? $base; // e.g. basic.demo
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', $base) ?? $base;
+        $slug = trim($slug, '-');
+        return strtolower($slug);
+    }
+
+    /**
+     * Flatten action objects to JSON-ready arrays, with special handling for
+     * ComposerRequire / ImportmapRequire so we preserve "requires" AND a
+     * pre-rendered "multiline" command the renderer can print directly.
      *
      * @param list<object> $actions
      * @return list<array<string,mixed>>
@@ -156,29 +162,52 @@ final class CastorStepExporter
         $out = [];
 
         foreach ($actions as $a) {
-            $type = (new ReflectionClass($a))->getShortName();
+            $rc   = new ReflectionClass($a);
+            $type = $rc->getShortName();
             $row  = ['type' => $type];
 
-            foreach (get_object_vars($a) as $prop => $val) {
-                // Hide closures and non-serializable bits
-                if ($val instanceof \Closure) {
-                    $row[$prop] = '[closure]';
-                    continue;
+            if ($a instanceof ComposerRequire || $a instanceof ImportmapRequire) {
+                $row['cwd']   = $a->cwd ?? null;
+                $row['note']  = $a->note ?? null;
+                $row['dev']   = $a instanceof ComposerRequire ? (bool)$a->dev : null;
+
+                $reqs = [];
+                foreach ($a->requires as $req) {
+                    if ($req instanceof RequirePackage) {
+                        $reqs[] = [
+                            'package'    => $req->package,
+                            'comment'    => $req->comment,
+                            'constraint' => $req->constraint,
+                        ];
+                    } elseif (is_array($req)) {
+                        $reqs[] = [
+                            'package'    => $req['package']    ?? (string)($req[0] ?? ''),
+                            'comment'    => $req['comment']    ?? null,
+                            'constraint' => $req['constraint'] ?? null,
+                        ];
+                    } else {
+                        $reqs[] = ['package' => (string)$req, 'comment' => null, 'constraint' => null];
+                    }
                 }
-                // Simple scalars / arrays only
-                if (\is_scalar($val) || \is_null($val)) {
+                $row['requires']  = $reqs;
+                $row['multiline'] = $a->asMultilineCommand();
+                $out[] = $row;
+                continue;
+            }
+
+            // Generic scalar/array-only snapshot
+            foreach (get_object_vars($a) as $prop => $val) {
+                if ($val instanceof \Closure) { $row[$prop] = '[closure]'; continue; }
+                if (\is_scalar($val) || $val === null) {
                     $row[$prop] = $val;
                 } elseif (\is_array($val)) {
-                    // keep only scalars in arrays for now
                     $row[$prop] = array_map(static fn($v) => \is_scalar($v) || $v === null ? $v : '[object]', $val);
                 } else {
                     $row[$prop] = '[object]';
                 }
             }
-
-            // Common base props (note, cwd) live on parent; include if present.
-            if (property_exists($a, 'note')) { $row['note'] = $a->note; }
-            if (property_exists($a, 'cwd'))  { $row['cwd']  = $a->cwd;  }
+            if (property_exists($a, 'note') && !isset($row['note'])) { $row['note'] = $a->note; }
+            if (property_exists($a, 'cwd')  && !isset($row['cwd']))  { $row['cwd']  = $a->cwd;  }
 
             $out[] = $row;
         }

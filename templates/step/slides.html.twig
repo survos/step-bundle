@@ -1,62 +1,54 @@
-{# Minimal Reveal-compatible structure; swap with your reveal-bundle if desired #}
+# templates/step/slides.html.twig
+cat > templates/step/slides.html.twig <<'TWIG'
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>{{ code }} — Slides</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {# If reveal.js is available via your importmap/bundle, include it here. #}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/black.css" id="theme">
-    <style>
-      .reveal pre { font-size: .8em; }
-      .meta { color:#aaa; font-size:.7em; }
-    </style>
-  </head>
-  <body>
-    <div class="reveal">
-      <div class="slides">
-        {% for t in deck.tasks %}
-          <section>
-            <h2>{{ t.title }}</h2>
-            {% if t.description %}<p>{{ t.description }}</p>{% endif %}
-            {% if t.bullets %}
-              <ul>
-                {% for b in t.bullets %}<li>{{ b }}</li>{% endfor %}
-              </ul>
-            {% endif %}
+<head>
+  <meta charset="utf-8">
+  <title>{{ code }} — Slides</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/black.css" id="theme">
+  <style>
+    .reveal pre code.language-bash {
+      font-size: .9em;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .reveal ul { text-align: left; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+    {% for t in deck.tasks %}
+      <section>
+        <h2>{{ t.title }}</h2>
 
-            {% if t.actions %}
-              <pre><code>
-{% for a in t.actions -%}
-{{- a.type -}}{% if a.note %} — {{ a.note }}{% endif %}
-{%- if a.cmd is defined %} :: {{ a.cmd }}{% endif -%}
-{%- if a.urlOrRoute is defined %} :: {{ a.urlOrRoute }}{% endif -%}
-{%- if a.path is defined %} :: {{ a.path }}{% endif -%}
-{%- if a.target is defined %} :: {{ a.target }}{% endif -%}
-{% if a.cwd %} (cwd: {{ a.cwd }}){% endif %}
-{% endfor -%}
-              </code></pre>
-            {% endif %}
+        {% if t.bullets %}
+          <ul>
+            {% for b in t.bullets %}
+              <li>{{ b }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
 
-            <div class="meta">
-              Task: <code>{{ t.name }}</code>
-              {% if t.website %} — <a href="{{ t.website }}" target="_blank" rel="noreferrer">Website</a>{% endif %}
-            </div>
-          </section>
+        {% for a in t.actions %}
+          {{ render_action(a) }}
         {% endfor %}
-      </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
-    <script>
-      const deck = new Reveal({
-        hash: true,
-        slideNumber: true
-      });
-      deck.initialize();
-      // Alternative client fetch:
-      // fetch('{{ json_url|e('js') }}').then(r => r.json()).then(data => { /* build slides dynamically */ });
-    </script>
-  </body>
+        <div class="meta">
+          Task: <code>{{ t.name }}</code>
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+<script>
+  const deck = new Reveal({ hash: true, slideNumber: true });
+  deck.initialize();
+</script>
+</body>
 </html>
+TWIG

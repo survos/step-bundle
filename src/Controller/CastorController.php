@@ -40,6 +40,8 @@ final class CastorController extends AbstractController
         // We can pass JSON inline or let front-end fetch from /steps/{code}.json.
         // Here we render server-side sections from data to keep it simple.
         $deck = $this->exporter->exportSteps($code);
+        // for json decoding consistence
+        $deck = json_decode(json_encode($deck), false);
 
         return $this->render('@SurvosStep/step/slides.html.twig', [
             'code' => $code,
