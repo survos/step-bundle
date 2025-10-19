@@ -1,0 +1,5 @@
+{# File: templates/step/action/yaml_write.html.twig #}
+<div class="action action-yaml">
+  {% if note %}<div class="badge" style="margin-bottom:.25rem;">{{ note }}</div>{% endif %}
+  <pre><code class="language-yaml">{% if path %}# {{ path }}\n{% endif %}{{- content -}}</code></pre>
+</div>

@@ -1,0 +1,12 @@
+{# File: templates/step/action/display_code.html.twig #}
+<div class="action action-{{ lang|default('text')|lower }}">
+    {% if note %}
+        <div class="badge" style="margin-bottom:.25rem;">{{ note }}</div>
+    {% endif %}
+    <pre><code class="language-{{ lang|default('text')|lower }}">
+{{- (code ?? (path ? ('# ' ~ path ~ "\n") : '')) -}}
+  </code></pre>
+  {% if path and not code %}
+    <div class="small" style="opacity:.7;">{{ path }}</div>
+{% endif %}
+</div>

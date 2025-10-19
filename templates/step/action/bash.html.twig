@@ -1,0 +1,6 @@
+{# File: templates/step/action/bash.html.twig #}
+{% set prefix = cwd ? 'cd ' ~ cwd ~ " && \\\n" : '' %}
+<div class="action action-bash">
+  {% if note %}<div class="badge" style="margin-bottom:.25rem;">{{ note }}</div>{% endif %}
+  <pre><code class="language-bash">{{- prefix -}}{{ cmd }}</code></pre>
+</div>
