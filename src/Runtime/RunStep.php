@@ -6,8 +6,24 @@ namespace Survos\StepBundle\Runtime;
 
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{
-    Bash, Console, Composer, Env, OpenUrl, YamlWrite, FileWrite, FileCopy,
-    DisplayCode, Section, BrowserVisit, BrowserClick, BrowserAssert, PhpClosure, ShowClass
+    Bash,
+    Console,
+    Composer,
+    Env,
+    OpenUrl,
+    YamlWrite,
+    FileWrite,
+    FileCopy,
+    DisplayCode,
+    Section,
+    BrowserVisit,
+    BrowserClick,
+    BrowserAssert,
+    PhpClosure,
+    ShowClass,
+    ComposerRequire,
+    ImportmapRequire,
+    RequirePackage
 };
 
 use ReflectionClass;
@@ -20,8 +36,6 @@ use function Castor\context as castor_context;
 
 /**
  * Executes the #[Step] attached to the *calling task function/method*.
- * - `run_step()` has no name arg; we detect the caller via backtrace.
- * - ShowClass: resolves class via autoloader and prints file in CLI; renderers show code block.
  */
 final class RunStep
 {
@@ -34,13 +48,11 @@ final class RunStep
 
         $step = self::locateCallingStep();
         if (!$step instanceof Step) {
-            // No #[Step] on caller — nothing to do.
             return;
         }
 
         $io = castor_io();
 
-        // Header / description / bullets
         $io->title($step->title);
         if ($step->description) {
             $io->note($step->description);
@@ -50,7 +62,6 @@ final class RunStep
         }
 
         if ($mode === 'present') {
-            // Presenter mode: render only, do not execute
             return;
         }
 
@@ -73,11 +84,9 @@ final class RunStep
 
     private static function locateCallingStep(): ?Step
     {
-        // Scan a handful of frames upward to find a function/method with #[Step]
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 12);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 16);
 
         foreach ($trace as $frame) {
-            // Function-style task
             if (isset($frame['function']) && is_string($frame['function']) && function_exists($frame['function'])) {
                 $rf = new ReflectionFunction($frame['function']);
                 $attrs = $rf->getAttributes(Step::class);
@@ -86,7 +95,6 @@ final class RunStep
                     return $attrs[0]->newInstance();
                 }
             }
-            // Method-style task
             if (isset($frame['class'], $frame['function']) && method_exists($frame['class'], $frame['function'])) {
                 $rm = new ReflectionMethod($frame['class'], $frame['function']);
                 $attrs = $rm->getAttributes(Step::class);
@@ -109,7 +117,8 @@ final class RunStep
     {
         if ($a instanceof Bash) {
             $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-            castor_run(['bash', '-lc', $a->cmd], context: $ctx);
+            $cmd = self::sanitizeShell($a->cmd);
+            castor_run(['bash', '-lc', $cmd], context: $ctx);
             return;
         }
 
@@ -121,9 +130,52 @@ final class RunStep
         }
 
         if ($a instanceof Composer) {
-            $cmd = 'composer ' . $a->cmd;
             $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
+            $cmd = 'composer ' . self::sanitizeShell($a->cmd);
             castor_run(['bash', '-lc', $cmd], context: $ctx);
+            return;
+        }
+
+        /** ComposerRequire → execute without comments/backslashes */
+        if ($a instanceof ComposerRequire) {
+            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
+
+            // Build argv form: composer req [--dev] pkg[:constraint] ...
+            $argv = ['composer', 'req'];
+            if (property_exists($a, 'dev') && $a->dev) {
+                $argv[] = '--dev';
+            }
+            foreach ((array)$a->requires as $req) {
+                if ($req instanceof RequirePackage) {
+                    $pkg = $req->package . ($req->constraint ? ':' . $req->constraint : '');
+                    if ($pkg) $argv[] = $pkg;
+                } elseif (\is_array($req)) {
+                    $pkg = (string)($req['package'] ?? ($req[0] ?? ''));
+                    $con = (string)($req['constraint'] ?? '');
+                    $argv[] = $pkg . ($con ? ':' . $con : '');
+                } else {
+                    $argv[] = (string)$req;
+                }
+            }
+
+            castor_run($argv, context: $ctx);
+            return;
+        }
+
+        /** ImportmapRequire → run via bin/console (or symfony console) with argv */
+        if ($a instanceof ImportmapRequire) {
+            $argv = array_merge(self::consolePrefix($a->cwd), ['importmap:require']);
+            foreach ((array)$a->requires as $req) {
+                if ($req instanceof RequirePackage) {
+                    $argv[] = $req->package;
+                } elseif (\is_array($req)) {
+                    $argv[] = (string)($req['package'] ?? ($req[0] ?? ''));
+                } else {
+                    $argv[] = (string)$req;
+                }
+            }
+            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
+            castor_run($argv, context: $ctx);
             return;
         }
 
@@ -150,14 +202,12 @@ final class RunStep
         }
 
         if ($a instanceof DisplayCode) {
-            // Renderer handles visual code block; CLI runs no-op here.
-            $io->comment('DisplayCode: ' . $a->target);
+            $target = $a->target ?? '(inline code)';
+            $io->comment('DisplayCode: ' . (is_string($target) ? $target : '(inline)'));
             return;
         }
 
         if ($a instanceof ShowClass) {
-            // Try to reflect the class; if found, echo the file in CLI;
-            // your slideshow renderer can still show it as a code block.
             $class = $a->class;
             if (!\class_exists($class)) {
                 $io->comment("⚠ Class not found: {$class} (did you run the previous step?)");
@@ -170,7 +220,6 @@ final class RunStep
                 return;
             }
             $io->section($class);
-            // Print source to CLI; ensure trailing newline
             $src = (string)\file_get_contents($file);
             echo rtrim($src) . "\n";
             return;
@@ -230,6 +279,26 @@ final class RunStep
     private static function joinPath(?string $cwd, string $path): string
     {
         return $cwd ? rtrim($cwd, '/') . '/' . ltrim($path, '/') : $path;
+    }
+
+    /** Remove shell comments and line continuations for execution */
+    private static function sanitizeShell(string $cmd): string
+    {
+        $lines = preg_split("/\r?\n/", $cmd) ?: [];
+        $out = [];
+        foreach ($lines as $line) {
+            // strip inline comments not in quotes (quick heuristic)
+            if (false !== ($pos = strpos($line, '#'))) {
+                $before = substr($line, 0, $pos);
+                // keep if the # was inside quotes (simple heuristic: if unmatched quotes present, don't strip)
+                $q = substr_count($before, "'") % 2 || substr_count($before, '"') % 2;
+                $line = $q ? $line : $before;
+            }
+            $line = rtrim($line);
+            $line = preg_replace('/\s*\\\\\s*$/', '', $line); // remove trailing backslash line-continue
+            if ($line !== '') $out[] = $line;
+        }
+        return trim(implode(' ', $out));
     }
 
     /** @return array<int,string> */

@@ -26,6 +26,12 @@ final class Step
         public array $notes = [],
         public ?string $group = null,
         public ?string $tags = null,
+        public array $options = [] {
+            set(string|array $value) => is_string($value)
+                ? explode('|', $value)
+                : $value;
+        }
+
     ) {}
 
     public function hasContent(): bool

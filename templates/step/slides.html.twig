@@ -12,14 +12,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
 
-  {# Bundle CSS (published at /bundles/survosstep/steps.css) #}
+  {# Bundle CSS #}
   <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
 </head>
 <body>
 <div class="reveal">
   <div class="slides">
 
-    {# Title #}
+    {# Title slide #}
     <section>
       <div class="slide-shell">
         <header class="slide-header">
@@ -28,29 +28,25 @@
             <a class="back-link" href="{{ path('app_home') }}">← Back to Home</a>
           {% endif %}
         </header>
-
-        <div class="slide-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div class="slide-content">
           <p>A Castor-powered slideshow</p>
         </div>
-
         <footer class="slide-footer"><span>Use ← → • <kbd>F</kbd> fullscreen</span></footer>
       </div>
     </section>
 
-    {# Slides — controller passes `tasks` #}
+    {# Task slides #}
     {% for task in tasks %}
       {% set taskTitle = task.title|default(task.name|default(task.code|default('Step'))) %}
       {% set taskName  = task.name|default(task.code|default('')) %}
-      <section>
+      <section data-task-name="{{ taskName|e('html_attr') }}">
         <div class="slide-shell">
           <header class="slide-header">
             <h2 class="slide-title">{{ taskTitle }}</h2>
           </header>
-
           <div class="slide-content">
             {% if task.description %}<p class="slide-description">{{ task.description }}</p>{% endif %}
             {% if task.bullets %}<ul>{% for b in task.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
-
             {% if task.actions %}
               {% for a in task.actions %}
                 <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
@@ -59,18 +55,18 @@
               {% endfor %}
             {% endif %}
           </div>
-
-          <footer class="slide-footer">
-            {% if taskName %}<span>Run: <code>castor {{ taskName }}</code></span>{% endif %}
-          </footer>
+          <footer class="slide-footer"></footer>
         </div>
       </section>
     {% endfor %}
 
+    {# Final #}
     <section>
       <div class="slide-shell">
         <header class="slide-header"><h2 class="slide-title">Done ✔</h2></header>
-        <div class="slide-content" style="display:flex;align-items:center;justify-content:center;"><p>Questions?</p></div>
+        <div class="slide-content" style="display:flex;align-items:center;justify-content:center;">
+          <p>Questions?</p>
+        </div>
         <footer class="slide-footer"><span>Thanks!</span></footer>
       </div>
     </section>
@@ -78,19 +74,107 @@
   </div>
 </div>
 
+{# HUD (left of Reveal arrows) #}
+<div id="slide-hud" class="slide-hud">
+  {% if app is defined %}<a href="{{ path('app_home') }}" class="hud-link">Home</a>{% else %}<span class="hud-link">Home</span>{% endif %}
+  <span class="hud-sep">|</span>
+  <a id="hud-json-deck" href="{{ json_url }}" target="_blank" class="hud-link">JSON (deck)</a>
+  <span class="hud-sep">|</span>
+  <a id="hud-json-slide" href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+  <span class="hud-sep">|</span>
+  <span id="hud-code" class="hud-label">{{ code }}</span>
+  <span class="hud-sep">*</span>
+  <span id="hud-step" class="hud-label">intro</span>
+  <span class="hud-sep">|</span>
+  <button id="hud-copy" type="button" class="hud-copy" title="Copy run command">Copy run</button>
+</div>
+
+{# Expose data to the HUD #}
+<script>
+  window.__SURVOS_SLIDES__ = {
+    code: {{ code|json_encode|raw }},
+    tasks: {{ tasks|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}
+  };
+</script>
+
 {# Reveal JS (CDN) #}
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
 <script>
-  Reveal.initialize({
-    hash: true,
-    slideNumber: true,
-    controls: true,
-    progress: true,
-    center: false, // we use sticky header/footer
-    transition: 'slide',
-    plugins: [ RevealHighlight ]
-  });
+Reveal.initialize({
+  hash: true,
+  slideNumber: true,
+  controls: true,
+  progress: true,
+  center: false,
+  transition: 'slide',
+  margin: 0.02,
+  minScale: 0.2,
+  maxScale: 1.6,
+  plugins: [ RevealHighlight ]
+});
+
+/* Auto-fit (compact classes) */
+function fitCurrentSlide() {
+  const sec = document.querySelector('.slides section.present');
+  const content = sec?.querySelector('.slide-content');
+  if (!sec || !content) return;
+  sec.classList.remove('compact-1','compact-2','compact-3');
+  let i = 0;
+  while (content.scrollHeight > content.clientHeight && i < 3) {
+    i++; sec.classList.add('compact-'+i);
+  }
+}
+
+/* HUD wiring */
+function currentTask() {
+  const state = window.__SURVOS_SLIDES__ || { code:'deck', tasks:[] };
+  const idx = Reveal.getIndices().h; // horizontal index
+  const tasks = Array.isArray(state.tasks) ? state.tasks : [];
+  if (idx >= 1 && idx <= tasks.length) return { obj: tasks[idx-1], idx };
+  return { obj: null, idx };
+}
+
+function updateHud() {
+  const { code, tasks } = window.__SURVOS_SLIDES__ || { code:'deck', tasks:[] };
+  const { obj, idx } = currentTask();
+  const step = obj?.name || obj?.code || obj?.title || (idx === 0 ? 'intro' : (idx > 0 ? `step-${idx}` : 'intro'));
+
+  document.getElementById('hud-code').textContent = code;
+  document.getElementById('hud-step').textContent = step;
+
+  // JSON (slide) on the fly
+  const aSlide = document.getElementById('hud-json-slide');
+  if (obj) {
+    const payload = { code, index: idx-1, task: obj };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}));
+    aSlide.href = url;
+    aSlide.download = `${code}-${step}.json`;
+    aSlide.style.display = '';
+  } else {
+    aSlide.removeAttribute('href');
+    aSlide.style.display = 'none';
+  }
+
+  // Copy run
+  const btn = document.getElementById('hud-copy');
+  btn.dataset.cmd = `CODE=${code} castor ${step}`;
+}
+
+document.getElementById('hud-copy').addEventListener('click', async (e) => {
+  const cmd = e.currentTarget.dataset.cmd || '';
+  try { await navigator.clipboard.writeText(cmd); }
+  catch {
+    const ta=document.createElement('textarea'); ta.value=cmd; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const old=e.currentTarget.textContent; e.currentTarget.textContent='Copied!';
+  setTimeout(()=> e.currentTarget.textContent=old, 900);
+});
+
+Reveal.on('ready', () => { fitCurrentSlide(); updateHud(); });
+Reveal.on('slidechanged', () => { fitCurrentSlide(); updateHud(); });
+window.addEventListener('resize', () => { setTimeout(()=>{ fitCurrentSlide(); updateHud(); }, 60); });
 </script>
 </body>
 </html>
