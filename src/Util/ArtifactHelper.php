@@ -20,7 +20,11 @@ final class ArtifactHelper
 
     public static function fromTaskContext(?\Castor\Console\Command\TaskCommand $task, ?Context $ctx): self
     {
-        $wd = (string)($ctx?->workingDirectory ?? getcwd());
+//        $wd = (string)($ctx?->workingDirectory ?? getcwd());
+//        if (!is_dir($wd)) {
+//        }
+        $wd = getcwd(); // fallback to main app root
+
         if (!is_dir($wd)) {
             throw new \RuntimeException("Working directory not found: $wd");
         }
@@ -50,6 +54,14 @@ final class ArtifactHelper
         if (false === file_put_contents($abs, $contents)) {
             throw new IOException("Failed to write artifact: $abs");
         }
+
+        if (!is_dir(dirname($abs))) {
+            throw new \RuntimeException("Artifact directory missing: " . dirname($abs));
+        }
+        if (false === @file_put_contents($abs, $contents)) {
+            throw new \RuntimeException("Failed to write artifact: {$abs}");
+        }
+
         return $abs;
     }
 

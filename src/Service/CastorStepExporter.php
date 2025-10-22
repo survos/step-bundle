@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
-
-// src/Service/CastorStepExporter.php
+// file: src/Service/CastorStepExporter.php — robust slide/action artifact lookup (safe + fuzzy)
 
 namespace Survos\StepBundle\Service;
 
@@ -19,33 +18,24 @@ final class CastorStepExporter
     public function __construct(
         private readonly string $projectDir,
         private readonly string $glob = '*.castor.php',
-        private readonly int $depth = 0,
+        private readonly int    $depth = 0,
     ) {}
 
-    /**
-     * Lists available castor files as slideshows.
-     * NOTE: codes are URL-safe slugs (no dots), e.g. "basic.demo.castor.php" → "basic-demo"
-     *
-     * @return array<int, array{code:string, path:string}>
-     */
     public function listSlideshows(): array
     {
         $files = $this->findCastorFiles();
         $out = [];
         foreach ($files as $file) {
-            $filename = $file->getFilename(); // e.g. basic.demo.castor.php
             $out[] = [
-                'code' => $this->slugFromFilename($filename),   // e.g. basic-demo
+                'code' => $this->slugFromFilename($file->getFilename()),
                 'path' => $file->getRealPath() ?: '',
             ];
         }
         return $out;
     }
 
-    /**
-     * Export a given castor file (by {code}) into a slideshow-ready deck structure.
-     */
-    public function exportSteps(string $code): array
+    /** Export a given castor file (by {code}) into a slideshow-ready structure. */
+    public function exportSlides(string $code): array
     {
         $file = $this->resolveFileByCode($code);
         if (!$file) {
@@ -57,7 +47,7 @@ final class CastorStepExporter
         $after  = get_defined_functions()['user'] ?? [];
         $newFns = array_values(array_diff($after, $before));
 
-        $tasks = [];
+        $slides = [];
         foreach ($newFns as $fnName) {
             $rf = new ReflectionFunction($fnName);
             $taskAttrs = $rf->getAttributes(AsTask::class, ReflectionAttribute::IS_INSTANCEOF);
@@ -65,106 +55,153 @@ final class CastorStepExporter
             if ($taskAttrs === [] || $stepAttrs === []) {
                 continue;
             }
-            /** @var AsTask $asTask */
-            $asTask = $taskAttrs[0]->newInstance();
-            /** @var Step $step */
-            $step = $stepAttrs[0]->newInstance();
 
-            $tasks[] = [
-                'name'        => $asTask->name ?? $rf->getName(),
-                'function'    => $rf->getName(),
-                'title'       => $step->title,
-                'description' => $step->description,
-                'bullets'     => array_values($step->bullets),
-                'website'     => $step->website,
-                'image'       => $step->image,
-                'notes'       => array_values($step->notes),
-                'actions'     => $this->serializeActions($step->actions),
-            ];
+            /** @var AsTask $asTask */
+            $asTask  = $taskAttrs[0]->newInstance();
+            $taskName = $asTask->name ?? $rf->getName();
+            $steps    = array_map(static fn($a) => $a->newInstance(), $stepAttrs);
+
+            foreach ($steps as $step) {
+                $slides[] = [
+                    'task_name'   => $taskName,
+                    'function'    => $rf->getName(),
+                    'title'       => $step->title,
+                    'description' => $step->description,
+                    'bullets'     => array_values($step->bullets),
+                    'website'     => $step->website,
+                    'image'       => $step->image,
+                    'notes'       => array_values($step->notes),
+
+                    // actions carry per-action artifacts
+                    'actions'     => $this->serializeActions($step->actions, $taskName, $step->title),
+
+                    // ALWAYS set slide-level artifacts (may be empty)
+                    'artifacts'   => $this->findSlideArtifacts($taskName, $step->title),
+                ];
+            }
         }
 
-        // Sort: numeric prefix first, then alpha
-        usort($tasks, static function ($a, $b) {
-            $na = $a['name']; $nb = $b['name'];
+        usort($slides, static function (array $a, array $b) {
+            $na = $a['task_name']; $nb = $b['task_name'];
             $pa = preg_match('/^\d+/', $na, $ma) ? (int)$ma[0] : PHP_INT_MAX;
             $pb = preg_match('/^\d+/', $nb, $mb) ? (int)$mb[0] : PHP_INT_MAX;
             return $pa <=> $pb ?: strcmp($na, $nb);
         });
 
         return [
-            'code'  => $code,
-            'path'  => $file,
-            'tasks' => $tasks,
+            'code'   => $code,
+            'path'   => $file,
+            'slides' => $slides,
         ];
     }
 
-    /** @return \Symfony\Component\Finder\SplFileInfo[] */
-    private function findCastorFiles(): array
+    // ---------- artifacts (robust) ----------
+
+    private function findSlideArtifacts(string $task, string $stepTitle): array
     {
-        // Search one level above the Symfony app (as before)
-        $root = $this->projectDir . '/castor';
+        $root = $this->projectDir . '/public/artifacts';
+        $safeTask = $this->safe($task);
+        $safeStep = $this->safe($stepTitle);
+        $dir = "{$root}/{$safeTask}/{$safeStep}";
 
-        $finder = new Finder();
-        $finder->files()
-            ->in($root)
-            ->name($this->glob)
-            ->depth('== ' . $this->depth);
+        if (!is_dir($dir)) {
+            return [];
+        }
 
-        return iterator_to_array($finder, false);
+        $rii = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        $files = [];
+        foreach ($rii as $f) {
+            if (!$f->isFile()) continue;
+            $path = substr($f->getPathname(), strlen($this->projectDir)); // keep /public prefix
+            $files[] = [
+                'path'  => str_replace(DIRECTORY_SEPARATOR, '/', $path),
+                'name'  => $f->getFilename(),
+                'size'  => $f->getSize(),
+                'mtime' => date('c', $f->getMTime()),
+                'contents' => @file_get_contents($f->getPathname()), // 👈 load content for rendering
+            ];
+        }
+
+        return $files;
     }
 
+
     /**
-     * Map a clean URL code back to an actual *.castor.php file.
-     * Accepts codes without dots: "basic-demo" will match "basic.demo.castor.php".
+     * Resolve the actual slide directory on disk for (task, stepTitle),
+     * trying both the direct "safe" path and a fuzzy match.
      */
-    private function resolveFileByCode(string $code): ?string
+    private function resolveSlideDir(string $task, string $stepTitle): ?string
     {
-        foreach ($this->findCastorFiles() as $file) {
-            if ($this->slugFromFilename($file->getFilename()) === $code) {
-                return $file->getRealPath() ?: null;
+        $root = $this->projectDir . '/public/artifacts';
+        $safeTask = $this->safe($task);
+        $safeStep = $this->safe($stepTitle);
+
+        // 1) direct path
+        $dir = "{$root}/{$safeTask}/{$safeStep}";
+        if (is_dir($dir)) {
+            return $dir;
+        }
+
+        // 2) fuzzy: scan task dir and compare canonical names (strip non-alnum)
+        $taskDir = "{$root}/{$safeTask}";
+        if (!is_dir($taskDir)) {
+            return null;
+        }
+
+        $want = $this->canon($stepTitle);
+        foreach (scandir($taskDir) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') continue;
+            $full = $taskDir . '/' . $entry;
+            if (!is_dir($full)) continue;
+            if ($this->canon($entry) === $want) {
+                return $full;
             }
         }
+
         return null;
     }
 
-    /**
-     * Convert filename -> URL-safe code.
-     * Rules:
-     *   1) strip final ".php"
-     *   2) strip trailing ".castor" token if present
-     *   3) replace any non-alnum with "-"
-     *   4) trim extra dashes, lowercase
-     *
-     * Examples:
-     *   "basic.demo.castor.php" -> "basic-demo"
-     *   "demo.castor.php"       -> "demo"
-     *   "my_demo.castor.php"    -> "my-demo"
-     */
-    private function slugFromFilename(string $filename): string
+    /** Recursive scanner that returns File[] with public paths. */
+    private function scanFilesRecursively(string $absDir): array
     {
-        $base = pathinfo($filename, PATHINFO_FILENAME);        // e.g. basic.demo.castor
-        $base = preg_replace('/\.castor$/i', '', $base) ?? $base; // e.g. basic.demo
-        $slug = preg_replace('/[^a-z0-9]+/i', '-', $base) ?? $base;
-        $slug = trim($slug, '-');
-        return strtolower($slug);
+        $rii = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($absDir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        $files = [];
+        foreach ($rii as $f) {
+            /** @var \SplFileInfo $f */
+            if (!$f->isFile()) continue;
+            $rel = substr($f->getPathname(), strlen($this->projectDir));
+            $files[] = [
+                'path'  => str_replace(DIRECTORY_SEPARATOR, '/', $rel),
+                'name'  => $f->getFilename(),
+                'size'  => $f->getSize(),
+                'mtime' => date('c', $f->getMTime()),
+            ];
+        }
+
+        return $files;
     }
 
-    /**
-     * Flatten action objects to JSON-ready arrays, with special handling for
-     * ComposerRequire / ImportmapRequire so we preserve "requires" AND a
-     * pre-rendered "multiline" command the renderer can print directly.
-     *
-     * @param list<object> $actions
-     * @return list<array<string,mixed>>
-     */
-    private function serializeActions(array $actions): array
+    // ---------- actions ----------
+
+    /** @param list<object> $actions @return list<array<string,mixed>> */
+    private function serializeActions(array $actions, string $taskName, string $stepTitle): array
     {
         $out = [];
+        $i = 0;
 
         foreach ($actions as $a) {
+            $i++;
             $rc   = new ReflectionClass($a);
             $type = $rc->getShortName();
             $row  = ['type' => $type];
+
+            $actionKey = $this->actionKeyFor($a, $i);
 
             if ($a instanceof ComposerRequire || $a instanceof ImportmapRequire) {
                 $row['cwd']   = $a->cwd ?? null;
@@ -189,13 +226,13 @@ final class CastorStepExporter
                         $reqs[] = ['package' => (string)$req, 'comment' => null, 'constraint' => null];
                     }
                 }
-                $row['requires']  = $reqs;
-                $row['multiline'] = $a->asMultilineCommand();
+                $row['requires']   = $reqs;
+                $row['multiline']  = $a->asMultilineCommand();
+                $row['artifacts']  = [];
                 $out[] = $row;
                 continue;
             }
 
-            // Generic scalar/array-only snapshot
             foreach (get_object_vars($a) as $prop => $val) {
                 if ($val instanceof \Closure) { $row[$prop] = '[closure]'; continue; }
                 if (\is_scalar($val) || $val === null) {
@@ -209,9 +246,69 @@ final class CastorStepExporter
             if (property_exists($a, 'note') && !isset($row['note'])) { $row['note'] = $a->note; }
             if (property_exists($a, 'cwd')  && !isset($row['cwd']))  { $row['cwd']  = $a->cwd;  }
 
+            $row['artifacts'] = [];
             $out[] = $row;
         }
 
         return $out;
+    }
+
+    /** Compute a RunStep-compatible actionKey. */
+    private function actionKeyFor(object $action, int $index): string
+    {
+        $short = (new ReflectionClass($action))->getShortName();
+        $base  = strtolower($short);
+        $id    = property_exists($action, 'id') ? (string)($action->id ?? '') : '';
+        if ($id !== '') {
+            // preserve writer’s case, but normalize punctuation
+            return $base . '-' . $this->safe($id);
+        }
+        return sprintf('%s-%02d', $base, $index);
+    }
+
+    // ---------- file discovery / names ----------
+
+    /** @return \Symfony\Component\Finder\SplFileInfo[] */
+    private function findCastorFiles(): array
+    {
+        $root = $this->projectDir . '/castor';
+
+        $finder = new Finder();
+        $finder->files()
+            ->in($root)
+            ->name($this->glob)
+            ->depth('== ' . $this->depth);
+
+        return iterator_to_array($finder, false);
+    }
+
+    private function resolveFileByCode(string $code): ?string
+    {
+        foreach ($this->findCastorFiles() as $file) {
+            if ($this->slugFromFilename($file->getFilename()) === $code) {
+                return $file->getRealPath() ?: null;
+            }
+        }
+        return null;
+    }
+
+    private function slugFromFilename(string $filename): string
+    {
+        $base = pathinfo($filename, PATHINFO_FILENAME);
+        $base = preg_replace('/\.castor$/i', '', $base) ?? $base;
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', $base) ?? $base;
+        return strtolower(trim($slug, '-'));
+    }
+
+    private function safe(string $s): string
+    {
+        // same contract as writer: any non [A-Za-z0-9._-] becomes a single dash
+        return preg_replace('/[^A-Za-z0-9._-]+/', '-', $s) ?: 'x';
+    }
+
+    private function canon(string $s): string
+    {
+        // for fuzzy match: strip everything but alnum, lowercase
+        return strtolower(preg_replace('/[^A-Za-z0-9]+/', '', $s) ?? '');
     }
 }

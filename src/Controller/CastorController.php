@@ -7,6 +7,8 @@ use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class CastorController extends AbstractController
@@ -39,50 +41,18 @@ final class CastorController extends AbstractController
 // file: src/Controller/StepSlidesController.php — flatten to slides[]
 
     #[Route('/slides/{code}', name: 'survos_step_slides', methods: ['GET'])]
-    public function slides(string $code): Response
+    public function slides(string $code,
+        #[MapQueryParameter] bool $debug=false
+    ): Response
     {
-        $deck = $this->exporter->exportSteps($code);
+        $deck = $this->exporter->exportSlides($code);
+        $slides = $deck['slides'] ?? [];
+        dump(array_keys($deck), array_keys($deck['slides'][0] ?? []));
 
-        $normalizedCode = (string)($deck['code'] ?? $code);
-        $tasks = $deck['tasks'] ?? [];
-
-        // Flatten tasks -> slides
-        $slides = [];
-        foreach ($tasks as $t) {
-            $taskName  = (string)($t['name'] ?? $t['code'] ?? 'task');
-            $taskTitle = (string)($t['title'] ?? $taskName);
-            $taskDesc  = (string)($t['description'] ?? '');
-            $taskBul   = (array)($t['bullets'] ?? []);
-
-            // New shape: steps[]
-            if (!empty($t['steps']) && is_array($t['steps'])) {
-                foreach ($t['steps'] as $s) {
-                    $slides[] = [
-                        'task_name' => $taskName,
-                        'title'     => (string)($s['title'] ?? $taskTitle),
-                        'description'=> (string)($s['description'] ?? $taskDesc),
-                        'bullets'   => (array)($s['bullets'] ?? $taskBul),
-                        'actions'   => (array)($s['actions'] ?? []),
-                    ];
-                }
-                continue;
-            }
-
-            // Legacy: the whole task is one slide
-            $slides[] = [
-                'task_name' => $taskName,
-                'title'     => $taskTitle,
-                'description'=> $taskDesc,
-                'bullets'   => $taskBul,
-                'actions'   => (array)($t['actions'] ?? []),
-            ];
-//            dd($slides, $deck);
-        }
-
-        return $this->render('@SurvosStep/step/slides.html.twig', [
-            'code'     => $normalizedCode,
-            'slides'   => $slides, // <-- now slides, not tasks
-            'json_url' => $this->generateUrl('survos_step_json', ['code' => $normalizedCode]),
+        return $this->render($debug ? '@SurvosStep/step/debug.html.twig' : '@SurvosStep/step/slides.html.twig', [
+            'code'     => (string)($deck['code'] ?? $code),
+            'slides'   => array_values($slides),
+            'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
             'deck'     => $deck,
         ]);
     }

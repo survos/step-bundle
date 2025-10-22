@@ -9,6 +9,11 @@
   {# Your bundle CSS (kept) #}
   <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
   {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
+
+  {% block javascripts %}
+      {% block importmap %}{{ importmap('app') }}{% endblock %}
+  {% endblock %}
+
 </head>
 <body>
 
@@ -22,10 +27,9 @@
       theme: 'black'
   }) }}
 >
-  <div class="slides">
+  <div class="slides" >
     {# iterate slides (already flattened server-side) #}
     {% for slide in slides %}
-      {{ stimulus_controller(_sc) }}
       {% set slideTitle = slide.title|default('Step') %}
       {% set taskName   = slide.task_name|default(code) %}
       {# provide context for DisplayCode('artifact:…') resolver #}
@@ -59,26 +63,25 @@
 </div>
 
 {# HUD (controlled by Stimulus) #}
-{% set _sc = '@SurvosStepBundle/reveal' %}
-<div class="slide-hud" data-controller="reveal"
-     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>
+<div class="slide-hud">
+{#     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>#}
   {% if app is defined %}
     <a href="{{ path('app_home') }}" class="hud-link">Home</a>
   {% else %}
     <span class="hud-link">Home</span>
   {% endif %}
   <span class="hud-sep">|</span>
-  <a {{ stimulus_target('reveal', 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
+  <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
   <span class="hud-sep">|</span>
-  <a {{ stimulus_target('reveal', 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+  <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
   <span class="hud-sep">|</span>
-  <span {{ stimulus_target('reveal', 'codeLabel') }} class="hud-label">{{ code }}</span>
+  <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
   <span class="hud-sep">*</span>
-  <span {{ stimulus_target('reveal', 'stepLabel') }} class="hud-label">intro</span>
+  <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
   <span class="hud-sep">|</span>
   <button type="button"
-          {{ stimulus_target('reveal', 'copyButton') }}
-          {{ stimulus_action('reveal', 'copy') }}
+          {{ stimulus_target(_sc, 'copyButton') }}
+          {{ stimulus_action(_sc, 'copy') }}
           class="hud-copy" title="Copy run command">
     Copy run
   </button>

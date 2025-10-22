@@ -160,6 +160,28 @@ final class RunStep
         if ($a instanceof Console) {
             $argv = array_merge(self::consolePrefix($cwdAbs), self::explodeArgs($a->cmd));
             $result = self::runProcess($argv, $cwdAbs);
+
+            // after: $result = self::runProcess($argv, $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
+
+// NEW: persist declared artifacts (e.g., DemoController.php)
+            $actionKeyLc = strtolower($actionKey);
+            foreach ((array)$a->artifacts as $spec) {
+                if (!$spec instanceof \Survos\StepBundle\Metadata\Actions\Artifact) { continue; }
+                $abs = \Survos\StepBundle\Util\PathUtil::absPath($spec->sourcePath, $cwdAbs);
+                if (!is_file($abs)) {
+                    throw new \RuntimeException("Declared artifact source not found: {$spec->sourcePath} (resolved: {$abs})");
+                }
+                $rel = "files/{$actionKeyLc}/{$spec->asName}";
+                $savedAbs = $ah->save($rel, (string)file_get_contents($abs));
+                if (method_exists($io, 'isVerbose') && $io->isVerbose()) {
+                    $io->writeln('<comment>Saved:</comment> ' . $ah->publishPath($savedAbs));
+                }
+            }
+            return;
+
+
             self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
             self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             if ($io->isVerbose()) {
@@ -322,11 +344,12 @@ final class RunStep
         ];
     }
 
-    private static function writeCommandArtifacts(ArtifactHelper $ah, string $actionKey, array $result, string $cwd, object $a): void
+    private static function writeCommandArtifacts(ArtifactHelper $ah, string $actionKey, array $result): void
     {
         $log = "# CMD\n{$result['command']}\n\n# EXIT\n{$result['exit']}\n\n# STDOUT\n{$result['stdout']}\n\n# STDERR\n{$result['stderr']}\n";
         $ah->save("logs/{$actionKey}/command.log", $log);
     }
+
 
     private static function writeGitArtifacts(ArtifactHelper $ah, string $actionKey, string $cwd, array $pre): void
     {
