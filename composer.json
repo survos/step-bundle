@@ -12,12 +12,18 @@
     "symfony/dependency-injection": "^7.3",
     "symfony/config": "^7.3",
     "survos/core-bundle": "^2.0",
-    "symfony/asset-mapper": "^7.3"
+    "symfony/asset-mapper": "^7.3",
+    "survos/installer": "^2.1"
   },
   "autoload": {
     "psr-4": {
       "Survos\\StepBundle\\": "src/"
     },
     "files": ["src/Runtime/functions.php"]
+  },
+  "config": {
+    "allow-plugins": {
+      "survos/installer": true
+    }
   }
 }

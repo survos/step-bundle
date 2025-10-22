@@ -12,9 +12,10 @@
 </head>
 <body>
 
+{% set _sc = '@survos/step/reveal' %}
 <div
   class="reveal"
-  {{ stimulus_controller('reveal', {
+  {{ stimulus_controller(_sc, {
       code: code,
       slides: slides,
       jsonUrl: json_url,
