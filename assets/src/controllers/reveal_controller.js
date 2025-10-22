@@ -20,6 +20,7 @@ export default class extends Controller {
   deck = null;
 
   connect() {
+    console.log("hello from " + this.identifier);
     // optional theme switch (via class on <html>)
     document.documentElement.dataset.revealTheme = this.themeValue;
 

@@ -12,7 +12,7 @@
 </head>
 <body>
 
-{% set _sc = '@survos/step/reveal' %}
+{% set _sc = '@survos/step-bundle/reveal' %}
 <div
   class="reveal"
   {{ stimulus_controller(_sc, {
@@ -25,7 +25,7 @@
   <div class="slides">
     {# iterate slides (already flattened server-side) #}
     {% for slide in slides %}
-      {{ dump(slide) }}
+      {{ stimulus_controller(_sc) }}
       {% set slideTitle = slide.title|default('Step') %}
       {% set taskName   = slide.task_name|default(code) %}
       {# provide context for DisplayCode('artifact:…') resolver #}
@@ -59,7 +59,7 @@
 </div>
 
 {# HUD (controlled by Stimulus) #}
-{% set _sc = '@SurvosStep/reveal' %}
+{% set _sc = '@SurvosStepBundle/reveal' %}
 <div class="slide-hud" data-controller="reveal"
      {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>
   {% if app is defined %}
