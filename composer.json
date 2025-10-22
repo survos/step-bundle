@@ -3,6 +3,7 @@
   "description": "Author steps as typed actions (Bash/Console/OpenUrl/DisplayCode/etc.) and render to README/Reveal/JSON.",
   "type": "symfony-bundle",
   "license": "MIT",
+  "keywords": ["symfony-ux","symfony"],
   "require": {
     "php": "^8.4",
     "symfony/http-kernel": "^7.3",

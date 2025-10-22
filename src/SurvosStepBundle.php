@@ -14,6 +14,8 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
 final class SurvosStepBundle extends AbstractBundle
 {
+    const string NAME = 'step'; // @todo use this for getPaths()
+
     use HasAssetMapperTrait; // this creates a dependency on core-bundle!  Maybe just repeat it here?
     protected string $extensionAlias = 'survos_step';
 
