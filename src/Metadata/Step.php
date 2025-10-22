@@ -8,7 +8,7 @@ use Attribute;
  * Neutral, renderer-agnostic step descriptor.
  * A Step contains ordered Actions and presentation info.
  */
-#[Attribute(Attribute::TARGET_FUNCTION)]
+#[Attribute(Attribute::TARGET_FUNCTION|Attribute::IS_REPEATABLE)]
 final class Step
 {
     /**

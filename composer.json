@@ -7,7 +7,9 @@
     "php": "^8.4",
     "symfony/http-kernel": "^7.3",
     "symfony/dependency-injection": "^7.3",
-    "symfony/config": "^7.3"
+    "symfony/config": "^7.3",
+    "survos/core-bundle": "^2.0",
+    "symfony/asset-mapper": "^7.3"
   },
   "autoload": {
     "psr-4": {

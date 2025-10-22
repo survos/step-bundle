@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
-// File: src/Twig/StepRuntimeExtension.php
+// file: src/Twig/StepRuntimeExtension.php — now resolves DisplayCode 'artifact:' targets via context
+
 namespace Survos\StepBundle\Twig;
 
 use ReflectionClass;
@@ -18,14 +19,27 @@ final class StepRuntimeExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('render_action', [$this, 'renderAction'], ['is_safe' => ['html']]),
-            new TwigFunction('render_actions', [$this, 'renderActions'], ['is_safe' => ['html']]),
+            // needs_context=true so we can read current task/step to resolve artifacts
+            new TwigFunction('render_action', [$this, 'renderAction'], [
+                'is_safe' => ['html'],
+                'needs_context' => true,
+            ]),
+            new TwigFunction('render_actions', [$this, 'renderActions'], [
+                'is_safe' => ['html'],
+                'needs_context' => true,
+            ]),
         ];
     }
 
-    public function renderAction(object|array $action): string
+    /** @param array<string,mixed> $context */
+    public function renderAction(array $context, object|array $action): string
     {
         [$type, $vars] = $this->normalize($action);
+
+        // Resolve DisplayCode("artifact:…") → public/artifacts/<safeTask>/<safeStep>/files/<actionKey>/<name>
+        if ($type === 'DisplayCode') {
+            $vars = $this->resolveDisplayCodeArtifact($context, $vars);
+        }
 
         $tpl = match ($type) {
             'Composer', 'ComposerRequire'      => self::TPL_BASE . 'composer.html.twig',
@@ -40,11 +54,12 @@ final class StepRuntimeExtension extends AbstractExtension
         return $this->twig->render($tpl, $vars + ['type' => $type]);
     }
 
-    public function renderActions(iterable $actions): string
+    /** @param array<string,mixed> $context */
+    public function renderActions(array $context, iterable $actions): string
     {
         $out = '';
         foreach ($actions as $a) {
-            $out .= $this->renderAction($a);
+            $out .= $this->renderAction($context, $a);
         }
         return $out;
     }
@@ -82,7 +97,6 @@ final class StepRuntimeExtension extends AbstractExtension
                 return [$type, compact('note','cwd','lang','cmd')];
 
             case 'ComposerRequire':
-                // exporter provides `multiline`
                 $cmd = (string)($data['multiline'] ?? '');
                 return ['Composer', compact('note','cwd','lang','cmd')];
 
@@ -103,10 +117,9 @@ final class StepRuntimeExtension extends AbstractExtension
                 $target  = $data['target'] ?? null;
                 $code    = $data['code']   ?? null;
                 $path    = is_string($target) ? $target : null;
-                return [$type, compact('note','cwd','lang','path','code')];
+                return [$type, compact('note','cwd','lang','path','code','target')];
 
             case 'ShowClass':
-                // accept various keys: class, target, fqcn, className
                 $class = $data['class'] ?? $data['target'] ?? $data['fqcn'] ?? $data['className'] ?? null;
                 $code = null; $path = null; $warning = null; $signature = null;
 
@@ -131,5 +144,44 @@ final class StepRuntimeExtension extends AbstractExtension
                 $path = $data['path'] ?? null;
                 return [$type, compact('note','cwd','lang','code','path')];
         }
+    }
+
+    /**
+     * Translate DisplayCode('artifact:<stepTitle>::<actionId>::<filename>')
+     *   → /artifacts/<safeTask>/<safeStep>/files/<actionKey>/<filename>
+     *
+     * @param array{path?:?string,target?:mixed} $vars
+     * @return array<string,mixed>
+     */
+    private function resolveDisplayCodeArtifact(array $context, array $vars): array
+    {
+        $path = $vars['path'] ?? null;
+        if (!is_string($path) || !str_starts_with($path, 'artifact:')) {
+            return $vars;
+        }
+
+        // Expected: artifact:<stepTitle>::<actionId>::<filename>
+        $spec = substr($path, strlen('artifact:'));
+        $parts = explode('::', $spec, 3);
+        if (count($parts) !== 3) {
+            return $vars; // leave it as-is
+        }
+        [$stepTitle, $actionId, $fileName] = $parts;
+
+        // We need the logical task name and the actual step title from the template context
+        // slides.html.twig should set these when looping:
+        //   {% set __task_name = task.name|default(code) %}
+        //   {% set __step_title = task.title|default(task.name|default(code)) %}
+        $taskName  = (string)($context['__task_name']  ?? $context['code'] ?? 'slide');
+        $stepTitle = (string)($context['__step_title'] ?? $stepTitle);
+
+        $safeTask = preg_replace('/[^A-Za-z0-9._-]+/', '-', $taskName);
+        $safeStep = preg_replace('/[^A-Za-z0-9._-]+/', '-', $stepTitle);
+        $safeAction = 'console-' . preg_replace('/[^A-Za-z0-9._-]+/', '-', $actionId);
+
+        $resolved = "/artifacts/{$safeTask}/{$safeStep}/files/{$safeAction}/{$fileName}";
+
+        $vars['path'] = $resolved;
+        return $vars;
     }
 }

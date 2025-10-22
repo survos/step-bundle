@@ -4,6 +4,8 @@
  */
 namespace Survos\StepBundle\Runtime;
 
+use Castor\Console\Command\TaskCommand;
+use Castor\Context as CastorContext;
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{
     Bash,
@@ -23,26 +25,25 @@ use Survos\StepBundle\Metadata\Actions\{
     ShowClass,
     ComposerRequire,
     ImportmapRequire,
-    RequirePackage
+    RequirePackage,
+    Artifact as ArtifactSpec
 };
-
+use Survos\StepBundle\Util\ArtifactHelper;
+use Survos\StepBundle\Util\PathUtil;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use Symfony\Component\Process\Process;
 
 use function Castor\io as castor_io;
-use function Castor\run as castor_run;
 use function Castor\context as castor_context;
 
-/**
- * Executes the #[Step] attached to the *calling task function/method*.
- */
 final class RunStep
 {
     /**
      * @param array{mode?:'run'|'present'|'dry'} $options
      */
-    public static function run(array $options = []): void
+    public static function run(?TaskCommand $task=null, ?CastorContext $ctx=null, array $options = []): void
     {
         $mode = (string)($options['mode'] ?? getenv('CASTOR_MODE') ?: 'run');
 
@@ -52,31 +53,31 @@ final class RunStep
         }
 
         $io = castor_io();
-
+        $io->title(($task?->getName() ?? '(task)') . ' / ' . ($task?->getDescription() ?? ''));
         $io->title($step->title);
-        if ($step->description) {
-            $io->note($step->description);
-        }
-        if ($step->bullets) {
-            $io->listing($step->bullets);
-        }
+        if ($step->description) $io->note($step->description);
+        if ($step->bullets)     $io->listing($step->bullets);
 
         if ($mode === 'present') {
             return;
         }
 
+        // Artifact helper bound to current step
+        $ctx ??= castor_context();
+        $ah = ArtifactHelper::fromTaskContext($task, $ctx)->withStep($step->title);
+
+        $actionIndex = 0;
         foreach ($step->actions as $action) {
+            $actionIndex++;
             if ($action instanceof Section) {
                 $io->section($action->title);
                 continue;
             }
-
             if ($mode === 'dry') {
                 $io->comment('DRY: ' . self::summarize($action));
                 continue;
             }
-
-            self::executeAction($io, $action);
+            self::executeAction($io, $action, $ctx, $ah, $actionIndex);
         }
 
         $io->success('Completed: ' . $step->title);
@@ -84,14 +85,13 @@ final class RunStep
 
     private static function locateCallingStep(): ?Step
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 16);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
 
         foreach ($trace as $frame) {
             if (isset($frame['function']) && is_string($frame['function']) && function_exists($frame['function'])) {
                 $rf = new ReflectionFunction($frame['function']);
                 $attrs = $rf->getAttributes(Step::class);
                 if ($attrs) {
-                    /** @var Step $step */
                     return $attrs[0]->newInstance();
                 }
             }
@@ -99,12 +99,10 @@ final class RunStep
                 $rm = new ReflectionMethod($frame['class'], $frame['function']);
                 $attrs = $rm->getAttributes(Step::class);
                 if ($attrs) {
-                    /** @var Step $step */
                     return $attrs[0]->newInstance();
                 }
             }
         }
-
         return null;
     }
 
@@ -113,38 +111,83 @@ final class RunStep
         return (new ReflectionClass($a))->getShortName();
     }
 
-    private static function executeAction(object $io, object $a): void
+    // inside RunStep class (private helpers)
+    private static function proxyUrl(string $urlOrPath, string $cwdAbs, ?string $hostHint = null): string
     {
+        // 1) explicit host wins
+        if ($hostHint) {
+            $h = preg_match('~^https?://~', $hostHint) ? $hostHint : ('http://' . $hostHint);
+            if ($urlOrPath === '/' || str_starts_with($urlOrPath, '/')) {
+                return rtrim($h, '/') . $urlOrPath;
+            }
+            return $h; // already a full URL
+        }
+
+        // 2) env hints (SYMFONY_DEFAULT_ROUTE_URL or SURVOS_PROXY_HOST)
+        $envUrl = getenv('SURVOS_PROXY_HOST') ?: getenv('SYMFONY_DEFAULT_ROUTE_URL'); // e.g. http://barcode.wip
+        if ($envUrl) {
+            $envUrl = rtrim($envUrl, '/');
+            return ($urlOrPath === '/' || str_starts_with($urlOrPath, '/')) ? $envUrl . $urlOrPath : $envUrl;
+        }
+
+        // 3) last resort: just pass through (caller gave a full URL, or local)
+        return $urlOrPath;
+    }
+
+
+    private static function executeAction(object $io, object $a, CastorContext $ctx, ArtifactHelper $ah, int $index): void
+    {
+        $cwdAbs = $a->cwd
+            ? PathUtil::absPath($a->cwd, (string)$ctx->workingDirectory)
+            : (string)$ctx->workingDirectory;
+
+        $actionKey = self::actionKey($a, $index);
+
+        // collect pre-change git state
+        $pre = self::gitStatus($cwdAbs);
+
         if ($a instanceof Bash) {
-            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-            $cmd = self::sanitizeShell($a->cmd);
-            castor_run(['bash', '-lc', $cmd], context: $ctx);
+            $result = self::runProcess(['bash','-lc', self::sanitizeShell($a->cmd)], $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
+            if ($io->isVerbose()) {
+                $io->writeln(sprintf('<comment>Saved:</comment> %s', $ah->publishPath($ah->baseDir() . "/logs/{$actionKey}/command.log")));
+            }
+
             return;
         }
 
         if ($a instanceof Console) {
-            $argv = array_merge(self::consolePrefix($a->cwd), self::explodeArgs($a->cmd));
-            $ctx  = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-            castor_run($argv, context: $ctx);
+            $argv = array_merge(self::consolePrefix($cwdAbs), self::explodeArgs($a->cmd));
+            $result = self::runProcess($argv, $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
+            if ($io->isVerbose()) {
+                $io->writeln(sprintf('<comment>Saved:</comment> %s', $ah->publishPath($ah->baseDir() . "/logs/{$actionKey}/command.log")));
+            }
+
+            // declared artifacts (e.g. snapshot AppController.php)
+            foreach ((array)$a->artifacts as $spec) {
+                if (!$spec instanceof ArtifactSpec) continue;
+                $abs = PathUtil::absPath($spec->sourcePath, $cwdAbs);
+                if (is_file($abs)) {
+                    $rel = "files/{$actionKey}/{$spec->asName}";
+                    $ah->save($rel, (string)file_get_contents($abs));
+                }
+            }
             return;
         }
 
         if ($a instanceof Composer) {
-            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-            $cmd = 'composer ' . self::sanitizeShell($a->cmd);
-            castor_run(['bash', '-lc', $cmd], context: $ctx);
+            $result = self::runProcess(['bash','-lc', 'composer ' . self::sanitizeShell($a->cmd)], $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             return;
         }
 
-        /** ComposerRequire → execute without comments/backslashes */
         if ($a instanceof ComposerRequire) {
-            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-
-            // Build argv form: composer req [--dev] pkg[:constraint] ...
             $argv = ['composer', 'req'];
-            if (property_exists($a, 'dev') && $a->dev) {
-                $argv[] = '--dev';
-            }
+            if (property_exists($a, 'dev') && $a->dev) $argv[] = '--dev';
             foreach ((array)$a->requires as $req) {
                 if ($req instanceof RequirePackage) {
                     $pkg = $req->package . ($req->constraint ? ':' . $req->constraint : '');
@@ -157,14 +200,15 @@ final class RunStep
                     $argv[] = (string)$req;
                 }
             }
+            $result = self::runProcess($argv, $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
 
-            castor_run($argv, context: $ctx);
             return;
         }
 
-        /** ImportmapRequire → run via bin/console (or symfony console) with argv */
         if ($a instanceof ImportmapRequire) {
-            $argv = array_merge(self::consolePrefix($a->cwd), ['importmap:require']);
+            $argv = array_merge(self::consolePrefix($cwdAbs), ['importmap:require']);
             foreach ((array)$a->requires as $req) {
                 if ($req instanceof RequirePackage) {
                     $argv[] = $req->package;
@@ -174,106 +218,190 @@ final class RunStep
                     $argv[] = (string)$req;
                 }
             }
-            $ctx = $a->cwd ? castor_context()->withWorkingDirectory($a->cwd) : null;
-            castor_run($argv, context: $ctx);
+            $result = self::runProcess($argv, $cwdAbs);
+            self::writeCommandArtifacts($ah, $actionKey, $result, $cwdAbs, $a);
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             return;
         }
 
         if ($a instanceof Env) {
             $file = ($a->cwd ? rtrim($a->cwd, '/') . '/' : '') . ($a->file ?? '.env.local');
-            self::writeEnvKV($file, $a->key, $a->value);
+            $abs  = PathUtil::absPath($file, $cwdAbs);
+            self::writeEnvKV($abs, $a->key, $a->value);
+            // snapshot updated file
+            $ah->save("files/{$actionKey}/" . basename($abs), (string)file_get_contents($abs));
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             return;
         }
 
-        if ($a instanceof OpenUrl) {
-            $io->comment('Open: ' . $a->urlOrRoute);
+        if ($a instanceof YamlWrite)  {
+            $abs = PathUtil::absPath(self::joinPath($a->cwd, $a->path), $cwdAbs);
+            self::fileWrite($abs, $a->content);
+            $ah->save("files/{$actionKey}/" . basename($abs), (string)file_get_contents($abs));
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             return;
         }
 
-        if ($a instanceof YamlWrite)  { self::fileWrite(self::joinPath($a->cwd, $a->path), $a->content); return; }
-        if ($a instanceof FileWrite)  { self::fileWrite(self::joinPath($a->cwd, $a->path), $a->content); return; }
+        if ($a instanceof FileWrite)  {
+            $abs = PathUtil::absPath(self::joinPath($a->cwd, $a->path), $cwdAbs);
+            self::fileWrite($abs, $a->content);
+            $ah->save("files/{$actionKey}/" . basename($abs), (string)file_get_contents($abs));
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
+            return;
+        }
+
         if ($a instanceof FileCopy)   {
-            $to = self::joinPath($a->cwd, $a->to);
-            @mkdir(\dirname($to), 0777, true);
-            if (!@copy(self::joinPath($a->cwd, $a->from), $to)) {
-                throw new \RuntimeException('Failed to copy to ' . $to);
+            $toAbs = PathUtil::absPath(self::joinPath($a->cwd, $a->to), $cwdAbs);
+            $fromAbs = PathUtil::absPath(self::joinPath($a->cwd, $a->from), $cwdAbs);
+            self::ensureDir(\dirname($toAbs));
+            if (!copy($fromAbs, $toAbs)) {
+                throw new \RuntimeException('Failed to copy to ' . $toAbs);
             }
+            $ah->save("files/{$actionKey}/" . basename($toAbs), (string)file_get_contents($toAbs));
+            self::writeGitArtifacts($ah, $actionKey, $cwdAbs, $pre);
             return;
         }
 
         if ($a instanceof DisplayCode) {
-            $target = $a->target ?? '(inline code)';
-            $io->comment('DisplayCode: ' . (is_string($target) ? $target : '(inline)'));
+            // purely presentational; still leave a breadcrumb
+            $ah->save("logs/{$actionKey}/display.txt", "DisplayCode: " . (string)($a->target ?? '(inline)') . "\n");
             return;
         }
 
         if ($a instanceof ShowClass) {
             $class = $a->class;
             if (!\class_exists($class)) {
-                $io->comment("⚠ Class not found: {$class} (did you run the previous step?)");
+                $ah->save("logs/{$actionKey}/showclass.txt", "Class not found: {$class}\n");
                 return;
             }
             $rc = new ReflectionClass($class);
             $file = $rc->getFileName();
-            if (!$file || !is_file($file)) {
-                $io->comment("⚠ Cannot locate file for {$class}");
-                return;
+            if ($file && is_file($file)) {
+                $ah->save("files/{$actionKey}/" . basename($file), (string)\file_get_contents($file));
             }
-            $io->section($class);
-            $src = (string)\file_get_contents($file);
-            echo rtrim($src) . "\n";
             return;
         }
 
-        if ($a instanceof BrowserVisit || $a instanceof BrowserClick || $a instanceof BrowserAssert) {
-            $io->comment('Browser step');
+        if ($a instanceof BrowserVisit) {
+            // Build final URL
+            $url = $a->urlOrPath;
+            if ($a->useProxy) {
+                $url = self::proxyUrl($url, $cwdAbs, $a->host);
+            }
+
+            // Verbose breadcrumb + artifact log
+            if (method_exists($io, 'isVerbose') && $io->isVerbose()) {
+                $io->writeln(sprintf('<info>Visit:</info> %s', $url));
+            }
+            $ah->save("logs/{$actionKey}/browser.txt", "Visit: {$url}\n");
+
+            // If you later automate a real headless fetch/screenshot, do it here.
             return;
         }
 
         if ($a instanceof PhpClosure) {
             ($a->fn)();
+            $ah->save("logs/{$actionKey}/closure.txt", "Executed closure.\n");
             return;
         }
 
-        $io->comment('Unknown action: ' . self::summarize($a));
+        $ah->save("logs/{$actionKey}/unknown.txt", 'Unknown action: ' . self::summarize($a) . "\n");
+    }
+
+    private static function runProcess(array $argv, string $cwd): array
+    {
+        $p = new Process($argv, $cwd);
+        $p->setTimeout(null);
+        $p->run();
+
+        return [
+            'command' => implode(' ', array_map(fn($s)=> (string)$s, $argv)),
+            'exit'    => $p->getExitCode(),
+            'stdout'  => $p->getOutput(),
+            'stderr'  => $p->getErrorOutput(),
+        ];
+    }
+
+    private static function writeCommandArtifacts(ArtifactHelper $ah, string $actionKey, array $result, string $cwd, object $a): void
+    {
+        $log = "# CMD\n{$result['command']}\n\n# EXIT\n{$result['exit']}\n\n# STDOUT\n{$result['stdout']}\n\n# STDERR\n{$result['stderr']}\n";
+        $ah->save("logs/{$actionKey}/command.log", $log);
+    }
+
+    private static function writeGitArtifacts(ArtifactHelper $ah, string $actionKey, string $cwd, array $pre): void
+    {
+        if (!is_dir($cwd . '/.git')) return;
+
+        $post = self::gitStatus($cwd);
+        $changed = array_values(array_diff($post['names'], $pre['names']));
+        if (!$changed) return;
+
+        $diff = self::proc(['git','diff'], $cwd);
+        $ah->save("git/{$actionKey}/changes.diff", $diff);
+
+        foreach ($changed as $rel) {
+            $abs = $cwd . '/' . $rel;
+            if (is_file($abs)) {
+                $ah->save("git/{$actionKey}/changed/" . basename($rel), (string)file_get_contents($abs));
+            }
+        }
+    }
+
+    private static function gitStatus(string $cwd): array
+    {
+        if (!is_dir($cwd . '/.git')) return ['names' => []];
+        $out = self::proc(['git','status','--porcelain'], $cwd);
+        $names = [];
+        foreach (preg_split("/\r?\n/", trim($out)) as $line) {
+            if ($line === '') continue;
+            $names[] = ltrim(substr($line, 3));
+        }
+        return ['names' => $names];
+    }
+
+    private static function proc(array $argv, string $cwd): string
+    {
+        $p = new Process($argv, $cwd);
+        $p->setTimeout(null);
+        $p->run();
+        return $p->getOutput() . $p->getErrorOutput();
     }
 
     /** @return array<int,string> */
-    private static function consolePrefix(?string $cwd): array
+    private static function consolePrefix(string $cwdAbs): array
     {
-        $bin = $cwd ? rtrim($cwd, '/') . '/bin/console' : 'bin/console';
+        $bin = $cwdAbs . '/bin/console';
         return \is_file($bin) ? ['php', $bin] : ['symfony', 'console'];
     }
 
-    private static function writeEnvKV(string $file, string $key, string $value): void
+    private static function writeEnvKV(string $absFile, string $key, string $value): void
     {
-        @mkdir(\dirname($file), 0777, true);
-        $lines = \is_file($file)
-            ? \preg_split("/\r?\n/", (string)\file_get_contents($file))
-            : [];
-
-        $found = false;
-        $out   = [];
-
+        self::ensureDir(\dirname($absFile));
+        $lines = \is_file($absFile) ? \preg_split("/\r?\n/", (string)\file_get_contents($absFile)) : [];
+        $found = false; $out = [];
         foreach ($lines as $line) {
             if (\preg_match('/^\s*' . \preg_quote($key, '/') . '\s*=/', (string)$line)) {
-                $out[] = "$key=$value";
-                $found = true;
+                $out[] = "$key=$value"; $found = true;
             } else {
                 $out[] = (string)$line;
             }
         }
-        if (!$found) {
-            $out[] = "$key=$value";
-        }
-
-        \file_put_contents($file, \rtrim(\implode("\n", $out)) . "\n");
+        if (!$found) $out[] = "$key=$value";
+        \file_put_contents($absFile, \rtrim(\implode("\n", $out)) . "\n");
     }
 
-    private static function fileWrite(string $path, string $content): void
+    private static function fileWrite(string $abs, string $content): void
     {
-        @mkdir(\dirname($path), 0777, true);
-        \file_put_contents($path, $content);
+        self::ensureDir(\dirname($abs));
+        \file_put_contents($abs, $content);
+    }
+
+    private static function ensureDir(string $dir): void
+    {
+        if (is_dir($dir)) return;
+        if (!mkdir($dir, 0777, true) && !is_dir($dir)) {
+            throw new \RuntimeException("Failed to create directory: $dir");
+        }
     }
 
     private static function joinPath(?string $cwd, string $path): string
@@ -287,15 +415,13 @@ final class RunStep
         $lines = preg_split("/\r?\n/", $cmd) ?: [];
         $out = [];
         foreach ($lines as $line) {
-            // strip inline comments not in quotes (quick heuristic)
             if (false !== ($pos = strpos($line, '#'))) {
                 $before = substr($line, 0, $pos);
-                // keep if the # was inside quotes (simple heuristic: if unmatched quotes present, don't strip)
                 $q = substr_count($before, "'") % 2 || substr_count($before, '"') % 2;
                 $line = $q ? $line : $before;
             }
             $line = rtrim($line);
-            $line = preg_replace('/\s*\\\\\s*$/', '', $line); // remove trailing backslash line-continue
+            $line = preg_replace('/\s*\\\\\s*$/', '', $line);
             if ($line !== '') $out[] = $line;
         }
         return trim(implode(' ', $out));
@@ -304,11 +430,7 @@ final class RunStep
     /** @return array<int,string> */
     private static function explodeArgs(string $cmd): array
     {
-        $out = [];
-        $len = \strlen($cmd);
-        $buf = '';
-        $inS = false; $inD = false;
-
+        $out = []; $len = \strlen($cmd); $buf = ''; $inS = false; $inD = false;
         for ($i = 0; $i < $len; $i++) {
             $ch = $cmd[$i];
             if ($ch === "'" && !$inD) { $inS = !$inS; continue; }
@@ -321,5 +443,12 @@ final class RunStep
         }
         if ($buf !== '') { $out[] = $buf; }
         return $out;
+    }
+
+    private static function actionKey(object $a, int $index): string
+    {
+        $id = property_exists($a, 'id') ? (string)($a->id ?? '') : '';
+        $base = strtolower((new ReflectionClass($a))->getShortName());
+        return $id ? ($base . '-' . ArtifactHelper::safe($id)) : ($base . '-' . sprintf('%02d', $index));
     }
 }

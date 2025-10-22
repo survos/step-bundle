@@ -36,22 +36,55 @@ final class CastorController extends AbstractController
         ]);
     }
 
+// file: src/Controller/StepSlidesController.php — flatten to slides[]
+
     #[Route('/slides/{code}', name: 'survos_step_slides', methods: ['GET'])]
     public function slides(string $code): Response
     {
-        // Export the deck server-side so Twig can render slides directly.
         $deck = $this->exporter->exportSteps($code);
 
-        // Normalize for Twig: hand it what the template expects.
         $normalizedCode = (string)($deck['code'] ?? $code);
-        $tasks          = $deck['tasks'] ?? [];
+        $tasks = $deck['tasks'] ?? [];
+
+        // Flatten tasks -> slides
+        $slides = [];
+        foreach ($tasks as $t) {
+            $taskName  = (string)($t['name'] ?? $t['code'] ?? 'task');
+            $taskTitle = (string)($t['title'] ?? $taskName);
+            $taskDesc  = (string)($t['description'] ?? '');
+            $taskBul   = (array)($t['bullets'] ?? []);
+
+            // New shape: steps[]
+            if (!empty($t['steps']) && is_array($t['steps'])) {
+                foreach ($t['steps'] as $s) {
+                    $slides[] = [
+                        'task_name' => $taskName,
+                        'title'     => (string)($s['title'] ?? $taskTitle),
+                        'description'=> (string)($s['description'] ?? $taskDesc),
+                        'bullets'   => (array)($s['bullets'] ?? $taskBul),
+                        'actions'   => (array)($s['actions'] ?? []),
+                    ];
+                }
+                continue;
+            }
+
+            // Legacy: the whole task is one slide
+            $slides[] = [
+                'task_name' => $taskName,
+                'title'     => $taskTitle,
+                'description'=> $taskDesc,
+                'bullets'   => $taskBul,
+                'actions'   => (array)($t['actions'] ?? []),
+            ];
+//            dd($slides, $deck);
+        }
 
         return $this->render('@SurvosStep/step/slides.html.twig', [
             'code'     => $normalizedCode,
-            'tasks'    => $tasks, // <-- key fix: provide `tasks` so the template's `{% for task in tasks %}` works
+            'slides'   => $slides, // <-- now slides, not tasks
             'json_url' => $this->generateUrl('survos_step_json', ['code' => $normalizedCode]),
-            // still pass deck if you need richer data for future customizations
             'deck'     => $deck,
         ]);
     }
+
 }

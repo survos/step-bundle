@@ -1,4 +1,4 @@
-{# File: templates/step/slides.html.twig #}
+{# file: templates/step/slides.html.twig — Stimulus + slides[] #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,175 +6,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ code|default('Steps') }} — Slides</title>
 
-  {# Reveal CSS (CDN) #}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
-
-  {# Bundle CSS #}
+  {# Your bundle CSS (kept) #}
   <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
+  {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
 </head>
 <body>
-<div class="reveal">
+
+<div
+  class="reveal"
+  {{ stimulus_controller('reveal', {
+      code: code,
+      slides: slides,
+      jsonUrl: json_url,
+      theme: 'black'
+  }) }}
+>
   <div class="slides">
+    {# iterate slides (already flattened server-side) #}
+    {% for slide in slides %}
+      {{ dump(slide) }}
+      {% set slideTitle = slide.title|default('Step') %}
+      {% set taskName   = slide.task_name|default(code) %}
+      {# provide context for DisplayCode('artifact:…') resolver #}
+      {% set __task_name  = taskName %}
+      {% set __step_title = slideTitle %}
 
-    {# Title slide #}
-    <section>
-      <div class="slide-shell">
-        <header class="slide-header">
-          <h1 class="slide-title">{{ code|default('Steps')|replace({'-':' '})|title }}</h1>
-          {% if app is defined %}
-            <a class="back-link" href="{{ path('app_home') }}">← Back to Home</a>
-          {% endif %}
-        </header>
-        <div class="slide-content">
-          <p>A Castor-powered slideshow</p>
-        </div>
-        <footer class="slide-footer"><span>Use ← → • <kbd>F</kbd> fullscreen</span></footer>
-      </div>
-    </section>
-
-    {# Task slides #}
-    {% for task in tasks %}
-      {% set taskTitle = task.title|default(task.name|default(task.code|default('Step'))) %}
-      {% set taskName  = task.name|default(task.code|default('')) %}
       <section data-task-name="{{ taskName|e('html_attr') }}">
         <div class="slide-shell">
           <header class="slide-header">
-            <h2 class="slide-title">{{ taskTitle }}</h2>
+            <h2 class="slide-title">{{ slideTitle }}</h2>
           </header>
+
           <div class="slide-content">
-            {% if task.description %}<p class="slide-description">{{ task.description }}</p>{% endif %}
-            {% if task.bullets %}<ul>{% for b in task.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
-            {% if task.actions %}
-              {% for a in task.actions %}
+            {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
+            {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+
+            {% if slide.actions %}
+              {% for a in slide.actions %}
                 <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
-                  {{ render_action(a)|raw }}
+                  {{ render_action(_context, a)|raw }}
                 </div>
               {% endfor %}
             {% endif %}
           </div>
+
           <footer class="slide-footer"></footer>
         </div>
       </section>
     {% endfor %}
-
-    {# Final #}
-    <section>
-      <div class="slide-shell">
-        <header class="slide-header"><h2 class="slide-title">Done ✔</h2></header>
-        <div class="slide-content" style="display:flex;align-items:center;justify-content:center;">
-          <p>Questions?</p>
-        </div>
-        <footer class="slide-footer"><span>Thanks!</span></footer>
-      </div>
-    </section>
-
   </div>
 </div>
 
-{# HUD (left of Reveal arrows) #}
-<div id="slide-hud" class="slide-hud">
-  {% if app is defined %}<a href="{{ path('app_home') }}" class="hud-link">Home</a>{% else %}<span class="hud-link">Home</span>{% endif %}
+{# HUD (controlled by Stimulus) #}
+{% set _sc = '@SurvosStep/reveal' %}
+<div class="slide-hud" data-controller="reveal"
+     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>
+  {% if app is defined %}
+    <a href="{{ path('app_home') }}" class="hud-link">Home</a>
+  {% else %}
+    <span class="hud-link">Home</span>
+  {% endif %}
   <span class="hud-sep">|</span>
-  <a id="hud-json-deck" href="{{ json_url }}" target="_blank" class="hud-link">JSON (deck)</a>
+  <a {{ stimulus_target('reveal', 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
   <span class="hud-sep">|</span>
-  <a id="hud-json-slide" href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+  <a {{ stimulus_target('reveal', 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
   <span class="hud-sep">|</span>
-  <span id="hud-code" class="hud-label">{{ code }}</span>
+  <span {{ stimulus_target('reveal', 'codeLabel') }} class="hud-label">{{ code }}</span>
   <span class="hud-sep">*</span>
-  <span id="hud-step" class="hud-label">intro</span>
+  <span {{ stimulus_target('reveal', 'stepLabel') }} class="hud-label">intro</span>
   <span class="hud-sep">|</span>
-  <button id="hud-copy" type="button" class="hud-copy" title="Copy run command">Copy run</button>
+  <button type="button"
+          {{ stimulus_target('reveal', 'copyButton') }}
+          {{ stimulus_action('reveal', 'copy') }}
+          class="hud-copy" title="Copy run command">
+    Copy run
+  </button>
 </div>
 
-{# Expose data to the HUD #}
-<script>
-  window.__SURVOS_SLIDES__ = {
-    code: {{ code|json_encode|raw }},
-    tasks: {{ tasks|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}
-  };
-</script>
-
-{# Reveal JS (CDN) #}
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
-<script>
-Reveal.initialize({
-  hash: true,
-  slideNumber: true,
-  controls: true,
-  progress: true,
-  center: false,
-  transition: 'slide',
-  margin: 0.02,
-  minScale: 0.2,
-  maxScale: 1.6,
-  plugins: [ RevealHighlight ]
-});
-
-/* Auto-fit (compact classes) */
-function fitCurrentSlide() {
-  const sec = document.querySelector('.slides section.present');
-  const content = sec?.querySelector('.slide-content');
-  if (!sec || !content) return;
-  sec.classList.remove('compact-1','compact-2','compact-3');
-  let i = 0;
-  while (content.scrollHeight > content.clientHeight && i < 3) {
-    i++; sec.classList.add('compact-'+i);
-  }
-}
-
-/* HUD wiring */
-function currentTask() {
-  const state = window.__SURVOS_SLIDES__ || { code:'deck', tasks:[] };
-  const idx = Reveal.getIndices().h; // horizontal index
-  const tasks = Array.isArray(state.tasks) ? state.tasks : [];
-  if (idx >= 1 && idx <= tasks.length) return { obj: tasks[idx-1], idx };
-  return { obj: null, idx };
-}
-
-function updateHud() {
-  const { code, tasks } = window.__SURVOS_SLIDES__ || { code:'deck', tasks:[] };
-  const { obj, idx } = currentTask();
-  const step = obj?.name || obj?.code || obj?.title || (idx === 0 ? 'intro' : (idx > 0 ? `step-${idx}` : 'intro'));
-
-  document.getElementById('hud-code').textContent = code;
-  document.getElementById('hud-step').textContent = step;
-
-  // JSON (slide) on the fly
-  const aSlide = document.getElementById('hud-json-slide');
-  if (obj) {
-    const payload = { code, index: idx-1, task: obj };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}));
-    aSlide.href = url;
-    aSlide.download = `${code}-${step}.json`;
-    aSlide.style.display = '';
-  } else {
-    aSlide.removeAttribute('href');
-    aSlide.style.display = 'none';
-  }
-
-  // Copy run
-  const btn = document.getElementById('hud-copy');
-  btn.dataset.cmd = `CODE=${code} castor ${step}`;
-}
-
-document.getElementById('hud-copy').addEventListener('click', async (e) => {
-  const cmd = e.currentTarget.dataset.cmd || '';
-  try { await navigator.clipboard.writeText(cmd); }
-  catch {
-    const ta=document.createElement('textarea'); ta.value=cmd; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); ta.remove();
-  }
-  const old=e.currentTarget.textContent; e.currentTarget.textContent='Copied!';
-  setTimeout(()=> e.currentTarget.textContent=old, 900);
-});
-
-Reveal.on('ready', () => { fitCurrentSlide(); updateHud(); });
-Reveal.on('slidechanged', () => { fitCurrentSlide(); updateHud(); });
-window.addEventListener('resize', () => { setTimeout(()=>{ fitCurrentSlide(); updateHud(); }, 60); });
-</script>
 </body>
 </html>
