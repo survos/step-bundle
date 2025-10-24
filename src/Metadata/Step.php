@@ -3,6 +3,7 @@
 namespace Survos\StepBundle\Metadata;
 
 use Attribute;
+use Survos\StepBundle\Action\AbstractAction;
 
 /**
  * Neutral, renderer-agnostic step descriptor.
@@ -13,7 +14,7 @@ final class Step
 {
     /**
      * @param list<string> $bullets
-     * @param list<Action> $actions
+     * @param list<AbstractAction> $actions
      * @param list<string> $notes
      */
     public function __construct(

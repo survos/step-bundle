@@ -7,22 +7,25 @@
   <title>{{ code|default('Steps') }} — Slides</title>
 
   {# Your bundle CSS (kept) #}
+  {# this is for the HUD #}
   <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
+  {% if app.request.get('debug', false) %}
+  {% endif %}
   {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
 
   {% block javascripts %}
-      {% block importmap %}{{ importmap('app') }}{% endblock %}
+      {% block importmap %}{{ importmap(app.request.get('debug') ? 'app'  : 'slideshow') }}{% endblock %}
   {% endblock %}
 
 </head>
 <body>
 
 {% set _sc = '@survos/step-bundle/reveal' %}
+slides: slides,
 <div
   class="reveal"
   {{ stimulus_controller(_sc, {
       code: code,
-      slides: slides,
       jsonUrl: json_url,
       theme: 'black'
   }) }}
@@ -43,13 +46,16 @@
           </header>
 
           <div class="slide-content">
+            {% set step = slide.step %}
+            {% set task = slide.task %}
             {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
             {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
 
-            {% if slide.actions %}
-              {% for a in slide.actions %}
+            {% if step.actions %}
+              {% for a in step.actions %}
                 <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
-                  {{ render_action(_context, a)|raw }}
+{#                  {{ render_action(_context, a)|raw }}#}
+                  {{ render_action(a)|raw }}
                 </div>
               {% endfor %}
             {% endif %}

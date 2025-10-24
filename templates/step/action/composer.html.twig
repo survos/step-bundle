@@ -1,55 +1,23 @@
-{# File: templates/step/action/composer.html.twig #}
-{# Inputs we may receive (any subset):
-   - cwd?: string
-   - note?: string
-   - multiline?: string   (preferred display)
-   - cmd?: string         (fallback)
-   - requires?: array     (fallback-of-fallback, array of {package?, constraint?, comment?} or [pkg, ...])
-   - dev?: bool
-#}
+<div class="action action-composer card shadow-sm mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">Composer</span>
+    {% if dev %}<span class="badge bg-warning text-dark">dev</span>{% endif %}
+  </div>
+  <div class="card-body">
+    {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
+      {{ dev ? 'dev' }}
+    {% if packages is defined and packages %}
+        {% set code %}
+    {% for p in packages %}composer req {{ dev ? '-dev' }} {{ p }}
+    {% endfor %}
+        {% endset %}
+        <pre class="mb-0"><code class="language-{{ lang|default('bash') }}">{{ code }}</code></pre>
 
-{% set prefix = cwd ? 'cd ' ~ cwd ~ " && \\\n" : '' %}
-
-{# Decide the source text to render ---------------------------------------- #}
-{% if multiline is defined and multiline %}
-  {% set raw = multiline %}
-{% elseif cmd is defined and cmd %}
-  {% set raw = (prefix ~ 'composer ' ~ cmd)|trim %}
-{% else %}
-  {# Build from requires[] #}
-  {% set devFlag = (dev is defined and dev) ? ' --dev' : '' %}
-  {% set pkglines = [] %}
-  {% for r in (requires|default([])) %}
-    {% set pkg   = r.package ?? (r[0] ?? '') %}
-    {% set cons  = r.constraint ?? '' %}
-    {% set label = r.comment ?? '' %}
-    {% set pkgline = (pkg ~ (cons ? ':' ~ cons : '')) %}
-    {% if label %}
-      {% set pkglines = pkglines|merge(['# ' ~ label, '  ' ~ pkgline ~ (not loop.last ? ' \\' : '')]) %}
-    {% else %}
-      {% set pkglines = pkglines|merge(['  ' ~ pkgline ~ (not loop.last ? ' \\' : '')]) %}
+{#        <ul class="mb-2">#}
+{#        {% for p in packages %}#}
+{#          <li><code>composer req {{ dev ? '-dev' }} {{ p }}</code></li>#}
+{#        {% endfor %}#}
+{#      </ul>#}
     {% endif %}
-  {% endfor %}
-  {% set raw = (prefix ~ 'composer req' ~ devFlag ~ "\n" ~ (pkglines|join("\n")))|trim %}
-{% endif %}
-
-{# Transform: move inline trailing " # comment" to its own line above -------- #}
-{% set lines = raw|split("\n") %}
-{% set out = [] %}
-{% for line in lines %}
-  {# Split on ' # ' once; if we find a trailing comment, lift it above #}
-  {% set parts = line|split(' # ', 2) %}
-  {% if parts|length > 1 %}
-    {% set commentText = parts[1] %}
-    {% set codeText = parts[0] %}
-    {% set out = out|merge(['# ' ~ commentText, codeText]) %}
-  {% else %}
-    {% set out = out|merge([line]) %}
-  {% endif %}
-{% endfor %}
-{% set final = out|join("\n") %}
-
-<div class="action action-bash">
-  {% if note %}<div class="badge" style="margin-bottom:.25rem;">{{ note }}</div>{% endif %}
-  <pre><code class="language-bash">{{ final }}</code></pre>
+  </div>
 </div>

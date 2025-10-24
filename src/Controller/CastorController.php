@@ -5,16 +5,20 @@ namespace Survos\StepBundle\Controller;
 
 use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class CastorController extends AbstractController
 {
     public function __construct(
         private readonly CastorStepExporter $exporter,
+        #[Autowire('%kernel.project_dir%)')] private string $projectDir,
     ) {}
 
     #[Route('/steps', name: 'survos_step_index', methods: ['GET'])]
@@ -27,10 +31,29 @@ final class CastorController extends AbstractController
         ]);
     }
 
+    #[Route('/run-castor', name: 'run_castor')]
+    public function runCastor(): Response
+    {
+        $process = new Process(['castor', 'foo:bar']);
+//        $process->setWorkingDirectory($this->projectDir);
+        $process->setTimeout(300); // 5 minutes timeout
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        return new Response('Task executed: ' . $output);
+    }
+
+
     #[Route('/steps/{code}.json', name: 'survos_step_json', methods: ['GET'])]
     public function castorJson(string $code): JsonResponse
     {
-        $deck = $this->exporter->exportSteps($code);
+        $deck = $this->exporter->exportSlides($code);
 
         // Let clients cache briefly; server-side rendering uses the same exporter anyway.
         return $this->json($deck, 200, [
@@ -47,7 +70,6 @@ final class CastorController extends AbstractController
     {
         $deck = $this->exporter->exportSlides($code);
         $slides = $deck['slides'] ?? [];
-        dump(array_keys($deck), array_keys($deck['slides'][0] ?? []));
 
         return $this->render($debug ? '@SurvosStep/step/debug.html.twig' : '@SurvosStep/step/slides.html.twig', [
             'code'     => (string)($deck['code'] ?? $code),

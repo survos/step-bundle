@@ -4,6 +4,8 @@ namespace Survos\StepBundle;
 
 use Survos\CoreBundle\Traits\HasAssetMapperTrait;
 use Survos\StepBundle\Controller\CastorController;
+use Survos\StepBundle\Controller\CastorLogController;
+use Survos\StepBundle\Service\CastorLogLocator;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Survos\StepBundle\Twig\StepRuntimeExtension;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -27,22 +29,24 @@ final class SurvosStepBundle extends AbstractBundle
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         // Service that finds castor files and exports steps JSON
-        $builder->autowire(CastorStepExporter::class)
+        array_map(fn($class) => $builder->autowire($class)
             ->setPublic(true)
             ->setAutowired(true)
             ->setAutoconfigured(true)
-            ->setArgument('$projectDir', '%kernel.project_dir%');
+            ->setArgument('$projectDir', '%kernel.project_dir%'), [CastorStepExporter::class, CastorLogLocator::class]);
 
-        // Controller
-        $builder->autowire(CastorController::class)
+        // Controllers
+        array_map(fn(string $class) => $builder->autowire($class)
             ->setPublic(true)
             ->setAutowired(true)
             ->setAutoconfigured(true)
             ->addTag('controller.service_arguments')
-            ->addTag('controller.service_subscriber');
+            ->addTag('controller.service_subscriber')
+        , [CastorController::class, CastorLogController::class]);
 
         // inside SurvosStepBundle::loadExtension()
         $builder->autowire(StepRuntimeExtension::class)
+            ->setArgument('$projectDir', '%kernel.project_dir%')
             ->addTag('twig.extension');
 
     }

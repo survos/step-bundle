@@ -1,0 +1,7 @@
+<div class="action action-browser card shadow-sm mb-3">
+  <div class="card-header"><span class="fw-semibold">Browser</span></div>
+  <div class="card-body">
+    {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
+    <a href="{{ url }}" class="btn btn-outline-primary" target="_blank" rel="noreferrer">Open {{ url }}</a>
+  </div>
+</div>

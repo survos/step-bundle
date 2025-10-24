@@ -1,0 +1,49 @@
+{# file: templates/castor/logs_index.html.twig #}
+{% extends '@SurvosStep/castor/_logger_layout.html.twig' %}
+
+{% block title %}Castor Logs{% endblock %}
+
+{% block logger_body %}
+  <div class="page-header mb-3">
+    <h2 class="page-title">Castor Logs</h2>
+    <div class="text-muted">Directory: <code>{{ dir }}</code></div>
+  </div>
+
+  {% if logs is empty %}
+    <div class="alert alert-info">No .jsonl logs found in <code>{{ dir }}</code>.</div>
+  {% else %}
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>File</th>
+              <th class="text-end">Size</th>
+              <th>Modified</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for log in logs %}
+            <tr>
+              <td class="fw-bold">
+                <a href="{{ path('survos_castor_logs_show', {code: log.code}) }}" class="text-decoration-none">
+                  {{ log.code }}
+                </a>
+              </td>
+              <td><code class="text-break">{{ log.path }}</code></td>
+              <td class="text-end">{{ (log.size/1024)|number_format(1) }} KB</td>
+              <td>{{ log.mtime ? log.mtime|date('Y-m-d H:i:s') : '-' }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{{ path('survos_castor_logs_show', {code: log.code}) }}">Open</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ path('survos_castor_logs_raw', {code: log.code}) }}">Raw</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

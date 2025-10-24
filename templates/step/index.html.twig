@@ -1,9 +1,13 @@
-{% extends 'base.html.twig' %}
+{% extends '@SurvosStep/castor/_logger_layout.html.twig' %}
 {% block title %}Castor Steps{% endblock %}
 
 {% block body %}
   <div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
     <h1>Available Castor Runners</h1>
+
+    <a href="{{ path('run_castor') }}">Interactive Run Castor</a>
+    <a href="{{ path('survos_castor_logs_index') }}">Logs</a>
+
 
     {% if slideshows is empty %}
       <p>No <code>*.castor.php</code> files found (searched one level above the app).</p>
@@ -18,6 +22,7 @@
             <a href="{{ path('survos_step_slides', { debug: true, code: s.code }) }}">Debug</a>
             &nbsp;|&nbsp;
             <a href="{{ path('survos_step_json',   { code: s.code }) }}" target="_blank">JSON</a>
+            <a href="{{ path('survos_castor_logs_show',   { code: s.code }) }}" target="_blank">Logs</a>
             <div style="color:#777; font-size:.9em;">{{ s.path }}</div>
           </li>
         {% endfor %}

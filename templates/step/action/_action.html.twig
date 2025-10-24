@@ -1,6 +1,9 @@
-{# File: templates/step/action/_action.html.twig #}
-<div class="action action-{{ lang|default('text')|lower }}">
-  {% if note %}<div class="badge" style="margin-bottom:.25rem;">{{ note }}</div>{% endif %}
-  <pre><code class="language-{{ lang|default('text')|lower }}">{{ code is defined and code is not null ? code|e : '' }}</code></pre>
-  {% if path %}<div class="small" style="opacity:.7;">{{ path }}</div>{% endif %}
+<div class="action action-generic mb-3">
+  <div class="small text-muted">{{ type }}</div>
+  {% if note is defined and note %}<p class="mb-1">{{ note }}</p>{% endif %}
+  {% if code is defined and code %}
+    <pre class="mb-0"><code class="language-{{ lang|default('text') }}">{{ code }}</code></pre>
+  {% else %}
+    <div class="text-muted fst-italic">No content</div>
+  {% endif %}
 </div>

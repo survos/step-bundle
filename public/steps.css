@@ -88,7 +88,8 @@
 /* HUD (if present) */
 .slide-hud{
   position: fixed;
-  right: 78px; bottom: 12px; z-index: 20;
+  /*right: 78px; bottom: 12px; z-index: 20;*/
+  left: 78px; bottom: 12px; z-index: 20;
   background: rgba(0,0,0,0.55); color: #fff;
   border: 1px solid rgba(255,255,255,0.25);
   border-radius: 10px; padding: 6px 10px; font-size: 12.5px;
