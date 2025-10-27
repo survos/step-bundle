@@ -1,3 +1,0 @@
-survos_step:
-  resource: '@SurvosStepBundle/config/routes.yaml'
-  prefix: '/steps'
