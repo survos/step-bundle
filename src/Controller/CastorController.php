@@ -7,6 +7,7 @@ use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -63,17 +64,22 @@ final class CastorController extends AbstractController
 
 // file: src/Controller/StepSlidesController.php — flatten to slides[]
 
-    #[Route('/slides/{code}', name: 'survos_step_slides', methods: ['GET'])]
-    public function slides(string $code,
+    #[Route('/slides/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
+    #[Route('/slides-overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
+    public function slides(Request $request, string $code,
         #[MapQueryParameter] bool $debug=false
     ): Response
     {
+        $template = $request->get('_route') === 'survos_step_slideshow'
+            ? '@SurvosStep/step/slides.html.twig'
+            : '@SurvosStep/step/debug.html.twig';
         $deck = $this->exporter->exportSlides($code);
         $slides = $deck['slides'] ?? [];
 
-        return $this->render($debug ? '@SurvosStep/step/debug.html.twig' : '@SurvosStep/step/slides.html.twig', [
+        return $this->render($template, [
             'code'     => (string)($deck['code'] ?? $code),
             'slides'   => array_values($slides),
+            'debug' => $debug,
             'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
             'deck'     => $deck,
         ]);

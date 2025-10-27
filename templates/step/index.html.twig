@@ -8,6 +8,10 @@
     <a href="{{ path('run_castor') }}">Interactive Run Castor</a>
     <a href="{{ path('survos_castor_logs_index') }}">Logs</a>
 
+    {% for html in ['easyadmin','examples'] %}
+      <a href="/{{ html }}.html" target="_blank">{{ html }}</a>
+    {% endfor %}
+
 
     {% if slideshows is empty %}
       <p>No <code>*.castor.php</code> files found (searched one level above the app).</p>
@@ -17,9 +21,10 @@
           <li style="margin: .5rem 0;">
             <code>{{ s.code }}</code>
             &nbsp;—&nbsp;
-            <a href="{{ path('survos_step_slides', { code: s.code }) }}">Slideshow</a>
+            <a href="{{ path('survos_step_slideshow', { code: s.code }) }}">Slideshow</a>
             &nbsp;—&nbsp;
-            <a href="{{ path('survos_step_slides', { debug: true, code: s.code }) }}">Debug</a>
+            <a href="{{ path('survos_step_slides', { code: s.code }) }}">Overview</a>
+            <a href="{{ path('survos_step_slides', { debug: true, code: s.code }) }}">Overview/Debug</a>
             &nbsp;|&nbsp;
             <a href="{{ path('survos_step_json',   { code: s.code }) }}" target="_blank">JSON</a>
             <a href="{{ path('survos_castor_logs_show',   { code: s.code }) }}" target="_blank">Logs</a>
