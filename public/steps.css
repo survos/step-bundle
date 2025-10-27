@@ -1,0 +1,108 @@
+/* File: public/steps.css */
+
+/* Wider stage: let sections fill; we hide scrollbars in content/code only */
+.reveal, .reveal .slides, .reveal .slides section { height: 100%; overflow: visible !important; }
+
+/* Slide chrome */
+.slide-shell { position: relative; height: 100%; min-height: 70vh; }
+.slide-header {
+  position: absolute; left: 0; right: 0; top: 0; height: 56px;
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: 0 .65rem; /* tighter L/R padding */
+  background: linear-gradient(90deg, #0a7cff, #0063cc);
+  color: #fff; z-index: 5;
+  box-shadow: 0 2px 0 rgba(0,0,0,.25);
+}
+.slide-footer {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 .6rem; background: rgba(0,0,0,.38); color: #dcdcdc; z-index: 5;
+  font-size: .85em; box-shadow: 0 -2px 0 rgba(0,0,0,.25);
+}
+.slide-title { margin: 0; letter-spacing: .5px; }
+.back-link {
+  font-size: .9em; color: #fff; text-decoration: none;
+  background: rgba(255,255,255,.15); padding: .2rem .6rem;
+  border-radius: 6px; border: 1px solid rgba(255,255,255,.35);
+}
+.back-link:hover { background: rgba(255,255,255,.25); }
+
+/* Content — left-aligned, wider, scrollable w/ hidden bars */
+.slide-content {
+  position: absolute; left: 0; right: 0; top: 56px; bottom: 40px;
+  padding: 0.75rem 0.75rem 0.75rem 1.25rem; /* slightly more left padding for a left rail */
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.slide-content::-webkit-scrollbar { display: none; }
+
+/* Typographic hierarchy (more “splash”, less monochrome) */
+.slide-kicker { color: #a9d0ff; font-size: 1.05em; margin: .25rem 0 0; }
+.slide-description { color: #e7e7e7; font-size: 1.25em; line-height: 1.35; margin: .25rem 0 .8rem; }
+.slide-bullets { margin: .1rem 0 .8rem 1.1rem; }
+.slide-bullets li { font-size: 1.05em; margin: .15rem 0; }
+.slide-bullets li::marker { color: #3fb389; }
+
+/* Code cards */
+.reveal pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #171717; color: #f5f5f5;
+  padding: .6rem .8rem; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 8px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.03);
+  overflow: auto !important;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.reveal pre::-webkit-scrollbar { display: none; }
+.reveal pre code {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.32;
+}
+
+/* YAML blocks: smaller + clamped (they’re illustrative, not to be read fully) */
+.action-yaml pre,
+.action-yaml .code-wrapper {
+  font-size: .72em !important;
+  max-height: 46vh;     /* shrink to avoid bottom overlap */
+  overflow: auto !important;
+}
+.action-yaml pre::-webkit-scrollbar { display: none; }
+
+/* Bash blocks: slightly smaller to reduce wrap */
+.action-bash pre,
+.action-composerrequire pre {
+  font-size: .78em;
+}
+
+/* Remove pseudo prompts */
+.action-bash pre::before,
+.action-sh pre::before,
+.action-php pre::before,
+.action-yaml pre::before,
+.action-js pre::before,
+.action-javascript pre::before { content: ''; }
+
+/* HUD (if present) */
+.slide-hud{
+  position: fixed;
+  /*right: 78px; bottom: 12px; z-index: 20;*/
+  left: 78px; bottom: 12px; z-index: 20;
+  background: rgba(0,0,0,0.55); color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px; padding: 6px 10px; font-size: 12.5px;
+  backdrop-filter: blur(4px);
+}
+.slide-hud .hud-link { color:#fff; text-decoration:none; opacity:.95; }
+.slide-hud .hud-link:hover { text-decoration:underline; opacity:1; }
+.slide-hud .hud-sep { margin: 0 8px; opacity:.6; }
+.slide-hud .hud-label { font-weight:700; }
+.slide-hud .hud-copy { margin-left:6px; font-size:12.5px; color:#111; background:#ffd24d; border:1px solid #c9a326; padding:2px 6px; border-radius:6px; cursor:pointer; }
+.slide-hud .hud-copy:hover { filter:brightness(1.05); }
+
+/* Progressive compaction (if you kept the auto-fit script) */
+.slides section.compact-1 { font-size: 0.95em; }
+.slides section.compact-2 { font-size: 0.9em;  }
+.slides section.compact-3 { font-size: 0.85em; }

@@ -1,0 +1,9 @@
+<div class="action action-generic mb-3">
+  <div class="small text-muted">{{ type }}</div>
+  {% if note is defined and note %}<p class="mb-1">{{ note }}</p>{% endif %}
+  {% if code is defined and code %}
+    <pre class="mb-0"><code class="language-{{ lang|default('text') }}">{{ code }}</code></pre>
+  {% else %}
+    <div class="text-muted fst-italic">No content</div>
+  {% endif %}
+</div>

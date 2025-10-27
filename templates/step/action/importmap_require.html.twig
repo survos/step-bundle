@@ -1,0 +1,22 @@
+<div class="action action-importmap card shadow-sm mb-3">
+  <div class="card-header">
+    <span class="fw-semibold">Importmap</span>
+  </div>
+  <div class="card-body">
+    {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
+    {% if packages is defined and packages %}
+      <ul class="mb-2">
+        {% if packages is iterable and packages|length > 0 %}
+          {% for key,val in packages %}
+            {% if key is same as(loop.index0) %}
+              <li><code>{{ val }}</code></li>
+            {% else %}
+              <li><code>{{ key }}</code>{% if val %} <span class="text-muted">@ {{ val }}</span>{% endif %}</li>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </ul>
+    {% endif %}
+    <pre class="mb-0"><code class="language-bash">{{ code }}</code></pre>
+  </div>
+</div>

@@ -1,0 +1,97 @@
+{# file: templates/step/slides.html.twig — Stimulus + slides[] #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ code|default('Steps') }} — Slides</title>
+
+  {# Your bundle CSS (kept) #}
+  {# this is for the HUD #}
+  <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
+  {% if app.request.get('debug', false) %}
+  {% endif %}
+  {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
+
+  {% block javascripts %}
+      {% block importmap %}{{ importmap(app.request.get('debug') ? 'app'  : 'slideshow') }}{% endblock %}
+  {% endblock %}
+
+</head>
+<body>
+
+{% set _sc = '@survos/step-bundle/reveal' %}
+slides: slides,
+<div
+  class="reveal"
+  {{ stimulus_controller(_sc, {
+      code: code,
+      jsonUrl: json_url,
+      theme: 'black'
+  }) }}
+>
+  <div class="slides" >
+    {# iterate slides (already flattened server-side) #}
+    {% for slide in slides %}
+      {% set slideTitle = slide.title|default('Step') %}
+      {% set taskName   = slide.task_name|default(code) %}
+      {# provide context for DisplayCode('artifact:…') resolver #}
+      {% set __task_name  = taskName %}
+      {% set __step_title = slideTitle %}
+
+      <section data-task-name="{{ taskName|e('html_attr') }}">
+        <div class="slide-shell">
+          <header class="slide-header">
+            <h2 class="slide-title">{{ slideTitle }}</h2>
+          </header>
+
+          <div class="slide-content">
+            {% set step = slide.step %}
+            {% set task = slide.task %}
+            {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
+            {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+
+            {% if step.actions %}
+              {% for a in step.actions %}
+                <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+{#                  {{ render_action(_context, a)|raw }}#}
+                  {{ render_action(a)|raw }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          <footer class="slide-footer"></footer>
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+</div>
+
+{# HUD (controlled by Stimulus) #}
+<div class="slide-hud">
+{#     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>#}
+  {% if app is defined %}
+    <a href="{{ path('app_home') }}" class="hud-link">Home</a>
+  {% else %}
+    <span class="hud-link">Home</span>
+  {% endif %}
+  <span class="hud-sep">|</span>
+  <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
+  <span class="hud-sep">|</span>
+  <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+  <span class="hud-sep">|</span>
+  <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
+  <span class="hud-sep">*</span>
+  <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+  <span class="hud-sep">|</span>
+  <button type="button"
+          {{ stimulus_target(_sc, 'copyButton') }}
+          {{ stimulus_action(_sc, 'copy') }}
+          class="hud-copy" title="Copy run command">
+    Copy run
+  </button>
+</div>
+
+</body>
+</html>

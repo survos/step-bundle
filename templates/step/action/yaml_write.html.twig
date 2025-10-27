@@ -1,0 +1,13 @@
+<div class="action action-yaml card shadow-sm mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">YAML</span>
+    {% if path %}<code class="small text-muted">{{ path }}</code>{% endif %}
+  </div>
+  <div class="card-body">
+    {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
+    <pre class="mb-0"><code class="language-yaml">{{ code }}</code></pre>
+    {% if merge is defined %}
+      <div class="mt-2 small text-muted">{{ merge ? 'Merge' : 'Replace' }}</div>
+    {% endif %}
+  </div>
+</div>
