@@ -38,7 +38,7 @@ final class ComposerRequire extends AbstractAction
             $this->dev ? ' --dev' : '',
             implode(' ', array_map('escapeshellarg', $this->packages))
         );
-        (new Bash($cmd, $this->note, $this->cwd))->execute($ctx, $dryRun);
+        new Bash($cmd, $this->note)->execute($ctx, $dryRun);
     }
 
     public function viewTemplate(): string { return 'composer.html.twig'; }

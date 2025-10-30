@@ -14,7 +14,10 @@ final class DisplayCode extends AbstractAction
         public string $path,
         public ?string $lang = null,
         public ?string $note = null,
-    ) {}
+    ) {
+//        dd($this, $this->highlightLanguage);
+    }
+    public string $highlightLanguage { get => $this->lang; }
 
     public function summary(): string
     {
@@ -23,9 +26,11 @@ final class DisplayCode extends AbstractAction
 
     public function toCommand(): ?string
     {
-        return "cat $this->path";
+//        return "cat $this->path";
         io()->writeln(sprintf('Display: %s', $this->path));
-        $code = @file_get_contents($this->path) ?: '';
+        $code = file_get_contents($this->path);
+        io()->writeln($code);
+        return 'cat ' . $this->path;
         // @todo: figure out slide formatting v. console output
         return $code;
     }
@@ -36,11 +41,18 @@ final class DisplayCode extends AbstractAction
         io()->writeln(sprintf('Display: %s', $this->path));
     }
 
-    public function viewTemplate(): string { return 'display_code.html.twig'; }
+    public function viewTemplate(): string {
+        return 'display_code.html.twig';
+    }
 
     public function viewContext(): array
     {
-        $code = @file_get_contents($this->path) ?: '';
+
+        if (!file_exists($this->path)) {
+            $code = "File $this->path does not exist. maybe run castor?";
+        } else {
+            $code = file_get_contents($this->path);
+        }
         return [
             'path' => $this->path,
             'code' => $code,

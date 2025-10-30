@@ -17,6 +17,8 @@ final class Bash extends AbstractAction
         public ?string $cwd = null,
     ) {}
 
+    public string $highlightLanguage = 'bash';
+
     public function summary(): string
     {
         return $this->note ?: sprintf('$ %s', $this->command);
@@ -26,16 +28,16 @@ final class Bash extends AbstractAction
     {
         $execCtx = $this->cwd ? $ctx->withWorkingDirectory($this->cwd) : $ctx;
         if ($dryRun) {
-            io()->writeln(sprintf('<comment>DRY</comment> $ %s', $this->command));
+            io()->writeln(sprintf('<comment>DRY</comment> (%S) $ %s', $execCtx->workingDirectory, $this->command));
             return;
         }
         run($this->command, context: $execCtx);
     }
 
-    public function toCommand(): string
-    {
-        return $this->command;
-    }
+//    public function toCommand(): string
+//    {
+//        return $this->command;
+//    }
 
     public function viewTemplate(): string { return 'bash.html.twig'; }
 

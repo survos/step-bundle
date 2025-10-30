@@ -5,9 +5,12 @@ namespace Survos\StepBundle;
 use Survos\CoreBundle\Traits\HasAssetMapperTrait;
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
+use Survos\StepBundle\Renderer\DebugActionRenderer;
+use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\CastorLogLocator;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Survos\StepBundle\Twig\StepRuntimeExtension;
+use Survos\StepBundle\Util\ArtifactHelper;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -48,6 +51,19 @@ final class SurvosStepBundle extends AbstractBundle
         $builder->autowire(StepRuntimeExtension::class)
             ->setArgument('$projectDir', '%kernel.project_dir%')
             ->addTag('twig.extension');
+
+        foreach ([DebugActionRenderer::class, RevealActionRenderer::class] as $class) {
+            $builder->autowire($class)
+                ->setArgument('$projectDir', '%kernel.project_dir%')
+                ->setPublic(true)
+                ->setAutowired(true)
+                ->addTag('survos_step.action_renderer');
+        }
+//        $builder->autowire(ArtifactHelper::class)
+//            ->setArgument('$projectDir', '%kernel.project_dir%')
+//            ->setPublic(true)
+//            ->setAutowired(true)
+//            ->addTag('survos_step.action_renderer');
 
     }
 

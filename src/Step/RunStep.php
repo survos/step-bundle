@@ -18,6 +18,7 @@ final class RunStep
      */
     public static function run(array $actions, Context $ctx): void
     {
+        assert(false);
         $n = \count($actions);
         if (\function_exists('Castor\io')) {
             io()->writeln(sprintf('DEBUG[runstep]: %d action(s)', $n));
@@ -32,6 +33,8 @@ final class RunStep
         foreach ($actions as $action) {
             assert($action instanceof AbstractAction, "Invalid action");
             $i++;
+
+            dd($action);
 
             // 1) If object exposes toCommand(Context): string|array|null
             if (\is_object($action) && \method_exists($action, 'toCommand')) {

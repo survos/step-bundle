@@ -90,7 +90,7 @@ final class EnvUtil
                 throw new \RuntimeException("Missing $key and no prompt callback provided. ($prompt)");
             }
 
-            $val = $ask($prompt, $hidden);
+            $val = $ask($prompt, $hidden, $cfg['default'] ?? null);
             if ($val === null || $val === '') {
                 // Caller can decide if empty is acceptable; we skip writing empties here.
                 continue;

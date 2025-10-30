@@ -42,12 +42,14 @@ final class CopyFile extends AbstractAction
 
     public function viewContext(): array
     {
-        $code = @file_get_contents($this->path) ?: '';
+        assert($this->src, "Empty path");
+        assert(file_exists($this->src), "Missing $this->src");
+        $code = file_get_contents($this->src);
         return [
-            'path' => $this->path,
+            'path' => $this->src,
             'code' => $code,
-            'lang' => $this->lang ?? FileWrite::guessLangFromPath($this->path),
-            'note' => $this->note,
+            'lang' => $this->lang ?? FileWrite::guessLangFromPath($this->src),
+            'note' => "Copy from $this->src to $this->target",
         ];
     }
 }

@@ -14,6 +14,7 @@ final class ActionRenderer
      */
     public function renderAction(array $context, object $action): string
     {
+        dd($context, $action);
         if (!$action instanceof RendersWithTwig) {
             throw new \LogicException(sprintf('Action %s does not implement RendersWithTwig', get_debug_type($action)));
         }

@@ -3,6 +3,8 @@
 
 namespace Survos\StepBundle\Controller;
 
+use Survos\StepBundle\Renderer\DebugActionRenderer;
+use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -67,16 +69,24 @@ final class CastorController extends AbstractController
     #[Route('/slides/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
     #[Route('/slides-overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
     public function slides(Request $request, string $code,
+        DebugActionRenderer $debugActionRenderer,
+        RevealActionRenderer $revealActionRenderer,
         #[MapQueryParameter] bool $debug=false
     ): Response
     {
-        $template = $request->get('_route') === 'survos_step_slideshow'
-            ? '@SurvosStep/step/slides.html.twig'
-            : '@SurvosStep/step/debug.html.twig';
+        if ($request->get('_route') === 'survos_step_slideshow') {
+            $renderer = $revealActionRenderer;
+            $template = '@SurvosStep/step/slides.html.twig';
+        } else {
+            $renderer = $debugActionRenderer;
+            $template = '@SurvosStep/step/debug.html.twig';
+
+        }
         $deck = $this->exporter->exportSlides($code);
         $slides = $deck['slides'] ?? [];
 
         return $this->render($template, [
+            'renderer' => $renderer,
             'code'     => (string)($deck['code'] ?? $code),
             'slides'   => array_values($slides),
             'debug' => $debug,

@@ -94,8 +94,8 @@ final class CastorStepExporter
             foreach ($steps as $step) {
                 $slides[] = [
                     // keep the objects, too little value in serialization
-                    'task' => $asTask,
                     'step' => $step,
+                    'task' => $asTask,
                     'sparseStep' => SurvosUtils::removeNullsAndEmptyArrays($step),
 
                     // not sure how much these help!
