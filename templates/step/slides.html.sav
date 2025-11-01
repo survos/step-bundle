@@ -1,0 +1,164 @@
+{# file: templates/step/slides.html.twig — Stimulus + slides[] #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ code|default('Steps') }} — Slides</title>
+
+  {# Your bundle CSS (kept) #}
+  {# this is for the HUD #}
+{#  <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">#}
+
+  <!-- Reveal.js -->
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reveal.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/theme/white.css" id="theme">
+
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+
+  {% if app.request.get('debug', false) %}
+  {% endif %}
+  {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
+
+  {% block javascripts %}
+{#      {% block importmap %}{{ importmap(app.request.get('debug') ? 'app'  : 'slideshow') }}{% endblock %}#}
+  {% endblock %}
+
+</head>
+<body>
+
+{% set _sc = '@survos/step-bundle/reveal' %}
+<div
+  class="reveal"
+{#  {{ stimulus_controller(_sc, {#}
+{#      code: code,#}
+{#      jsonUrl: json_url,#}
+{#  }) }}#}
+>
+  <div class="slides" >
+    <section class="ea-slide" data-next-hint="explain the step">
+      <h2 class="ea-title">Create a Symfony Web App</h2>
+      <div class="ea-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+<pre><code class="language-bash">symfony new ea-demo --webapp --version=7.3
+cd ea-demo
+symfony server:start -d
+open http://127.0.0.1:8000</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ explain the step <span class="arrow">›</span></div>
+    </section>
+
+
+    {# iterate slides (already flattened server-side) #}
+    {% for slide in slides|slice(0,0) %}
+      {% set slideTitle = slide.title|default('Step') %}
+      {% set taskName   = slide.task_name|default(code) %}
+      {# provide context for DisplayCode('artifact:…') resolver #}
+      {% set __task_name  = taskName %}
+      {% set __step_title = slideTitle %}
+
+      <section data-task-name="{{ taskName|e('html_attr') }}">
+        <div class="slide-shell">
+          <header class="slide-header">
+            <h2 class="slide-title">{{ slideTitle }}</h2>
+          </header>
+
+          <div class="slide-content">
+            {% set step = slide.step %}
+            {% set task = slide.task %}
+            {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
+            {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+
+            {% if step.actions %}
+              {% for a in step.actions %}
+                <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+{#                  {{ render_action(_context, a)|raw }}#}
+                  {{ render_action(a)|raw }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          <footer class="slide-footer"></footer>
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+</div>
+
+{# HUD (controlled by Stimulus) #}
+<div class="slide-hud">
+{#     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>#}
+  {% if app is defined %}
+    <a href="{{ path('app_home') }}" class="hud-link">Home</a>
+  {% else %}
+    <span class="hud-link">Home</span>
+  {% endif %}
+  <span class="hud-sep">|</span>
+  <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
+  <span class="hud-sep">|</span>
+  <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+  <span class="hud-sep">|</span>
+  <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
+  <span class="hud-sep">*</span>
+  <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+  <span class="hud-sep">|</span>
+  <button type="button"
+          {{ stimulus_target(_sc, 'copyButton') }}
+          {{ stimulus_action(_sc, 'copy') }}
+          class="hud-copy" title="Copy run command">
+    Copy run
+  </button>
+</div>
+<!-- Reveal.js -->
+<script src="https://unpkg.com/reveal.js@4/dist/reveal.js"></script>
+
+<!-- highlight.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<script>
+  hljs.highlightAll();
+
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 780,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.2,
+    transition: 'slide',
+    slideNumber: true,
+    progress: true,
+    controls: true,
+    controlsLayout: 'bottom-right',
+    dependencies: [
+      { src: 'https://unpkg.com/reveal.js@4/plugin/notes/notes.js', async: true },
+      { src: 'https://unpkg.com/reveal.js@4/plugin/search/search.js', async: true }
+    ]
+  });
+
+  // --- "next ▶ ..." hint: only show when all fragments on slide are visible ---
+  function updateNextHint(){
+    const current = Reveal.getCurrentSlide();
+    // Hide all hints first
+    document.querySelectorAll('.next-hint').forEach(el => el.style.display = 'none');
+    if (!current) return;
+
+    const remaining = current.querySelectorAll('.fragment:not(.visible)');
+    const hint = current.querySelector('.next-hint');
+
+    if (hint && remaining.length === 0) {
+      hint.style.display = 'inline-flex';
+    }
+  }
+
+  Reveal.on('ready', updateNextHint);
+  Reveal.on('slidechanged', updateNextHint);
+  Reveal.on('fragmentshown', updateNextHint);
+  Reveal.on('fragmenthidden', updateNextHint);
+</script>
+</body>
+</html>
