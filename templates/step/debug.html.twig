@@ -59,8 +59,6 @@
       </header>
 
       <div class="body">
-        {{ dump(slide) }}
-
         {% if slide.description %}
           <div class="panel"><header>Description</header><div class="content">{{ slide.description }}</div></div>
         {% endif %}
@@ -74,12 +72,25 @@
           <div class="panel">
             <header>Rendered Actions</header>
             <div class="content">
+                php?
+              <pre><code class="language-php">
+function hello() {
+    echo "Hello World!";
+}
+</code></pre>
+
+              <pre><code class="language-javascript">
+const greeting = "Hello World!";
+console.log(greeting);
+</code></pre>
               {% if step.actions %}
                 {% for a in step.actions %}
+
                   <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}" style="margin-bottom:10px">
 {#                    {{ dump(_context, a) }}#}
                     <code>{{ a|short_class }}</code>
-                    {{ render_action(a)|raw }}
+                      {{ dump(a) }}
+{#                    {{ render_action(a, renderer)|raw }}#}
                   </div>
                 {% endfor %}
               {% else %}
@@ -91,7 +102,6 @@
           <div class="panel">
             <header>Step JSON</header>
             <div class="content">
-{#              {{ dump(step) }}#}
               <pre><code>{{ slide.sparseStep|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</code></pre>
             </div>
           </div>

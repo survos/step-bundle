@@ -9,7 +9,7 @@ export default class extends Controller {
   static values = {
     code: String,
     jsonUrl: String,
-    theme: { type: String, default: 'black' }
+    theme: { type: String, default: 'light' }
   }
 
   static targets = [

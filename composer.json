@@ -14,7 +14,8 @@
         "survos/core-bundle": "^2.0",
         "symfony/asset-mapper": "^7.3||^8.0",
         "survos/installer": "^2.0",
-        "survos/jsonl-bundle": "dev-main"
+        "survos/jsonl-bundle": "dev-main",
+        "symfony/framework-bundle": "^7.3"
     },
     "autoload": {
         "psr-4": {

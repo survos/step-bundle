@@ -1,97 +1,449 @@
-{# file: templates/step/slides.html.twig — Stimulus + slides[] #}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ code|default('Steps') }} — Slides</title>
+  <meta charset="utf-8" />
+  <title>EasyAdmin in 20 Minutes — Symfony 7.3 / PHP 8.4</title>
 
-  {# Your bundle CSS (kept) #}
-  {# this is for the HUD #}
-  <link rel="stylesheet" href="{{ asset('bundles/survosstep/steps.css') }}">
-  {% if app.request.get('debug', false) %}
-  {% endif %}
-  {# Reveal CSS will be imported by the Stimulus controller via AssetMapper #}
+  <!-- Reveal.js -->
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reveal.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/theme/white.css" id="theme">
 
-  {% block javascripts %}
-      {% block importmap %}{{ importmap(app.request.get('debug') ? 'app'  : 'slideshow') }}{% endblock %}
-  {% endblock %}
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
 
+  <style>
+    :root{
+      --slide-accent:#6f42c1;       /* purple */
+      --slide-accent-2:#20c997;     /* teal */
+      --slide-ink:#222;
+      --slide-code-bg:#f7f8fb;
+      --slide-title-h: 84px;        /* fixed title band height */
+      --slide-pad-x: 28px;
+      --slide-radius: 10px;
+    }
+
+    /* Flatten Reveal’s inner panel look */
+    .reveal .slides { background: none; }
+
+    /* Slide grid: fixed title band + scrollable content area */
+    .slide{
+      display:grid;
+      grid-template-rows: var(--slide-title-h) 1fr;
+      height:100%;
+      padding:0 var(--slide-pad-x);
+      position:relative; /* for next-hint positioning */
+    }
+
+    /* Title band (not all-caps) */
+    .slide-title{
+      display:flex; align-items:flex-end;
+      border-bottom:3px solid rgba(111,66,193,.18);
+      padding:18px 0 14px 0; margin:0;
+      text-align:left; text-transform:none; color:var(--slide-ink);
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.9));
+      backdrop-filter: blur(2px);
+      font-weight: 700;
+    }
+    .slide-subtitle{ font-weight:500; color:#555; margin-left:.6rem; font-size:.8em; }
+
+    /* Scrollable content */
+    .slide-body{ overflow:auto; padding:18px 0 16px 0; }
+
+    /* Lists */
+    .reveal ul, .reveal ol { margin:0; padding-left:1.1em; }
+    .reveal li{ margin:.18em 0; line-height:1.3; color:var(--slide-ink); }
+
+    /* Labels above code/blocks (filename, command, etc.) */
+    .label{
+      font-size:.92rem; color:#555; font-weight:600;
+      margin:.35rem 0 .35rem; text-align:left;
+    }
+
+    /* Code card */
+    pre{ margin:0; }
+    pre code{ font-size:1.06rem; line-height:1.38rem; }
+    .code-card{
+      background: var(--slide-code-bg);
+      border-left:4px solid var(--slide-accent);
+      border-radius: var(--slide-radius);
+      box-shadow: 0 6px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.06);
+      padding:12px 16px;
+      max-height:62vh; overflow:auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+
+    /* Optional line highlight utility */
+    .hl-line{ display:block; background: rgba(111,66,193,.08); border-left:3px solid var(--slide-accent); padding-left:.5rem; }
+
+    /* “Next” hint — appears only when slide is ready to advance */
+    .next-hint{
+      display:none; position:absolute; right:16px; bottom:12px; z-index:10;
+      background: rgba(0,0,0,.72); color:#fff; padding:6px 10px;
+      border-radius: 999px; font-size:.84rem; letter-spacing:.2px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    }
+    .next-hint .arrow{ opacity:.85; margin-left:6px; }
+
+    /* Fragments */
+    .fragment{ transition: opacity .35s ease; }
+
+    /* Print */
+    @media print{
+      .reveal .controls, .reveal .progress, .reveal .overview, .reveal .slide-number{ display:none !important; }
+      pre code{ font-size:10pt !important; }
+    }
+  </style>
 </head>
 <body>
+<div class="reveal">
+  <div class="slides">
 
-{% set _sc = '@survos/step-bundle/reveal' %}
-slides: slides,
-<div
-  class="reveal"
-  {{ stimulus_controller(_sc, {
-      code: code,
-      jsonUrl: json_url,
-      theme: 'black'
-  }) }}
->
-  <div class="slides" >
-    {# iterate slides (already flattened server-side) #}
-    {% for slide in slides %}
-      {% set slideTitle = slide.title|default('Step') %}
-      {% set taskName   = slide.task_name|default(code) %}
-      {# provide context for DisplayCode('artifact:…') resolver #}
-      {% set __task_name  = taskName %}
-      {% set __step_title = slideTitle %}
 
-      <section data-task-name="{{ taskName|e('html_attr') }}">
-        <div class="slide-shell">
-          <header class="slide-header">
-            <h2 class="slide-title">{{ slideTitle }}</h2>
-          </header>
+    <!-- Title -->
+      {% if showTitle|default(false) %}
+    <section class="slide" data-next-hint="start creating the app">
+      <h1 class="slide-title">EasyAdmin hard-coded <span class="slide-subtitle">Symfony 7.3 / PHP 8.4</span></h1>
+      <div class="slide-body">
+        <p class="lead">Create → Install → Entity → Dashboard → CRUD → Configure → Data → Open</p>
+        <p class="fragment"><small>Projector-friendly palette • code-first flow</small></p>
+      </div>
+      <div class="next-hint">next ▶ start creating the app <span class="arrow">›</span></div>
+    </section>
+      {% endif %}
 
-          <div class="slide-content">
-            {% set step = slide.step %}
-            {% set task = slide.task %}
-            {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
-            {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+      {% set max = 4 %}
+      {% for idx, slide in slides|slice(0,max) %}
+          {% set slideTitle = slide.title|default('Step') %}
+          {% set taskName   = slide.task_name|default(code) %}
+          {# provide context for DisplayCode('artifact:…') resolver #}
+          {% set __task_name  = taskName %}
+          {% set __step_title = slideTitle %}
+          {% if idx < slides|length %}
+            {% set nextHint = slides[idx].title %}
+          {% else %}
+              {% set nextHint = "--END--" %}
+          {% endif %}
 
-            {% if step.actions %}
-              {% for a in step.actions %}
-                <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
-{#                  {{ render_action(_context, a)|raw }}#}
-                  {{ render_action(a)|raw }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          </div>
+          <section class="slide" data-next-hint="{{ nextHint }}"
+                   data-task-name="{{ taskName|e('html_attr') }}">
+                  <h2 class="slide-title">{{ slideTitle }}</h2>
 
-          <footer class="slide-footer"></footer>
+                  <div class="slide-body">
+                      {% set step = slide.step %}
+                      {% set task = slide.task %}
+                      {% if slide.description %}<p class="slide-description">{{ slide.description }}</p>{% endif %}
+                      {% if slide.bullets %}<ul>{% for b in slide.bullets %}<li class="fragment">{{ b }}</li>{% endfor %}</ul>{% endif %}
+
+                      {% if step.actions %}
+                          {% for a in step.actions %}
+                              <div class="label">{{ a|short_class }}</div>
+{#                              {{ dump(a) }}#}
+                              <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+{#                                  {% if a.lang == 'php' %}#}
+{#                                  {{ dump(a, render_action(a)) }}#}
+{#                                  {% endif %}#}
+                                  {{ render_action(a)|raw }}
+                              </div>
+                          {% endfor %}
+                      {% endif %}
+                  </div>
+                  <footer class="slide-footer"></footer>
+          </section>
+      {% endfor %}
+
+
+      <!-- Agenda -->
+    <section class="slide" data-next-hint="create the project">
+      <h2 class="slide-title">Agenda</h2>
+      <div class="slide-body">
+        <ul>
+          <li class="fragment">Create project & install EasyAdmin</li>
+          <li class="fragment">Make an entity & run migrations</li>
+          <li class="fragment">Generate Dashboard & CRUD</li>
+          <li class="fragment">Tweak <code>configureDashboard()</code> & <code>configureFields()</code></li>
+          <li class="fragment">Load sample data & open <code>/admin</code></li>
+        </ul>
+      </div>
+      <div class="next-hint">next ▶ create the project <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Create app (code first) -->
+    <section class="slide" data-next-hint="explain the step">
+      <h2 class="slide-title">Create a Symfony Web App</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+<pre><code class="language-bash">symfony new slide-demo --webapp --version=7.3
+cd slide-demo
+symfony server:start -d
+open http://127.0.0.1:8000</code></pre>
         </div>
-      </section>
-    {% endfor %}
+      </div>
+      <div class="next-hint">next ▶ explain the step <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Create app (explain) -->
+    <section class="slide" data-next-hint="install easyadmin">
+      <h2 class="slide-title">What we just did</h2>
+      <div class="slide-body">
+        <ul>
+          <li class="fragment">Used Symfony CLI so recipes apply cleanly</li>
+          <li class="fragment">Verified the app boots before adding bundles</li>
+        </ul>
+      </div>
+      <div class="next-hint">next ▶ install easyadmin <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Install EasyAdmin (code first) -->
+    <section class="slide" data-next-hint="create the entity">
+      <h2 class="slide-title">Install EasyAdmin</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+          <pre><code class="language-bash">composer require easycorp/easyadmin-bundle</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ create the entity <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Entity (code first) -->
+    <section class="slide" data-next-hint="why these fields">
+      <h2 class="slide-title">Create an Entity</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+<pre><code class="language-bash">bin/console make:entity Product
+# name (string), price (int/money), createdAt (datetime_immutable)
+bin/console make:migration
+bin/console doctrine:migrations:migrate -n</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ why these fields <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Entity (explain) -->
+    <section class="slide" data-next-hint="generate the dashboard">
+      <h2 class="slide-title">Entity: notes</h2>
+      <div class="slide-body">
+        <ul>
+          <li class="fragment">Keep migrations small; review SQL before applying</li>
+          <li class="fragment">Use immutable timestamps for reliable ordering</li>
+        </ul>
+      </div>
+      <div class="next-hint">next ▶ generate the dashboard <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Dashboard (code first) -->
+    <section class="slide" data-next-hint="generate crud">
+      <h2 class="slide-title">Generate the Dashboard</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+          <pre><code class="language-bash">bin/console make:admin:dashboard</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ generate crud <span class="arrow">›</span></div>
+    </section>
+
+    <!-- CRUD (code first) -->
+    <section class="slide" data-next-hint="explain crud">
+      <h2 class="slide-title">Generate CRUD</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+          <pre><code class="language-bash">bin/console make:admin:crud Product</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ explain crud <span class="arrow">›</span></div>
+    </section>
+
+    <!-- CRUD (explain) -->
+    <section class="slide" data-next-hint="tweak dashboard">
+      <h2 class="slide-title">CRUD: what just happened?</h2>
+      <div class="slide-body">
+        <ul>
+          <li class="fragment">Controller with index/detail/new/edit</li>
+          <li class="fragment">Default fields inferred from metadata</li>
+          <li class="fragment">Link via <code>MenuItem::linkToCrud()</code></li>
+        </ul>
+      </div>
+      <div class="next-hint">next ▶ tweak dashboard <span class="arrow">›</span></div>
+    </section>
+
+    <!-- configureDashboard() snippet -->
+    <section class="slide" data-next-hint="tweak fields">
+      <h2 class="slide-title">configureDashboard(): minimal edit</h2>
+      <div class="slide-body">
+        <div class="label">src/Controller/Admin/DashboardController.php</div>
+        <div class="code-card">
+<pre><code class="language-php">use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+use App\Entity\Product;
+
+public function configureDashboard(): Dashboard
+{
+    return Dashboard::new()-&gt;setTitle('EA Demo');
+}
+
+public function configureMenuItems(): iterable
+{
+    yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
+    yield MenuItem::linkToCrud('Products', 'fa fa-box', Product::class);
+}</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ tweak fields <span class="arrow">›</span></div>
+    </section>
+
+    <!-- configureFields() diff -->
+      {% if true %}
+    <section class="slide" data-next-hint="access control">
+      <h2 class="slide-title">configureFields(): small but useful</h2>
+      <div class="slide-body">
+        <div class="label">src/Controller/Admin/ProductCrudController.php</div>
+        <div class="code-card">
+        {% set php %}// BEFORE
+return [
+    TextField::new('name'),
+    MoneyField::new('price'),
+];
+
+// AFTER
+return [
+    TextField::new('name')->setColumns(8),            // <span class="hl-line">wider input</span>
+    MoneyField::new('price')->setCurrency('USD')      // <span class="hl-line">display currency</span>
+               ->setStoredAsCents(false),
+]; {% endset %}
+
+            <pre><code class="language-php">{{ php|escape }}</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ access control <span class="arrow">›</span></div>
+    </section>
+      {% endif %}
+
+    <!-- Access control (small YAML + bullets) -->
+    <section class="slide" data-next-hint="load fixtures">
+      <h2 class="slide-title">Access control (optional)</h2>
+      <div class="slide-body">
+        <ul>
+          <li>Protect <code>/admin</code> with a role</li>
+        </ul>
+        <div class="label">config/packages/security.yaml</div>
+        <div class="code-card">
+<pre><code class="language-yaml">access_control:
+  - { path: ^/admin, roles: ROLE_ADMIN }</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ load fixtures <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Fixtures (code first) -->
+    <section class="slide" data-next-hint="open the dashboard">
+      <h2 class="slide-title">Load sample data</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+<pre><code class="language-bash">composer require --dev orm-fixtures
+bin/console make:fixture ProductFixtures
+bin/console doctrine:fixtures:load -n</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ open the dashboard <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Full-screen image slide (your URL) -->
+    <section
+            data-background-image="https://raw.githubusercontent.com/EasyCorp/EasyAdminBundle/refs/heads/4.x/doc/images/easyadmin-promo.jpg"
+            data-background-size="cover"
+            data-background-position="center"
+            data-background-color="#ffffff">
+      <!-- Full-screen visual; navigation/controls remain -->
+    </section>
+
+    <!-- Open dashboard (code first + label) -->
+    <section class="slide" data-next-hint="recap">
+      <h2 class="slide-title">Open the dashboard</h2>
+      <div class="slide-body">
+        <div class="label">bash</div>
+        <div class="code-card">
+<pre><code class="language-bash">symfony server:start -d
+open http://127.0.0.1:8000/admin</code></pre>
+        </div>
+      </div>
+      <div class="next-hint">next ▶ recap <span class="arrow">›</span></div>
+    </section>
+
+    <!-- Summary -->
+    <section class="slide" data-next-hint="q&a">
+      <h2 class="slide-title">Summary</h2>
+      <div class="slide-body">
+        <ol>
+          <li class="fragment">Create project & install EasyAdmin</li>
+          <li class="fragment">Make entity & run migrations</li>
+          <li class="fragment">Generate Dashboard & CRUD</li>
+          <li class="fragment">Tweak menu & fields, load data, open <code>/admin</code></li>
+        </ol>
+      </div>
+      <div class="next-hint">next ▶ q&amp;a <span class="arrow">›</span></div>
+    </section>
+
+    <section class="slide">
+      <h2 class="slide-title">Q&amp;A</h2>
+      <div class="slide-body">
+        <p>Thanks! Slides & code available after the talk.</p>
+      </div>
+    </section>
+
   </div>
 </div>
 
-{# HUD (controlled by Stimulus) #}
-<div class="slide-hud">
-{#     {{ stimulus_controller(_sc, { code: code, slides: slides, jsonUrl: json_url }) }}>#}
-  {% if app is defined %}
-    <a href="{{ path('app_home') }}" class="hud-link">Home</a>
-  {% else %}
-    <span class="hud-link">Home</span>
-  {% endif %}
-  <span class="hud-sep">|</span>
-  <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="#" target="_blank" class="hud-link">JSON (deck)</a>
-  <span class="hud-sep">|</span>
-  <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
-  <span class="hud-sep">|</span>
-  <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
-  <span class="hud-sep">*</span>
-  <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
-  <span class="hud-sep">|</span>
-  <button type="button"
-          {{ stimulus_target(_sc, 'copyButton') }}
-          {{ stimulus_action(_sc, 'copy') }}
-          class="hud-copy" title="Copy run command">
-    Copy run
-  </button>
-</div>
+<!-- Reveal.js -->
+<script src="https://unpkg.com/reveal.js@4/dist/reveal.js"></script>
 
+<!-- highlight.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<script>
+  hljs.highlightAll();
+
+  Reveal.initialize({
+    hash: true,
+    width: 1200,
+    height: 780,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.2,
+    transition: 'slide',
+    slideNumber: true,
+    progress: true,
+    controls: true,
+    controlsLayout: 'bottom-right',
+    dependencies: [
+      { src: 'https://unpkg.com/reveal.js@4/plugin/notes/notes.js', async: true },
+      { src: 'https://unpkg.com/reveal.js@4/plugin/search/search.js', async: true }
+    ]
+  });
+
+  // --- "next ▶ ..." hint: only show when all fragments on slide are visible ---
+  function updateNextHint(){
+    const current = Reveal.getCurrentSlide();
+    // Hide all hints first
+    document.querySelectorAll('.next-hint').forEach(el => el.style.display = 'none');
+    if (!current) return;
+
+    const remaining = current.querySelectorAll('.fragment:not(.visible)');
+    const hint = current.querySelector('.next-hint');
+
+    if (hint && remaining.length === 0) {
+      hint.style.display = 'inline-flex';
+    }
+  }
+
+  Reveal.on('ready', updateNextHint);
+  Reveal.on('slidechanged', updateNextHint);
+  Reveal.on('fragmentshown', updateNextHint);
+  Reveal.on('fragmenthidden', updateNextHint);
+</script>
 </body>
 </html>
