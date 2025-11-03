@@ -26,6 +26,7 @@ final class Step
         public ?string $image = null,
         public array $notes = [],
         public ?string $group = null,
+        public ?string $if = null,
         public ?string $tags = null,
         public array $options = [] {
             set(string|array $value) => is_string($value)

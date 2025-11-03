@@ -36,6 +36,7 @@ final class Env extends AbstractAction
 
     public function toCommand(): ?string
     {
+
         return sprintf("Add to $this->file\n\n%s: %s", $this->key, $this->cfg['default']??null);
     }
 
@@ -52,7 +53,6 @@ final class Env extends AbstractAction
 
     public function viewTemplate(): string
     {
-        return json_encode($this);
-        // TODO: Implement viewTemplate() method.
+        return 'env.html.twig';
     }
 }
