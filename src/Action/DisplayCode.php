@@ -26,10 +26,13 @@ final class DisplayCode extends AbstractAction
 
     public function toCommand(): ?string
     {
-//        return "cat $this->path";
-        io()->writeln(sprintf('Display: %s', $this->path));
-        $code = file_get_contents($this->path);
-        io()->writeln($code);
+//        if (!file_exists($this->path)) {
+//            io()->writeln(sprintf("Display contents of %s when it exists", $this->path)));
+//        }
+////        return "cat $this->path";
+//        io()->writeln(sprintf('Display: %s', $this->path));
+//        $code = file_get_contents($this->path);
+//        io()->writeln($code);
         return 'cat ' . $this->path;
         // @todo: figure out slide formatting v. console output
         return $code;

@@ -34,6 +34,11 @@ final class Env extends AbstractAction
         $this->file = $file;
     }
 
+    public function toCommand(): ?string
+    {
+        return sprintf("Add to $this->file\n\n%s: %s", $this->key, $this->cfg['default']??null);
+    }
+
     public function summary(): string
     {
         return __METHOD__;

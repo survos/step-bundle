@@ -26,12 +26,22 @@ final class Bash extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
+        dump($ctx->workingDirectory);
         $execCtx = $this->cwd ? $ctx->withWorkingDirectory($this->cwd) : $ctx;
+        dump($execCtx);
         if ($dryRun) {
             io()->writeln(sprintf('<comment>DRY</comment> (%S) $ %s', $execCtx->workingDirectory, $this->command));
             return;
         }
-        run($this->command, context: $execCtx);
+        try {
+            $output = run($this->command, context: $execCtx, callback: fn($type, $buffer) =>
+            io()->write($buffer));
+            dump($output);
+
+        } catch (\Throwable $e) {
+            dd($e);
+        }
+
     }
 
 //    public function toCommand(): string

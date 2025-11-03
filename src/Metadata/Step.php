@@ -18,7 +18,7 @@ final class Step
      * @param list<string> $notes
      */
     public function __construct(
-        public string $title,
+        public string $title='', // get from AsTask if empty
         public string $description = '',
         public array $bullets = [],
         public array $actions = [],
