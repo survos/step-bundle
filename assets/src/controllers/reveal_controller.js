@@ -1,8 +1,9 @@
 // file: assets/src/controllers/reveal_controller.js — Stimulus controller for Reveal slides + HUD
 
 import { Controller } from '@hotwired/stimulus';
+
 import Reveal from 'reveal.js';
-import 'reveal.js/dist/reveal.css';
+//import 'reveal.js/dist/reveal.css';
 import RevealHighlight from 'reveal.js/plugin/highlight/highlight.js';
 
 export default class extends Controller {
@@ -30,9 +31,11 @@ export default class extends Controller {
       controls: true,
       progress: true,
       center: false,
-      margin: 0.02,
-      minScale: 0.2,
-      maxScale: 1.6
+      width: '100%',
+      height: '100%',
+      margin: 0,
+      minScale: 1,
+      maxScale: 1
     });
 
     this.deck.initialize().then(() => {

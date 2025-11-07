@@ -1,118 +1,120 @@
 {# file: templates/step/slides.html.twig — Reveal + HUD (Stimulus) #}
 <!DOCTYPE html>
+
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ code|default('Steps') }} — Slides</title>
 
-  <!-- Reveal theme CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reveal.css">
-  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/theme/white.css" id="theme">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  {# External slideshow CSS #}
-  <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">
+        <title>{{ code|default('Steps') }} — Slides</title>
 
-  {% block javascripts %}
-    {% block importmap %}{{ importmap('app') }}{% endblock %}
-  {% endblock %}
-</head>
-<body>
+        <!-- Reveal theme CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+        <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/theme/white.css" id="theme">
 
-{% set _sc = '@survos/step-bundle/reveal' %}
+        {# External slideshow CSS #}
+        <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">
 
-<div
-  {{ stimulus_controller(_sc, {
-    code: code,
-    jsonUrl: json_url,
-    theme: 'light'
-  }) }}
->
-  <div class="reveal">
-    <div class="slides">
+        {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
 
-      {# Optional intro slide #}
-      <section class="ea-slide" data-next-hint="Explain this step">
-        <h2 class="ea-title">Create a Symfony Web App</h2>
-        <div class="ea-body">
-          <div class="label">bash</div>
-          <div class="code-card">
-<pre><code class="language-bash">symfony new ea-demo --webapp --version=7.3
-cd ea-demo
-symfony server:start -d
-open http://127.0.0.1:8000</code></pre>
-          </div>
-        </div>
-        <div class="next-hint">next ▶ Explain this step <span class="arrow">›</span></div>
-      </section>
+    <body>
 
-      {# Real slides (flattened server-side) #}
-      {% for slide in slides|default([]) %}
-        {% set slideTitle = slide.title|default('Step') %}
-        {% set taskName   = slide.task_name|default(code) %}
-        {% set __task_name  = taskName %}
-        {% set __step_title = slideTitle %}
+        {% set _sc = '@survos/step-bundle/reveal' %}
+        <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
+            <div class="slides">
+                {# Optional intro slide #}
+                <section data-next-hint="Explain this step">
+                    <div class="slide-shell">
+                        <header class="slide-header">
+                            <h2 class="slide-task">Create a Symfony Web App</h2>
+                            <div class="slide-step">bash</div>
+                        </header>
+                        <div class="slide-content">
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre>
+                                        <code class="language-bash" data-trim data-noescape>
+                                            symfony new ea-demo --webapp --version=7.3
+                                            cd ea-demo
+                                            symfony server:start -d
+                                            open http://127.0.0.1:8000
+                                        </code>
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slide-footer"></div>
+                        <div class="next-hint">next ▶ Explain this step <span class="arrow">›</span></div>
+                    </div>
+                </section>
 
-        <section data-task-name="{{ taskName|e('html_attr') }}" data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
-          <div class="slide-shell">
-            <header class="slide-header">
-              <h2 class="slide-task">{{ taskName }}</h2>
-              <div class="slide-step">{{ slideTitle }}</div>
-            </header>
+                {# Real slides (flattened server-side) #}
+                {% for slide in slides|default([]) %}
+                {% set slideTitle = slide.title|default('Step') %}
+                {% set taskName   = slide.task_name|default(code) %}
+                {% set __task_name  = taskName %}
+                {% set __step_title = slideTitle %}
+                <section data-task-name="{{ taskName|e('html_attr') }}" data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
+                    <div class="slide-shell">
+                        <header class="slide-header">
+                            <h2 class="slide-task">{{ taskName }}</h2>
+                            <div class="slide-step">{{ slideTitle }}</div>
+                        </header>
+                        <div class="slide-content">
+                            {% set step = slide.step %}
+                            {% set task = slide.task %}
+                            {% if slide.description %}
+                            <p class="slide-description mb-3">{{ slide.description }}</p>
+                            {% endif %}
+                            {% if slide.bullets %}
+                            <ul class="slide-bullets mb-3">
+                                {% for b in slide.bullets %}
+                                <li>{{ b }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
 
-            <div class="slide-content">
-              {% set step = slide.step %}
-              {% set task = slide.task %}
-
-              {% if slide.description %}
-                <p class="slide-description">{{ slide.description }}</p>
-              {% endif %}
-
-              {% if slide.bullets %}
-                <ul>
-                  {% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}
-                </ul>
-              {% endif %}
-
-              {% if step and step.actions %}
-                {% for a in step.actions %}
-                  {# removed stray debug label: {{ a|short_class }} #}
-                  <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
-                    {{ render_action(a)|raw }}
-                  </div>
+                            {% if step and step.actions %}
+                            {% for a in step.actions %}
+                            {# removed stray debug label: {{ a|short_class }} #}
+                            <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+                                {{ render_action(a)|raw }}
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <footer class="slide-footer"></footer>
+                        <div class="next-hint">
+                            next ▶ {{ slide.next_hint|default('Explain this step') }}
+                            <span class="arrow">›</span>
+                        </div>
+                    </div>
+                </section>
                 {% endfor %}
-              {% endif %}
             </div>
+        </div>
 
-            <footer class="slide-footer"></footer>
+        {# HUD inside controller scope #}
+        <div class="slide-hud">
+            {% if app is defined %}
+            <a href="{{ path('app_home') }}" class="hud-link">Home</a>
+            {% else %}
+            <span class="hud-link">Home</span>
+            {% endif %}
+            <span class="hud-sep">|</span>
+            <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="{{ json_url ?? '#' }}" target="_blank" class="hud-link">JSON (deck)</a>
+            <span class="hud-sep">|</span>
+            <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
+            <span class="hud-sep">|</span>
+            <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
+            <span class="hud-sep">*</span>
+            <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+        </div>
 
-            <div class="next-hint">
-              next ▶ {{ slide.next_hint|default('Explain this step') }}
-              <span class="arrow">›</span>
-            </div>
-          </div>
-        </section>
-      {% endfor %}
-    </div>
-  </div>
+    </body>
 
-  {# HUD inside controller scope #}
-  <div class="slide-hud">
-    {% if app is defined %}
-      <a href="{{ path('app_home') }}" class="hud-link">Home</a>
-    {% else %}
-      <span class="hud-link">Home</span>
-    {% endif %}
-    <span class="hud-sep">|</span>
-    <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="{{ json_url ?? '#' }}" target="_blank" class="hud-link">JSON (deck)</a>
-    <span class="hud-sep">|</span>
-    <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
-    <span class="hud-sep">|</span>
-    <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
-    <span class="hud-sep">*</span>
-    <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
-  </div>
-</div>
-
-</body>
 </html>

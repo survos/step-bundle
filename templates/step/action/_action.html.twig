@@ -1,9 +1,14 @@
-<div class="action action-generic mb-3">
-  <div class="small text-muted">{{ type }}</div>
-  {% if note is defined and note %}<p class="mb-1">{{ note }}</p>{% endif %}
-  {% if code is defined and code %}
-    <pre class="mb-0"><code class="language-{{ lang|default('text') }}">{{ code }}</code></pre>
-  {% else %}
+{# file: templates/step/action/_action.html.twig #}
+<div class="action action-generic card">
+    <div class="small text-muted">{{ type }}</div>
+    {% if note is defined and note %}
+    <p class="mb-3 mt-0 text-start">{{ note }}</p>
+    {% endif %}
+    {% if code is defined and code %}
+    <pre>
+        <code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code>
+    </pre>
+    {% else %}
     <div class="text-muted fst-italic">No content</div>
-  {% endif %}
+    {% endif %}
 </div>
