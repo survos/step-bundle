@@ -4,7 +4,6 @@
     {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
     <pre class="terminal"><code class="language-{{ action.highlightLanguage|default('bash') }}">{{ action.command|raw }}</code></pre>
     {% if action.a %}
-      {{ dump(action) }}
       <div class="card-header d-flex justify-content-between align-items-center mt-2">
         <span class="fw-semibold">{{ action.a }}</span>
       </div>

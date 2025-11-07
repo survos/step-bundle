@@ -64,7 +64,6 @@ if (!function_exists(__NAMESPACE__ . '\\sjl_before_execute')) {
         ];
 
         S::append($rec, tokenCode: 'finish|' . ($runId ?? 'na') . '|' . $task->getName(), code: $code);
-        dd($rec);
 
         // Friendly hint (stderr)
         $uiUrl = "/castor/logs/{$code}";
