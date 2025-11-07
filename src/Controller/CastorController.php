@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -71,6 +72,7 @@ final class CastorController extends AbstractController
     public function slides(Request $request, string $code,
         DebugActionRenderer $debugActionRenderer,
         RevealActionRenderer $revealActionRenderer,
+        RequestStack $requestStack,
         #[MapQueryParameter] bool $debug=false
     ): Response
     {
@@ -82,7 +84,7 @@ final class CastorController extends AbstractController
             $template = '@SurvosStep/step/debug.html.twig';
 
         }
-        $deck = $this->exporter->exportSlides($code);
+        $deck = $this->exporter->exportSlides($code, $requestStack);
         $slides = $deck['slides'] ?? [];
 
         return $this->render($template, [

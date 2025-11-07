@@ -12,15 +12,26 @@ use ReflectionFunction;
 use Survos\CoreBundle\Service\SurvosUtils;
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Metadata\Actions\{ ComposerRequire, ImportmapRequire, RequirePackage };
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 final class CastorStepExporter
 {
+    const ARTIFACT_ROOT = 'public/artifacts/';
+
     public function __construct(
-        private readonly string $projectDir,
+        #[Autowire('%kernel.project_dir%')] private ?string $projectDir=null,
         private readonly string $glob = '*.castor.php',
         private readonly int $depth = 0,
-    ) {}
+        private ?RequestStack $requestStack = null,
+        private ?ArtifactLocator $artifactLocator = null,
+    ) {
+//        dd($this, $this->highlightLanguage);
+    }
+
+    public function artifactsDir(string $projectName): string { return self::ARTIFACT_ROOT . $projectName . '/'; }
+
 
     /**
      * List available castor files as slideshows.
@@ -91,10 +102,22 @@ final class CastorStepExporter
             $steps = array_map(static fn($a) => $a->newInstance(), $stepAttrs);
 
             // Append steps in the same order they are declared on the function
-            foreach ($steps as $step) {
+            foreach ($steps as $idx => $step) {
+                $actions = [];
+                foreach ($step->actions as $action) {
+                    $action->project = $this->requestStack->getCurrentRequest()->attributes->get('code');
+                    $action->artifactLocator = $this->artifactLocator;
+                    $actions[] = $action;
+                    if ($action->artifactId) {
+                        $content = $this->artifactLocator->read($action->project, $action->a);
+                        $action->artifact = $content;
+                    }
+                }
+                $step->actions = $actions;
                 $slides[] = [
                     // keep the objects, too little value in serialization
                     'step' => $step,
+                    'actions' => $actions,
                     'task' => $asTask,
                     'sparseStep' => SurvosUtils::removeNullsAndEmptyArrays($step),
 

@@ -1,10 +1,7 @@
+{# file: templates/step/action/display_code.html.twig #}
 <div class="action action-code card shadow-sm mb-3">
-{#  <div class="card-header d-flex justify-content-between align-items-center">#}
-{#    <span class="fw-semibold">Code</span>#}
-{#    {% if path %}<code class="small text-muted">{{ path }}</code>{% endif %}#}
-{#  </div>#}
   <div class="card-body">
     {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
-    <pre class="mb-0"><code class="language-{{ lang|default('text') }}">{{ code }}</code></pre>
+    <pre class="code-block"><code class="language-{{ lang|default('text') }}">{{ code }}</code></pre>
   </div>
 </div>

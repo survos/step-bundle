@@ -30,6 +30,7 @@
   <div class="header">
     <h1>[DEBUG] Slides for <span class="badge">{{ code }}</span></h1>
     <div>
+      <a href="{{ path('app_home') }}" target="_blank" class="badge">Home</a>
       <a href="{{ json_url }}" target="_blank" class="badge">Deck JSON</a>
       <a href="{{ path('survos_step_slides', {code: code}) }}" target="_blank" class="badge">
         <span class="badge">{{ slides|length }} slides</span>
@@ -72,25 +73,24 @@
           <div class="panel">
             <header>Rendered Actions</header>
             <div class="content">
-                php?
-              <pre><code class="language-php">
-function hello() {
-    echo "Hello World!";
-}
-</code></pre>
+{#                php?#}
+{#              <pre><code class="language-php">#}
+{#function hello() {#}
+{#    echo "Hello World!";#}
+{#}#}
+{#</code></pre>#}
 
-              <pre><code class="language-javascript">
-const greeting = "Hello World!";
-console.log(greeting);
-</code></pre>
+{#              <pre><code class="language-javascript">#}
+{#const greeting = "Hello World!";#}
+{#console.log(greeting);#}
+{#</code></pre>#}
               {% if step.actions %}
                 {% for a in step.actions %}
 
                   <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}" style="margin-bottom:10px">
 {#                    {{ dump(_context, a) }}#}
                     <code>{{ a|short_class }}</code>
-                      {{ dump(a) }}
-{#                    {{ render_action(a, renderer)|raw }}#}
+                    {{ render_action(a, renderer)|raw }}
                   </div>
                 {% endfor %}
               {% else %}

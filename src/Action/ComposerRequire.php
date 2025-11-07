@@ -15,6 +15,7 @@ final class ComposerRequire extends AbstractAction
         public bool $dev = false,
         public ?string $note = null,
         public ?string $cwd = null,
+        public ?string $a = null, // artifact ID
     ) {}
 
     public function toCommand(): string

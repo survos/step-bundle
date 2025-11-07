@@ -3,8 +3,8 @@
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
-use function Castor\io;
-use function Castor\run;
+use Survos\StepBundle\Util\ArtifactHelper;
+use function Castor\{io,run,task};
 
 /**
  * Run a shell command.
@@ -15,9 +15,11 @@ final class Bash extends AbstractAction
         public string $command,
         public ?string $note = null,
         public ?string $cwd = null,
+        public ?string $a = null, // artifact ID
     ) {}
 
     public string $highlightLanguage = 'bash';
+    public ?string $artifact = null; // the content
 
     public function summary(): string
     {
@@ -32,9 +34,13 @@ final class Bash extends AbstractAction
             return;
         }
         try {
-            $output = run($this->command, context: $execCtx, callback: fn($type, $buffer) =>
-            io()->write($buffer));
-//            dump($output);
+            $output = run($this->command, context: $execCtx, callback: fn($type, $buffer) => io()->write($buffer));
+            // @todo: move this to castor listener
+            $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
+            if ($this->a) {
+                $artifactLocation = $helper->save($this->a, $output->getOutput());
+                io()->writeln($artifactLocation . " written");
+            }
 
         } catch (\Throwable $e) {
             dd($e);

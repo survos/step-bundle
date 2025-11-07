@@ -3,7 +3,9 @@
 namespace Survos\StepBundle\Util;
 
 use Castor\Context;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Centralized artifact saving. Uses task()->getName() and context()->workingDirectory.
@@ -32,6 +34,25 @@ final class ArtifactHelper
         return new self($wd, self::safe($taskName), self::safe('step'));
     }
 
+
+    public static function fromRequest(
+        Request $request,
+    ): self
+    {
+        dd($request->get('code'));
+
+//        $wd = (string)($ctx?->workingDirectory ?? getcwd());
+//        if (!is_dir($wd)) {
+//        }
+        $wd = getcwd(); // fallback to main app root
+
+        if (!is_dir($wd)) {
+            throw new \RuntimeException("Working directory not found: $wd");
+        }
+        $taskName = $task?->getName() ?: 'slide';
+        return new self($wd, self::safe($taskName), self::safe('step'));
+    }
+
     public function withStep(string $stepTitle): self
     {
         return new self($this->projectDir, $this->safeTask, self::safe($stepTitle));
@@ -39,7 +60,7 @@ final class ArtifactHelper
 
     public function baseDir(): string
     {
-        return $this->projectDir . '/public/artifacts/' . $this->safeTask . '/' . $this->safeStep;
+        return $this->projectDir . '/public/artifacts/' .  $this->safeTask; // don't overcomplicate the steps . '/' . $this->safeStep;
     }
 
     public function actionDir(string $actionKey): string
@@ -47,9 +68,14 @@ final class ArtifactHelper
         return $this->baseDir() . '/' . self::safe($actionKey);
     }
 
+    public function path(string $relativePath): string
+    {
+        return $this->baseDir() . ltrim($relativePath, '/');
+    }
+
     public function save(string $relativePath, string $contents): string
     {
-        $abs = $this->baseDir() . '/' . ltrim($relativePath, '/');
+        $abs = artifact_path($relativePath);
         $this->ensureDir(\dirname($abs));
         if (false === file_put_contents($abs, $contents)) {
             throw new IOException("Failed to write artifact: $abs");

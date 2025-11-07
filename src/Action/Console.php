@@ -30,11 +30,13 @@ final class Console extends AbstractAction
         array $args = [],
         public ?string $note = null,
         public ?string $cwd = null,
-        public array $env = [],
+        public array $env = [], // ??
+        public ?string $a = null, // artifact
         public string $prefer = 'auto',    // 'auto' | 'symfony' | 'php'
         public string $consolePath = 'bin/console',
         public string $phpBinary = 'php',
-        public bool $autoNoInteraction = true
+        public bool $autoNoInteraction = true,
+        public ?string $postfix = null, // e.g. >> 'env.local'
     ) {
         $this->args = array_values($args);
         $this->normalizeNoInteraction();
@@ -62,9 +64,11 @@ final class Console extends AbstractAction
         // Build a Bash-safe string for execution while preserving argv semantics.
         // We join with escapeshellarg to avoid shell injection in preview/execute.
         $code = implode(' ', array_map('escapeshellarg', $argv));
-
+        if ($this->postfix) {
+            $code .= ' ' . $this->postfix;
+        }
         // Prefer running with env + cwd through Bash action (shared runner, unified logging).
-        $bash = new Bash($code, $this->note, $this->cwd, $this->env);
+        $bash = new Bash($code, $this->note, $this->cwd, a: $this->a);
         $bash->execute($ctx, $dryRun);
     }
 

@@ -39,7 +39,6 @@ final class OpenUrl extends AbstractAction
 
     public function viewTemplate(): string
     {
-        return __METHOD__;
-        // TODO: Implement viewTemplate() method.
+        return "artifact.html.twig";
     }
 }

@@ -3,7 +3,7 @@
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
-use function Castor\io;
+use function Castor\{io, context};
 
 /**
  * Show code from a path (presentational).
@@ -50,6 +50,8 @@ final class DisplayCode extends AbstractAction
 
     public function viewContext(): array
     {
+//        dd(context()->workingDirectory());
+//        dd($this);
 
         if (!file_exists($this->path)) {
             $code = "File $this->path does not exist. maybe run castor?";

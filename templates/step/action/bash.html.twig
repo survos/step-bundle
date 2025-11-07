@@ -1,17 +1,13 @@
+{# file: templates/step/action/bash.html.twig #}
 <div class="action action-bash card shadow-sm mb-3">
-{#  <div class="card-header d-flex justify-content-between align-items-center">#}
-{#    <span class="fw-semibold">Bash</span>#}
-{#    {{ _self }}#}
-{#    {% if command %}<code class="small text-muted">cwd: {{ command }}</code>{% endif %}#}
-{#  </div>#}
   <div class="card-body">
     {% if note %}<p class="mb-2">{{ note }}</p>{% endif %}
-    <pre class="mb-0"><code class="language-{{ lang|default('bash') }}">{{ code }}</code></pre>
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span class="fw-semibold">Artifact</span>
-      @todo: reveal the artifact
-{#      {% if command %}<code class="small text-muted">cwd: {{ command }}</code>{% endif %}#}
-    </div>
+    <pre class="terminal"><code class="language-{{ action.highlightLanguage|default('bash') }}">{{ action.command|raw }}</code></pre>
+    {% if action.a %}
+      {{ dump(action) }}
+      <div class="card-header d-flex justify-content-between align-items-center mt-2">
+        <span class="fw-semibold">{{ action.a }}</span>
+      </div>
+    {% endif %}
   </div>
-
 </div>

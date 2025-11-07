@@ -7,12 +7,14 @@ use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
 use Survos\StepBundle\Renderer\DebugActionRenderer;
 use Survos\StepBundle\Renderer\RevealActionRenderer;
+use Survos\StepBundle\Service\ArtifactLocator;
 use Survos\StepBundle\Service\CastorLogLocator;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Survos\StepBundle\Twig\StepRuntimeExtension;
 use Survos\StepBundle\Util\ArtifactHelper;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
@@ -51,6 +53,26 @@ final class SurvosStepBundle extends AbstractBundle
         $builder->autowire(StepRuntimeExtension::class)
             ->setArgument('$projectDir', '%kernel.project_dir%')
             ->addTag('twig.extension');
+
+// You can make this configurable; hard-code for brevity
+        $subpath = 'public/artifacts';
+
+        $def = new Definition(ArtifactLocator::class);
+        // Call the static factory: ArtifactLocator::fromKernel(KernelInterface $kernel, string $subpath)
+        $def->setFactory([ArtifactLocator::class, 'fromKernel']);
+        // Arguments are passed to the FACTORY method, in order
+        $def->setArguments([
+            new Reference('kernel'),   // KernelInterface
+            $subpath,                  // string $subpath
+        ]);
+
+        // Visibility/autowiring
+        $def->setPublic(false);       // typical for services
+        $def->setAutowired(false);    // not used because we’re using a factory
+        $def->setAutoconfigured(true);
+
+        $builder    ->setDefinition(ArtifactLocator::class, $def);
+
 
         foreach ([DebugActionRenderer::class, RevealActionRenderer::class] as $class) {
             $builder->autowire($class)

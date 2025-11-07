@@ -22,6 +22,7 @@ final class YamlWrite extends AbstractAction
         public int $inline = 4,
         public ?string $note = null,
         public ?string $content = null, // raw YAML
+        public ?string $a = null, // artifact ID
     ) {}
 
     public function summary(): string
