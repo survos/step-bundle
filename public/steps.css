@@ -1,5 +1,22 @@
 /* File: public/steps.css */
 
+:root{--bg:#0f1320;--panel:#171b2b;--muted:#8aa0b4;--text:#e7eef7;--accent:#74c0fc;--ok:#51cf66}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Roboto,Arial}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#24304b;color:var(--muted);font-size:12px}
+.panel{background:#0b0e18;border:1px solid #1f2540;border-radius:8px;margin:12px 0}
+.panel>header{padding:8px 10px;border-bottom:1px solid #1f2540;color:var(--muted);font-size:12px}
+.panel .content{padding:10px;overflow:auto}
+.slide{background:var(--panel);border-radius:10px;margin:18px 0;border:1px solid #1f2540}
+.slide header{padding:12px 14px;border-bottom:1px solid #1f2540;display:flex;justify-content:space-between}
+.slide .body{padding:14px}
+.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.pill{padding:2px 8px;border:1px solid #30405e;border-radius:999px;color:var(--muted);font-size:12px;display:inline-block;margin-left:.5rem}
+pre{white-space:pre-wrap;background:#0b0e18;border-radius:6px;padding:10px;overflow:auto}
+details>summary{cursor:pointer}
+
 /* Wider stage: let sections fill; we hide scrollbars in content/code only */
 .reveal, .reveal .slides, .reveal .slides section { height: 100%; overflow: visible !important; }
 

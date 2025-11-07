@@ -37,7 +37,8 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
             'action' => $action,
             'renderer' => $this->getName(),
         ]);
-
+        return $html;
+        // only if debug is enabled?
         return $this->wrapOutput($html, $action, $template, $renderData);
     }
 

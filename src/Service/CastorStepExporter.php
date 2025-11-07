@@ -104,6 +104,7 @@ final class CastorStepExporter
             // Append steps in the same order they are declared on the function
             foreach ($steps as $idx => $step) {
                 $actions = [];
+                $artifacts = [];
                 foreach ($step->actions as $action) {
                     $action->project = $this->requestStack->getCurrentRequest()->attributes->get('code');
                     $action->artifactLocator = $this->artifactLocator;
@@ -111,6 +112,13 @@ final class CastorStepExporter
                     if ($action->artifactId) {
                         $content = $this->artifactLocator->read($action->project, $action->a);
                         $action->artifact = $content;
+                        $artifacts[] = [
+                            'name' => $action->a,
+                            'mtime' => null, // @todo
+                            'size' => $content ? strlen($content): 0,
+                            'path' => $this->artifactLocator->absolute($action->project, $action->a),
+                            'contents' => $content,
+                        ];
                     }
                 }
                 $step->actions = $actions;
@@ -131,7 +139,7 @@ final class CastorStepExporter
                     'image'       => $step->image,
                     'notes'       => array_values($step->notes),
 //                    'actions'     => $this->serializeActions($step->actions, $taskName, $step->title),
-                    'artifacts'   => $this->findSlideArtifacts($taskName, $step->title),
+                    'artifacts'   => $artifacts, //  $this->findSlideArtifacts($taskName, $step->title),
                 ];
             }
         }
