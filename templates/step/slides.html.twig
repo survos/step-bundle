@@ -38,10 +38,11 @@
                                 <div class="card-body">
                                     <pre>
                                         <code class="language-bash" data-trim data-noescape>
-                                            symfony new ea-demo --webapp --version=7.3
-                                            cd ea-demo
+                                            symfony new {{ code }}-demo --webapp --version=7.3
+                                            cd {{ code }}-demo
+                                            symfony proxy:domain:attach {{ code }}
                                             symfony server:start -d
-                                            open http://127.0.0.1:8000
+                                            open https://{{ code }}.wip
                                         </code>
                                     </pre>
                                 </div>
