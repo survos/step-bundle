@@ -26,6 +26,7 @@ final class DisplayCode extends AbstractAction
 
     public function toCommand(): ?string
     {
+
 //        if (!file_exists($this->path)) {
 //            io()->writeln(sprintf("Display contents of %s when it exists", $this->path)));
 //        }
@@ -53,11 +54,13 @@ final class DisplayCode extends AbstractAction
 //        dd(context()->workingDirectory());
 //        dd($this);
 
+
         if (!file_exists($this->path)) {
             $code = "File $this->path does not exist. maybe run castor?";
         } else {
             $code = file_get_contents($this->path);
         }
+
         return [
             'path' => $this->path,
             'code' => $code,

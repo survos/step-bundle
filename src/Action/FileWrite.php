@@ -3,8 +3,10 @@
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
+use Survos\StepBundle\Util\ArtifactHelper;
 use Survos\StepBundle\Util\PathUtil;
 use function Castor\io;
+use function Castor\task;
 
 /**
  * Write a file verbatim.
@@ -15,6 +17,7 @@ final class FileWrite extends AbstractAction
         public string $path,
         public string $content,
         public ?string $note = null,
+        public ?string $a = null,
     ) {}
 
     public function summary(): string
@@ -31,6 +34,13 @@ final class FileWrite extends AbstractAction
         }
         PathUtil::ensureDir(\dirname($abs));
         file_put_contents($abs, $this->content);
+
+        if ($this->a) {
+            $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
+            $artifactLocation = $helper->save($this->a, $this->content);
+            io()->writeln($artifactLocation . " written");
+        }
+
     }
 
     public function viewTemplate(): string { return 'display_code.html.twig'; }
