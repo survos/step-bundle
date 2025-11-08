@@ -10,6 +10,7 @@ use Castor\Event\ProcessCreatedEvent;
 use Castor\Event\ProcessStartEvent;
 use Castor\Event\ProcessTerminateEvent;
 use Survos\StepBundle\Slideshow\SlideshowJsonl as S;
+use function Castor\io;
 
 if (!function_exists(__NAMESPACE__ . '\\sjl_before_execute')) {
 
@@ -66,11 +67,13 @@ if (!function_exists(__NAMESPACE__ . '\\sjl_before_execute')) {
         S::append($rec, tokenCode: 'finish|' . ($runId ?? 'na') . '|' . $task->getName(), code: $code);
 
         // Friendly hint (stderr)
-        $uiUrl = "/castor/logs/{$code}";
-        $hint = "📼 Slideshow JSONL: {$jsonlPath}\n".
+        if (io()->isVerbose()) {
+            $uiUrl = "/castor/logs/{$code}";
+            $hint = "📼 Slideshow JSONL: {$jsonlPath}\n".
                 "    UI: {$uiUrl}\n".
                 "    tail: tail -n +1 {$jsonlPath} | jq";
-        \fwrite(\STDERR, $hint . "\n");
+            \fwrite(\STDERR, $hint . "\n");
+        }
     }
 
     #[AsListener(ProcessCreatedEvent::class)]
