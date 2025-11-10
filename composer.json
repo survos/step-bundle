@@ -29,5 +29,8 @@
         "allow-plugins": {
             "survos/installer": true
         }
+    },
+    "require-dev": {
+        "symfony/panther": "^2.2"
     }
 }

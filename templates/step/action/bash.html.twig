@@ -1,11 +1,16 @@
 {# file: templates/step/action/bash.html.twig #}
 <div class="action action-bash card">
     <div class="card-body">
-        {% if note %}
-        <p class="mb-3 mt-0 text-start">{{ note }}</p>
+        {% if action.note %}
+        <p class="mb-3 mt-0 text-start">{{ action.note }}</p>
         {% endif %}
         <pre>
-            <code class="language-{{ action.highlightLanguage|default('bash') }}" data-trim data-noescape>{{ action.command|raw }}</code>
+            <code class="language-{{ action.highlightLanguage|default('bash') }}"
+                  data-trim data-noescape>
+                {% for command in action.commands %}
+                {{ command }}
+                {% endfor %}
+            </code>
         </pre>
         {% if action.a %}
         <div class="text-start mt-3">

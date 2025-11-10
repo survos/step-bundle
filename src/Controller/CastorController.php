@@ -84,7 +84,7 @@ final class CastorController extends AbstractController
             $template = '@SurvosStep/step/debug.html.twig';
 
         }
-        $deck = $this->exporter->exportSlides($code, $requestStack);
+        $deck = $this->exporter->exportSlides($code);
         $slides = $deck['slides'] ?? [];
 
         return $this->render($template, [

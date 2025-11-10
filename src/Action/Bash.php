@@ -12,11 +12,16 @@ use function Castor\{io,run,task};
 final class Bash extends AbstractAction
 {
     public function __construct(
-        public string $command,
+        public ?string $command=null,
         public ?string $note = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
-    ) {}
+        public array $commands=[], // to put them all on one slide
+    ) {
+        if ($command) {
+            $this->commands = [$command];
+        }
+    }
 
     public string $highlightLanguage = 'bash';
     public ?string $artifact = null; // the content
@@ -34,13 +39,18 @@ final class Bash extends AbstractAction
             return;
         }
         try {
-            $output = run($this->command, context: $execCtx, callback: fn($type, $buffer) => io()->write($buffer));
-            // @todo: move this to castor listener
-            $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
-            if ($this->a) {
-                $artifactLocation = $helper->save($this->a, $output->getOutput());
-                io()->writeln($artifactLocation . " written");
+            foreach ($this->commands as $command) {
+//                run($command, context: $execCtx);
+                // artifact doesn't work right if multiple commands are run in one slide
+                $output = run($command, context: $execCtx, callback: fn($type, $buffer) => io()->write($buffer));
+                // @todo: move this to castor listener
+                $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
+                if ($this->a) {
+                    $artifactLocation = $helper->save($this->a, $output->getOutput());
+                    io()->writeln($artifactLocation . " written");
+                }
             }
+
 
         } catch (\Throwable $e) {
             dd($e);

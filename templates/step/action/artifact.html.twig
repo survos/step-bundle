@@ -1,12 +1,15 @@
 {# file: templates/step/action/artifact.html.twig #}
-<div class="action action-code card">
-{#  <div class="card-header d-flex justify-content-between align-items-center">#}
-{#      <span class="fw-bold text-muted">Code</span>#}
-{#      {% if path %}#}
-{#      <code class="text-muted">{{ path }}</code>#}
-{#      {% endif %}#}
-{#  </div>#}
-    <div class="card-body">
-        This is where the artifact will go.
+{% if action.artifactId %}
+    <div class="action action-code card">
+        {#  <div class="card-header d-flex justify-content-between align-items-center"> #}
+        {#      <span class="fw-bold text-muted">Code</span> #}
+        {#      {% if path %} #}
+        {#      <code class="text-muted">{{ path }}</code> #}
+        {#      {% endif %} #}
+        {#  </div> #}
+        <div class="card-body">
+            {#        {{ dump(action.artifactLocator.publishPath(action.artifactId)) }} #}
+            This is where the artifact will go.
+        </div>
     </div>
-</div>
+{% endif %}

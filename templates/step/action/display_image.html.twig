@@ -1,0 +1,13 @@
+{# file: templates/step/action/display_image.html.twig #}
+<div class="action action-code card">
+    <div class="card-body">
+        {% if note %}
+        <p class="mb-3 mt-0 text-start">{{ note }}</p>
+        {% endif %}
+        {% set relativeUrl = action.artifactLocator.relative(action.project, action.path) %}
+        {# @todo: add divs for size, or a class #}
+        <img src="{{ relativeUrl }}" />
+
+{#        {{ dump(action.artifactLocator.publishPath(action.path)) }}#}
+    </div>
+</div>

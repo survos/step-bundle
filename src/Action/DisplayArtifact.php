@@ -46,10 +46,15 @@ final class DisplayArtifact extends AbstractAction
         $artifact = artifact($this->path);
         // No side-effects; presentational.
         io()->writeln(sprintf('Display: %s', $this->path));
-        io()->writeln($artifact);
+        // @todo: check if image, show only a snippet, etc.
+//        io()->writeln($artifact);
     }
 
     public function viewTemplate(): string {
+        $ext = pathinfo($this->path, PATHINFO_EXTENSION);
+        if (in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'svg'])) {
+            return 'display_image.html.twig';
+        }
         return 'display_code.html.twig';
     }
 

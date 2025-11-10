@@ -55,11 +55,11 @@ final class CastorStepExporter
      * ['code'=>..., 'path'=>..., 'slides'=>[ ['task_name'=>..., 'title'=>..., 'actions'=>[], 'artifacts'=>[] ], ... ] ]
      * @return array{code:string,path:string,slides: list<array<string,mixed>>}
      */
-    public function exportSlides(string $code): array
+    public function exportSlides(?string $code=null, ?string $file=null): array
     {
-        $file = $this->resolveFileByCode($code);
+        $file = $file ?? $this->resolveFileByCode($code);
         if (!$file) {
-            throw new \RuntimeException("Slideshow '{$code}' not found");
+            throw new \RuntimeException("Slideshow '{$code}' $file not found");
         }
 
         // Include the castor file and detect only the functions it declares, then walk through those.
@@ -106,17 +106,17 @@ final class CastorStepExporter
                 $actions = [];
                 $artifacts = [];
                 foreach ($step->actions as $action) {
-                    $action->project = $this->requestStack->getCurrentRequest()->attributes->get('code');
+                    $action->project = $code ?? $this->requestStack->getCurrentRequest()->attributes->get('code');
                     $action->artifactLocator = $this->artifactLocator;
                     $actions[] = $action;
                     if ($action->artifactId) {
-                        $content = $this->artifactLocator->read($action->project, $action->a);
+                        $content = $this->artifactLocator?->read($action->project, $action->a);
                         $action->artifact = $content;
                         $artifacts[] = [
                             'name' => $action->a,
                             'mtime' => null, // @todo
                             'size' => $content ? strlen($content): 0,
-                            'path' => $this->artifactLocator->absolute($action->project, $action->a),
+                            'path' => $this->artifactLocator?->absolute($action->project, $action->a),
                             'contents' => $content,
                         ];
                     }

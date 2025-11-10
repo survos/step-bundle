@@ -53,6 +53,12 @@ final class ArtifactLocator
     {
         return Path::join($this->projectDir, $this->subpath, $projectCode, ltrim($rel, '/'));
     }
+    public function relative(string $projectCode, string $rel): string
+    {
+        return str_replace('public', '',
+            Path::join($this->subpath, $projectCode, ltrim($rel, '/'))
+        );
+    }
 
     public function exists(string $projectCode, string $rel): bool
     {
@@ -80,4 +86,16 @@ final class ArtifactLocator
     {
         return str_replace(DIRECTORY_SEPARATOR, '/', substr($absPath, strlen($this->projectDir)));
     }
+
+    // relative to /public, for image tags
+    public function baseDir(): string
+    {
+        // hack!
+        return $this->subpath;
+    }
+    public function publicPath(): string
+    {
+        return $this->projectDir;
+    }
+
 }
