@@ -34,7 +34,7 @@
                             <div class="slide-step">bash</div>
                         </header>
                         <div class="slide-content">
-                            <div class="card">
+                            <div class="action action-generic card">
                                 <div class="card-body">
                                     <pre>
                                         <code class="language-bash" data-trim data-noescape>
@@ -69,10 +69,10 @@
                             {% set step = slide.step %}
                             {% set task = slide.task %}
                             {% if slide.description %}
-                            <p class="slide-description mb-3">{{ slide.description }}</p>
+                            <p class="slide-description">{{ slide.description }}</p>
                             {% endif %}
                             {% if slide.bullets %}
-                            <ul class="slide-bullets mb-3">
+                            <ul class="slide-bullets">
                                 {% for b in slide.bullets %}
                                 <li>{{ b }}</li>
                                 {% endfor %}

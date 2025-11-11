@@ -1,93 +1,16 @@
-/* HUD (kept minimal; you can replace with your bundle css later) */
-.slide-hud {
-    position: fixed;
-    left: 1rem;
-    right: 1rem;
-    bottom: .75rem;
-    z-index: 9999;
-    display: flex;
-    gap: .5rem;
-    align-items: center;
-    justify-content: flex-start;
-    font: 500 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    background: rgba(255, 255, 255, .9);
-    border: 1px solid rgba(0, 0, 0, .08);
-    border-radius: .5rem;
-    padding: .5rem .75rem;
-    backdrop-filter: blur(6px);
-    min-height: 40px;
-}
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
 
-.slide-hud .hud-link {
-    text-decoration: none;
-    color: #333;
-}
-
-.slide-hud .hud-link:hover {
-    text-decoration: underline;
-}
-
-.slide-hud .hud-sep {
-    opacity: .5;
-}
-
-.slide-hud .hud-label {
-    font-weight: 600;
-}
-
-.slide-hud .hud-copy {
-    margin-left: auto;
-    padding: .35rem .6rem;
-    border-radius: .4rem;
-    border: 1px solid rgba(0, 0, 0, .12);
-    background: #f9f9f9;
-}
-
-/* Lists */
-.reveal ul, .reveal ol {
-
-}
-.reveal li {
-    line-height: 1.3;
-    margin: 4px 0;
-}
-
-/* “Next” hint — small, bottom-right */
-.next-hint {
-    background: rgba(0, 0, 0, 0.75);
-    border-radius: 999px;
-    bottom: 0.25rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    color: #FFFFFF;
-    display: none;
-    font-size: 0.75rem;
-    gap: 0.25rem;
-    padding: 6px 10px;
-    position: absolute;
-    right: 0.25rem;
-}
-.next-hint .arrow {
-    font-size: 1rem;
-    line-height: 0;
-    margin-left: 6px;
-    opacity: 0.75;
-}
-
-/* Print */
-@media print{
-    .reveal .controls, .reveal .progress, .reveal .overview, .reveal .slide-number{
-        display: none !important;
-    }
-    pre code{
-        font-size: 10pt !important;
-    }
-}
-
+/* Reveal */
 :root {
     --r-background-color: #F4F2EE;
-    --r-heading-font: var(--r-main-font);
     --r-main-font: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     --r-main-font-size: 16px;
+    --r-heading-font: var(--r-main-font);
+    --r-heading-margin: 0 0 24px 0;
+}
+
+.reveal-viewport {
+    background-image: radial-gradient(circle at 20% 80%, rgba(255, 182, 153, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 244, 214, 0.5) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(255, 182, 153, 0.1) 0%, transparent 50%);
 }
 
 .reveal .slides {
@@ -96,21 +19,28 @@
     scrollbar-width: none;
 }
 
+.reveal-viewport.reveal-scroll .slides {
+    padding: 0 16px;
+}
+
 .reveal .slides > section {
-    padding: 16px;
+    padding-bottom: 96px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
 }
 
 .reveal .progress {
     background-color: rgba(0, 0, 0, 0.15);
     bottom: auto;
-    color: #000000;
+    color: #222222;
     height: 4px;
     top: 0;
 }
 
 .reveal .controls {
     bottom: 48px;
-    color: #000000;
+    color: #222222;
     font-size: 8px;
     right: 16px;
 }
@@ -124,30 +54,8 @@
     bottom: 2.7em;
 }
 
-.slide-header {
-    margin-top: 16px;
-}
-
-.slide-task {
-    font-size: 40px !important;
-    font-weight: 900 !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-}
-
-.slide-step {
-    font-size: 24px !important;
-    font-weight: 200 !important;
-    line-height: 1 !important;
-    margin-top: 16px !important;
-}
-
-.slide-content {
-    margin-top: 16px;
-}
-
 .reveal .code-wrapper {
-    background-color: var(--r-background-color);
+    background-color: transparent;
     box-shadow: none;
     font-size: 1rem;
     margin: 0;
@@ -155,20 +63,165 @@
     width: 100%;
 }
 
-.reveal .hljs {
-    background-color: var(--r-background-color);
-    padding: 1rem;
+.reveal pre code {
+    max-height: auto;
 }
 
-.action + .action {
+.reveal .hljs {
+    background-color: transparent;
+    padding: 0;
+}
+
+.reveal .btn:hover {
+    color: #FFFFFF;
+}
+
+/* Slide */
+.slide-shell {
+    position: relative;
+}
+
+.slide-shell .slide-header {
     margin-top: 16px;
 }
 
-.reveal dd {
-    margin-bottom: revert !important;
-    margin-left: revert !important;
+.slide-shell .slide-content {
+    margin-top: 16px;
 }
 
-pre code {
-    color: initial !important;
+.slide-shell .slide-footer {
+    margin-top: 16px;
+}
+
+.slide-shell h2.slide-task {
+    font-family: Bricolage Grotesque, Georgia, Times New Roman, Times, serif;
+    font-size: 40px;
+    font-weight: 900;
+    margin: 0;
+    position: relative;
+    text-transform: lowercase;
+}
+
+.slide-shell h2.slide-task::after {
+    background: linear-gradient(to right, transparent, #A59087, #3C2B24, #A59087, transparent);
+    content: '';
+    height: 4px;
+    left: 0;
+    position: absolute;
+    top: calc(100% + 8px);
+    width: 100%;
+}
+
+.slide-shell .slide-step {
+    font-size: 24px;
+    font-weight: 200;
+    line-height: 1;
+    margin-top: 24px;
+}
+
+.slide-shell .slide-description {
+    margin-bottom: 0;
+    margin-top: 16px;
+}
+
+.slide-shell .slide-description + .slide-bullets {
+    margin-top: 8px;
+}
+
+.slide-shell .slide-bullets {
+    line-height: 1.5;
+    margin: 0;
+    padding-left: 40px;
+}
+
+.slide-shell .slide-bullets li {
+    margin: 4px 0;
+}
+
+.slide-shell .card {
+    --tblr-card-bg: rgba(255, 255, 255, 0.5);
+    --tblr-card-box-shadow: none;
+    border: none;
+}
+
+.action {
+    margin-top: 16px;
+}
+
+/* HUD */
+.slide-hud {
+    align-items: center;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    bottom: 0.75rem;
+    display: flex;
+    font-size: 14px;
+    font-weight: 500;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    left: 1rem;
+    min-height: 40px;
+    padding: 0.5rem 0.75rem;
+    position: fixed;
+    right: 1rem;
+    z-index: 9999;
+}
+
+.slide-hud .hud-label {
+    font-weight: 600;
+}
+
+.slide-hud .hud-link {
+    color: #333333;
+    text-decoration: none;
+}
+
+.slide-hud .hud-link:hover {
+    text-decoration: underline;
+}
+
+.slide-hud .hud-sep {
+    opacity: 0.5;
+}
+
+.slide-hud .hud-copy {
+    background: #F9F9F9;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 0.4rem;
+    margin-left: auto;
+    padding: 0.35rem 0.6rem;
+}
+
+/* Next Hint */
+.next-hint {
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: #FFFFFF;
+    display: block;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+    margin-left: auto;
+    margin-top: 8px;
+    padding: 6px 10px;
+    width: max-content;
+}
+
+.next-hint .arrow {
+    font-size: 1rem;
+    line-height: 0;
+    margin-left: 6px;
+    opacity: 0.75;
+}
+
+/* Print */
+@media print{
+    .reveal .controls, .reveal .progress, .reveal .overview, .reveal .slide-number{
+        display: none;
+    }
+    pre code{
+        font-size: 10pt;
+    }
 }
