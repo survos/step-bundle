@@ -53,7 +53,9 @@ final class Bash extends AbstractAction
 
 
         } catch (\Throwable $e) {
-            dd($e);
+            io()->writeln($e->getMessage());
+            io()->error($command);
+            exit();
         }
 
     }

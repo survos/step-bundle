@@ -36,7 +36,7 @@ final class Artifact extends AbstractAction
         if (file_exists($sourceFilename)) {
             $content = file_get_contents($sourceFilename);
             $artifactFilename = $helper->save($this->sourcePath, $content);
-            dd($artifactFilename, $this->sourcePath, $this->asName);
+//            dd($artifactFilename, $this->sourcePath, $this->asName);
             io()->writeln($artifactFilename . " written");
         } else {
             $content = run("cat $sourceFilename does not exist");

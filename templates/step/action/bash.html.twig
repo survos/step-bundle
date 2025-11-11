@@ -6,10 +6,8 @@
         {% endif %}
         <pre>
             <code class="language-{{ action.highlightLanguage|default('bash') }}"
-                  data-trim data-noescape>
-                {% for command in action.commands %}
-                {{ command }}
-                {% endfor %}
+                  data-trim data-noescape>{% for command in action.commands %}{{ command }}
+{% endfor %}
             </code>
         </pre>
         {% if action.a %}
