@@ -15,9 +15,7 @@
         {% if note %}
         <p class="mb-3 mt-0 text-start">{{ note }}</p>
         {% endif %}
-        <pre>
-            <code class="language-bash" data-trim data-noescape>{{ code|raw }}</code>
-        </pre>
+        <pre><code class="language-bash" data-trim data-noescape>{{ code|raw }}</code></pre>
         {% if false and cwd %}
         <dl class="row ms-0 mt-3 w-100">
             <dt class="col-3">CWD</dt>

@@ -4,10 +4,8 @@
         {% if note %}
         <p class="mb-3 mt-0 text-start">{{ note }}</p>
         {% endif %}
-        {{ action.artifactLocator.relative(action.project, action.path) }}
+        <div class="mb-3">{{ action.artifactLocator.relative(action.project, action.path) }}</div>
 {#        {{ dump(action.artifactLocator.publishPath(action.path)) }}#}
-        <pre>
-            <code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code>
-        </pre>
+        <pre><code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code></pre>
     </div>
 </div>

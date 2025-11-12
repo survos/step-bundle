@@ -123,3 +123,162 @@ details>summary{cursor:pointer}
 .slides section.compact-1 { font-size: 0.95em; }
 .slides section.compact-2 { font-size: 0.9em;  }
 .slides section.compact-3 { font-size: 0.85em; }
+
+.vertical-align-middle {
+    vertical-align: middle;
+}
+
+.slide header {
+    align-items: center;
+    padding: 16px;
+}
+
+img {
+    display: block;
+    border-radius: 4px;
+    height: auto;
+    max-width: 100%;
+    width: 100%;
+}
+
+.hljs {
+    background: #161C2F;
+    border-radius: 4px;
+}
+
+.action pre {
+    font-size: 1rem;
+}
+
+.slide > header > h2 {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+}
+
+.slide > header .task-description {
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.slide .bullets {
+    margin: 0;
+    padding-inline-start: 16px;
+}
+
+.bullets li + li {
+    margin-top: 2px;
+}
+
+.panel {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.panel + .panel {
+    margin-top: 16px;
+}
+
+.cols {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 12px;
+    min-width: 0;
+}
+
+.cols > .panel {
+    margin: 0;
+}
+
+.panel + .cols {
+    margin-top: 16px;
+}
+
+.slide {
+    margin: 16px 0;
+}
+
+.slide .body {
+    padding: 16px;
+}
+
+.panel .content {
+    padding: 16px;
+}
+
+details pre {
+    margin: 16px 0;
+    padding: 0;
+}
+
+details > summary {
+    margin-bottom: 16px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #191C33;
+    border-radius: 8px;
+    background-color: transparent;
+}
+
+.card-header,
+.card-footer {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #191C33;
+}
+
+.card-footer {
+    border-top: 1px solid #191C33;
+    border-bottom: 0;
+}
+
+.card-body {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.card > :first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.card > :last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+.action-text > code {
+    display: block;
+    text-align: center;
+}
+
+code + .action.card {
+    margin-top: 8px;
+}
+
+.action:not(.card) + .action:not(.card) {
+    margin-top: 16px;
+}
+
+.card-body pre {
+    margin: 0;
+    padding: 0;
+}
+
+.mb-3 {
+    margin-bottom: 8px;
+}
+
+.mt-3 {
+    margin-top: 8px;
+}
+
+pre {
+    white-space: pre;
+    overflow-x: auto;
+    display: block;
+    max-width: 100%;
+}

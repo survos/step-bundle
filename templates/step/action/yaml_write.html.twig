@@ -10,9 +10,7 @@
         {% if note %}
         <p class="mb-3 mt-0 text-start">{{ note }}</p>
         {% endif %}
-        <pre>
-            <code class="language-yaml" data-trim data-noescape>{{ code }}</code>
-        </pre>
+        <pre><code class="language-yaml" data-trim data-noescape>{{ code }}</code></pre>
         {% if merge is defined %}
         <div class="mt-2 small text-muted">{{ merge ? 'Merge' : 'Replace' }}</div>
         {% endif %}

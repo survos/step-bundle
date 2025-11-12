@@ -5,12 +5,13 @@
   <meta charset="utf-8">
   <title>[DEBUG] {{ code }} — Slides</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
   <link href="{{ asset('bundles/survosstep/steps.css') }}" rel="stylesheet" />
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    <h1>[DEBUG] Slides for <span class="badge">{{ code }}</span></h1>
+    <h1>[DEBUG] Slides for <span class="badge vertical-align-middle">{{ code }}</span></h1>
     <div>
       <a href="{{ path('app_home') }}" target="_blank" class="badge">Home</a>
       <a href="{{ json_url }}" target="_blank" class="badge">Deck JSON</a>
@@ -33,7 +34,13 @@
 
     <section class="slide" id="slide-{{ loop.index }}">
       <header>
-        <h2>{{ loop.index }}. {{ task.name }} / {{ slideTitle }}</h2>
+        <h2>
+          <div>{{ loop.index }}.</div>
+          <div>
+            <div>{{ task.name }}</div>
+            <div class="task-description">{{ slideTitle }}</div>
+          </div>
+        </h2>
 {#          {{ dump(task, step) }}#}
         <div>
           <span class="pill">{{ taskName }}</span>
@@ -43,13 +50,13 @@
       </header>
 
       <div class="body">
-          {{ dump(slide) }}
+          {#{{ dump(slide) }}#}
         {% if slide.description %}
           <div class="panel"><header>Description</header><div class="content">{{ slide.description }}</div></div>
         {% endif %}
         {% if slide.bullets %}
           <div class="panel"><header>Bullets</header>
-            <div class="content"><ul>{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul></div>
+            <div class="content"><ul class="bullets">{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul></div>
           </div>
         {% endif %}
 
@@ -68,10 +75,10 @@
 {#const greeting = "Hello World!";#}
 {#console.log(greeting);#}
 {#</code></pre>#}
-                {{ dump(step.bullets) }}
+                {#{{ dump(step.bullets) }}#}
               {% if step.actions %}
                 {% for a in step.actions %}
-                  <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}" style="margin-bottom:10px">
+                  <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
 {#                    {{ dump(_context, a) }}#}
                     <code>{{ a|short_class }}</code>
                     {{ render_action(a, renderer)|raw }}
@@ -97,8 +104,30 @@
                     <span class="pill">{{ (f.size/1024)|number_format(1) }} KB</span>
                     <span class="pill">{{ f.mtime|date('H:i:s') }}</span>
                   </summary>
-                  {% if f.contents is not null %}
+                  {#{% if f.contents is not null %}
                     <pre><code class="language-text">{{ f.contents }}</code></pre>
+                  {% endif %}#}
+                  {% if f.contents is not null %}
+                    {# Detect file extension #}
+                    {% set ext = f.name|split('.')|last|lower %}
+
+                    {# Determine MIME type #}
+                    {% if ext == 'png' %}
+                      {% set mime = 'image/png' %}
+                    {% elseif ext in ['jpg', 'jpeg'] %}
+                      {% set mime = 'image/jpeg' %}
+                    {% else %}
+                      {% set mime = 'text/plain' %}
+                    {% endif %}
+
+                    {# Render image or text depending on type #}
+                    {% if mime starts with 'image/' %}
+                      {% if f.contents is not empty %}
+                        <img src="{{ f.contents|data_uri(mime) }}" alt="{{ f.name }}">
+                      {% endif %}
+                    {% else %}
+                      <pre><code class="language-text">{{ f.contents }}</code></pre>
+                    {% endif %}
                   {% endif %}
                 </details>
               {% endfor %}
@@ -110,5 +139,14 @@
     </section>
   {% endfor %}
 </div>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      hljs.highlightAll();
+    });
+  </script>
+
 </body>
 </html>

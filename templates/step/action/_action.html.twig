@@ -5,9 +5,7 @@
     <p class="mb-3 mt-0 text-start">{{ note }}</p>
     {% endif %}
     {% if code is defined and code %}
-    <pre>
-        <code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code>
-    </pre>
+    <pre><code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code></pre>
     {% else %}
     <div class="text-muted fst-italic">No content</div>
     {% endif %}
