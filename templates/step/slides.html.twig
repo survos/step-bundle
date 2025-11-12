@@ -6,6 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.css" />
 
         <title>{{ code|default('Steps') }} — Slides</title>
 
@@ -17,6 +18,12 @@
         <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">
 
         {% block javascripts %}
+{#            <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.js"></script>#}
+{#            <script type="module">#}
+{#                console.log("Player");#}
+
+{#                // Create player#}
+{#            </script>#}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
@@ -47,6 +54,11 @@
                                     </pre>
                                 </div>
                             </div>
+                            player
+                            <div id="demo">
+                                DEMO here
+                            </div>
+{#                            <asciinema-player src="/test.cast"></asciinema-player>#}
                         </div>
                         <div class="slide-footer"></div>
                         <div class="next-hint">next ▶ Explain this step <span class="arrow">›</span></div>
