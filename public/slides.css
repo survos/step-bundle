@@ -39,7 +39,7 @@
 }
 
 .reveal .controls {
-    bottom: 48px;
+    bottom: 60px;
     color: #222222;
     font-size: 8px;
     right: 16px;
@@ -64,16 +64,21 @@
 }
 
 .reveal pre code {
-    max-height: auto;
+    max-height: 100%;
 }
 
 .reveal .hljs {
     background-color: transparent;
+    line-height: 1.5;
     padding: 0;
 }
 
 .reveal .btn:hover {
     color: #FFFFFF;
+}
+
+.reveal .fragment {
+    transition: opacity 0.35s ease;
 }
 
 /* Slide */
@@ -95,15 +100,16 @@
 
 .slide-shell h2.slide-task {
     font-family: Bricolage Grotesque, Georgia, Times New Roman, Times, serif;
-    font-size: 40px;
+    font-size: 48px;
     font-weight: 900;
     margin: 0;
     position: relative;
+    text-align: start;
     text-transform: lowercase;
 }
 
 .slide-shell h2.slide-task::after {
-    background: linear-gradient(to right, transparent, #A59087, #3C2B24, #A59087, transparent);
+    background: linear-gradient(to right, #3C2B24, #A59087, transparent);
     content: '';
     height: 4px;
     left: 0;
@@ -113,13 +119,14 @@
 }
 
 .slide-shell .slide-step {
-    font-size: 24px;
+    font-size: 40px;
     font-weight: 200;
     line-height: 1;
     margin-top: 24px;
 }
 
 .slide-shell .slide-description {
+    font-size: 24px;
     margin-bottom: 0;
     margin-top: 16px;
 }
@@ -129,6 +136,7 @@
 }
 
 .slide-shell .slide-bullets {
+    font-size: 24px;
     line-height: 1.5;
     margin: 0;
     padding-left: 40px;
@@ -148,6 +156,13 @@
     margin-top: 16px;
 }
 
+.slide-shell img {
+    border-radius: calc(var(--tblr-card-border-radius) / 2);
+    margin: 0;
+    max-height: 100%;
+    max-width: 100%;
+}
+
 /* HUD */
 .slide-hud {
     align-items: center;
@@ -163,7 +178,7 @@
     justify-content: flex-start;
     left: 1rem;
     min-height: 40px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 0.75rem;
     position: fixed;
     right: 1rem;
     z-index: 9999;
@@ -204,7 +219,6 @@
     font-size: 0.75rem;
     gap: 0.25rem;
     margin-left: auto;
-    margin-top: 8px;
     padding: 6px 10px;
     width: max-content;
 }

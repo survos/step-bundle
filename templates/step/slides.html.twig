@@ -61,7 +61,6 @@
 {#                            <asciinema-player src="/test.cast"></asciinema-player>#}
                         </div>
                         <div class="slide-footer"></div>
-                        <div class="next-hint">next ▶ Explain this step <span class="arrow">›</span></div>
                     </div>
                 </section>
 
@@ -86,7 +85,7 @@
                             {% if slide.bullets %}
                             <ul class="slide-bullets">
                                 {% for b in slide.bullets %}
-                                <li>{{ b }}</li>
+                                <li class="fragment">{{ b }}</li>
                                 {% endfor %}
                             </ul>
                             {% endif %}
@@ -101,10 +100,6 @@
                             {% endif %}
                         </div>
                         <footer class="slide-footer"></footer>
-                        <div class="next-hint">
-                            next ▶ {{ slide.next_hint|default('Explain this step') }}
-                            <span class="arrow">›</span>
-                        </div>
                     </div>
                 </section>
                 {% endfor %}
@@ -126,7 +121,34 @@
             <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
             <span class="hud-sep">*</span>
             <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+            <span class="next-hint">
+                next ▶ {{ slide.next_hint|default('Explain this step') }}
+                <span class="arrow">›</span>
+            </span>
         </div>
+
+        <!--
+        <script>
+            function initializeMutationObserver() {
+                const reveal = document.querySelector('.reveal');
+                const mutationObserver = new MutationObserver((mutations, observer) => {
+                    const controls = reveal.querySelector('.controls');
+                    if (controls) {
+                        const hud = document.querySelector('.slide-hud');
+                        if (hud) {
+                            hud.appendChild(controls);
+                        }
+                        observer.disconnect();
+                    }
+                });
+                mutationObserver.observe(reveal, { childList: true });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeMutationObserver();
+            });
+        </script>
+        -->
 
     </body>
 
