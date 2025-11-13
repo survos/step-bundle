@@ -4,7 +4,10 @@
         {% if action.note %}
         <p class="mb-3 mt-0 text-start">{{ action.note }}</p>
         {% endif %}
-        <pre><code class="language-{{ action.highlightLanguage|default('bash') }}" data-trim data-noescape>{% for command in action.commands %}{{ command }} {% endfor %}</code></pre>
+        <pre><code class="language-{{ action.highlightLanguage|default('bash') }}" data-trim data-noescape>
+{% for command in action.commands %}{{ command }}
+{% endfor %}
+            </code></pre>
         {% if action.a %}
         <div class="text-start mt-3">
             <span class="fw-semibold">{{ action.a }}</span>

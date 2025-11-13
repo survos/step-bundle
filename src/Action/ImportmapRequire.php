@@ -41,7 +41,7 @@ final class ImportmapRequire extends AbstractAction
     public function viewContext(): array
     {
         return [
-            'code' => 'php bin/console importmap:require ' .
+            'code' => 'bin/console importmap:require ' .
                       implode(' ', self::isAssoc($this->packages)
                         ? array_map(fn($n,$v)=>$v?("$n@$v"):$n, array_keys($this->packages), $this->packages)
                         : $this->packages),

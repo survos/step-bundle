@@ -66,7 +66,7 @@
 
                 {# Real slides (flattened server-side) #}
                 {% for slide in slides|default([]) %}
-                {% set slideTitle = slide.title|default('Step') %}
+                {% set slideTitle = slide.title|default(slide.task.description) %}
                 {% set taskName   = slide.task_name|default(code) %}
                 {% set __task_name  = taskName %}
                 {% set __step_title = slideTitle %}

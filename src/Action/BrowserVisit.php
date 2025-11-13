@@ -17,6 +17,7 @@ final class BrowserVisit extends AbstractAction
         public ?string $host = null,
         public bool $useProxy = false,
         public ?string $note = null,
+        public int $sleep = 1,
         public ?string $a = null,
     ) {}
 
@@ -27,13 +28,17 @@ final class BrowserVisit extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
+        $settings =  [
+            '--window-size=1024,2048',
+        ];
+        if (str_contains($this->host, '.wip')) {
+            $settings[] = '--proxy-server=http://127.0.0.1:7080';
+        }
+
         // using symfony/panther
         $client = Client::createChromeClient(
             null,
-            [
-                '--window-size=1500,4000',
-                '--proxy-server=http://127.0.0.1:7080'
-            ]
+            $settings,
         );
         $url = $this->host . $this->path;
 //        $host = parse_url($url, PHP_URL_HOST);
@@ -41,10 +46,11 @@ final class BrowserVisit extends AbstractAction
         $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
         if ($this->a) {
             $client->request('GET', $url);
-
+            sleep($this->sleep); // Wait 2 seconds for content to load
 //            $artifactLocation = $helper->save($this->a, $output->getOutput());
             $artifactLocation = artifact_path($this->a);
-            $client->takeScreenshot($artifactLocation);
+            $response = $client->takeScreenshot($artifactLocation);
+//            dd $artifactLocation);
             io()->writeln($artifactLocation . " written");
         } else {
             io()->error("No artifact name, why take a screenshot?");

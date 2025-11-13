@@ -104,4 +104,45 @@ final class EnvUtil
 
         return $toWrite;
     }
+
+    /**
+     * Perform a preg_replace on a file's contents.
+     * Returns the number of replacements made.
+     *
+     * Example:
+     * EnvUtil::pregReplaceInFile(
+     *     '#\[MeiliIndex\]#',
+     *     "#[MeiliIndex(\n    primaryKey: 'sku',\n    searchable: ['title','description']\n)]",
+     *     'src/Entity/Movie.php'
+     * );
+     */
+    public static function pregReplaceInFile(
+        string $pattern,
+        string $replacement,
+        string $filePath,
+        int $limit = -1
+    ): int {
+        if (!is_file($filePath)) {
+            throw new \RuntimeException("File does not exist: $filePath");
+        }
+
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read file: $filePath");
+        }
+
+        $newContent = preg_replace($pattern, $replacement, $content, $limit, $count);
+
+        if ($newContent === null) {
+            throw new \RuntimeException("preg_replace failed for pattern: $pattern");
+        }
+
+        if ($count > 0) {
+            if (file_put_contents($filePath, $newContent) === false) {
+                throw new \RuntimeException("Failed to write file: $filePath");
+            }
+        }
+
+        return $count;
+    }
 }

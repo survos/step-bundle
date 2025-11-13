@@ -21,7 +21,9 @@ final class CopyFile extends AbstractAction
         $target = context()->workingDirectory . '/' . $this->target;
         $targetDir = pathinfo($target, PATHINFO_DIRNAME);
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true);
+            if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $targetDir));
+            }
         }
         return sprintf('cp %s %s', $this->src, $this->target, );
     }

@@ -16,6 +16,7 @@ final class Bash extends AbstractAction
         public ?string $note = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
+        public bool $displayOnly = false, // for the slide but not the run
         public array $commands=[], // to put them all on one slide
     ) {
         if ($command) {

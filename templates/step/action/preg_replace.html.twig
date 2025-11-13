@@ -1,0 +1,22 @@
+{# file: templates/step/action/env.html.twig #}
+<div class="action action-bash card">
+    <div class="card-header d-flex justify-content-center align-items-center">
+        <span class="fw-bold">{{ action.file }}</span>
+    </div>
+    <div class="card-body">
+        {#  {% if command %}#}
+        {#  <code class="small text-muted">cwd: {{ command }}</code>#}
+        {#  {% endif %}#}
+        Replace
+        <pre><code class="language-{{ action.lang|default('bash') }}" data-trim data-noescape>
+                {{ action.pattern }}
+            </code>
+        </pre>
+
+        With
+        <pre><code class="language-{{ action.lang|default('bash') }}" data-trim data-noescape>
+                {{ action.replacement }}
+            </code>
+        </pre>
+    </div>
+</div>
