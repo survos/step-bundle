@@ -93,7 +93,7 @@
                             {% if step and step.actions %}
                             {% for a in step.actions %}
                             {# removed stray debug label: {{ a|short_class }} #}
-                            <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+                            <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} fragment">
                                 {{ render_action(a)|raw }}
                             </div>
                             {% endfor %}

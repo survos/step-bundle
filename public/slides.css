@@ -91,7 +91,7 @@
 }
 
 .slide-shell .slide-content {
-    margin-top: 16px;
+    margin-top: 24px;
 }
 
 .slide-shell .slide-footer {
@@ -123,12 +123,14 @@
     font-weight: 200;
     line-height: 1;
     margin-top: 24px;
+    text-align: start;
 }
 
 .slide-shell .slide-description {
     font-size: 24px;
     margin-bottom: 0;
     margin-top: 16px;
+    text-align: start;
 }
 
 .slide-shell .slide-description + .slide-bullets {
@@ -136,10 +138,12 @@
 }
 
 .slide-shell .slide-bullets {
+    display: block;
     font-size: 24px;
     line-height: 1.5;
     margin: 0;
-    padding-left: 40px;
+    padding-left: 64px;
+    text-align: start;
 }
 
 .slide-shell .slide-bullets li {
@@ -238,4 +242,8 @@
     pre code{
         font-size: 10pt;
     }
+}
+
+.slides div.ap-wrapper div.ap-player {
+    border-radius: 8px;
 }
