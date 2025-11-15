@@ -2,6 +2,33 @@
 {% block title %}Castor Steps{% endblock %}
 
 {% block body %}
+
+  {% types {
+    photo: "array{
+    id: int,
+    title: string,
+    description: string,
+    imageUrl: string,
+    thumbnailUrl: string,
+    dateTaken: string,
+    photographer: string,
+    tags: array,
+    location: array{
+      city: string,
+      country: string,
+      latitude: float,
+      longitude: float
+    }
+  }",
+    collection: "array{
+    name: string,
+    totalItems: int
+  }"
+  } %}
+
+  {{ collection. }}
+
+
   <div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
     <h1>Available Castor Runners</h1>
 

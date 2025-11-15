@@ -35,9 +35,10 @@ final class CopyFile extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
-        assert(false, "when do we even use execute?");
+        fs()->copy($this->src, $targetFile = context()->workingDirectory . '/' . $this->target);
+//        dd($this->src, $targetFile, file_get_contents($targetFile));
         // No side-effects; presentational.
-        io()->writeln(sprintf('Display: %s', $this->path));
+        io()->writeln(sprintf('Display: %s', realpath($targetFile)));
     }
 
     public function viewTemplate(): string { return 'display_code.html.twig'; }
