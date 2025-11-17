@@ -26,7 +26,6 @@
   }"
   } %}
 
-  {{ collection. }}
 
 
   <div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
@@ -35,7 +34,8 @@
     <a href="{{ path('run_castor') }}">Interactive Run Castor</a>
     <a href="{{ path('survos_castor_logs_index') }}">Logs</a>
 
-    {% for html in ['easyadmin','example'] %}
+
+    {% for html in ['easyadmin','example','ordered-elements'] %}
       <a href="/{{ html }}.html" target="_blank">{{ html }}</a>
     {% endfor %}
 

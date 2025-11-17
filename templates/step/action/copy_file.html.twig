@@ -1,0 +1,10 @@
+{# file: templates/step/action/display_code.html.twig #}
+<div class="action action-code card">
+    <div class="card-body">
+        {% if note %}
+        <p class="mb-3 mt-0 text-start">{{ note }}</p>
+        {% endif %}
+        copy {{ action.src }} to {{ action.target }}
+{#        <pre><code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code></pre>#}
+    </div>
+</div>

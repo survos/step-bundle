@@ -41,7 +41,7 @@ final class CopyFile extends AbstractAction
         io()->writeln(sprintf('Display: %s', realpath($targetFile)));
     }
 
-    public function viewTemplate(): string { return 'display_code.html.twig'; }
+    public function viewTemplate(): string { return 'copy_file.html.twig'; }
 
     public function viewContext(): array
     {
