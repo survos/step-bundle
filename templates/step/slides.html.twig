@@ -85,7 +85,7 @@
                             {% if slide.bullets %}
                             <ul class="slide-bullets">
                                 {% for b in slide.bullets %}
-                                <li class="fragment">{{ b }}</li>
+                                <li class="fragment custom">{{ b }}</li>
                                 {% endfor %}
                             </ul>
                             {% endif %}
@@ -121,34 +121,31 @@
             <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
             <span class="hud-sep">*</span>
             <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+            <button type="button" class="hud-link toggle-overview" title="Toggle Overview Mode" onclick="toggleSlidesOverview()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256">
+	                <path fill="currentColor" d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16M40 88h80v80H40Zm96-16V56h32v16Zm-16 0H88V56h32Zm0 112v16H88v-16Zm16 0h32v16h-32Zm0-16V88h80v80Zm80-96h-32V56h32ZM72 56v16H40V56ZM40 184h32v16H40Zm176 16h-32v-16h32z" />
+                </svg>
+            </button>
+            <button type="button" class="hud-link start-over" title="Start Over" onclick="slideStartOver()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+	                <path fill="currentColor" d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6c0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93c0-4.42-3.58-8-8-8m-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34A8 8 0 0 0 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91" />
+                </svg>
+            </button>
             <span class="next-hint">
                 next ▶ {{ slide.next_hint|default('Explain this step') }}
                 <span class="arrow">›</span>
             </span>
         </div>
 
-        <!--
         <script>
-            function initializeMutationObserver() {
-                const reveal = document.querySelector('.reveal');
-                const mutationObserver = new MutationObserver((mutations, observer) => {
-                    const controls = reveal.querySelector('.controls');
-                    if (controls) {
-                        const hud = document.querySelector('.slide-hud');
-                        if (hud) {
-                            hud.appendChild(controls);
-                        }
-                        observer.disconnect();
-                    }
-                });
-                mutationObserver.observe(reveal, { childList: true });
+            function slideStartOver() {
+                Reveal.slide(0, 0);
+                Reveal.sync();
             }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                initializeMutationObserver();
-            });
+            function toggleSlidesOverview() {
+                Reveal.toggleOverview();
+            }
         </script>
-        -->
 
     </body>
 

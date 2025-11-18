@@ -1,12 +1,13 @@
 {# file: templates/step/action/bullet.html.twig #}
 {% if action.style == 'list' %}
     <div class="action action-code card">
-        <ul>
-
-        {% for msg in action.msg %}
-            <li {{ action.fade ? 'class="fragment"' }}>{{ msg }}</li>
-        {% endfor %}
-        </ul>
+        <div class="card-body text-start">
+            <ul>
+            {% for msg in action.msg %}
+                <li {{ action.fade ? 'class="fragment"' }}>{{ msg }}</li>
+            {% endfor %}
+            </ul>
+        </div>
     </div>
 {% elseif action.style == 'callout' %}
 <div class="callout-row">

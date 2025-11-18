@@ -50,6 +50,8 @@ export default class extends Controller {
         window.setTimeout(() => { this._autoFit(); this._updateHud(); }, 60);
       });
     });
+
+    window.Reveal = this.deck;
   }
 
   disconnect() {
