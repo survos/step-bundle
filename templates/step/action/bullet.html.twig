@@ -1,0 +1,22 @@
+{# file: templates/step/action/bullet.html.twig #}
+{% if action.style == 'list' %}
+    <div class="action action-code card">
+        <ul>
+
+        {% for msg in action.msg %}
+            <li {{ action.fade ? 'class="fragment"' }}>{{ msg }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+{% elseif action.style == 'callout' %}
+<div class="callout-row">
+    <div class="callout-pill callout-pill--ok fragment">
+        {#  add color class for warning, success? #}
+        {{ ux_icon('mdi:checkbox-marked-circle-outline') }}
+        <!-- check-circle icon -->
+        <span>Use <code>.env.local</code> for secrets — never commit real API keys.</span>
+    </div>
+</div>
+{% else %}
+Missing action.style in {{ _self }}
+{% endif %}
