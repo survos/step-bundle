@@ -39,7 +39,7 @@ final class Console extends AbstractAction
         public ?string $postfix = null, // e.g. >> 'env.local'
     ) {
         $this->args = array_values($args);
-        $this->normalizeNoInteraction();
+//        $this->normalizeNoInteraction();
     }
 
     public function toCommand(): ?string

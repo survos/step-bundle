@@ -19,6 +19,7 @@ final class BrowserVisit extends AbstractAction
         public ?string $note = null,
         public int $sleep = 1,
         public ?string $a = null,
+        public bool $displayOnly = false,
     ) {}
 
     public function summary(): string
@@ -28,10 +29,13 @@ final class BrowserVisit extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
+        if ($this->displayOnly) {
+            return;
+        }
         $settings =  [
             '--window-size=1024,2048',
         ];
-        if (str_contains($this->host, '.wip')) {
+        if ($this->host && str_contains($this->host, '.wip')) {
             $settings[] = '--proxy-server=http://127.0.0.1:7080';
         }
 
@@ -53,10 +57,11 @@ final class BrowserVisit extends AbstractAction
 //            dd $artifactLocation);
             io()->writeln($artifactLocation . " written");
         } else {
-            io()->error("No artifact name, why take a screenshot?");
+            // could just be for slideshow, e.g. open api keys
+//            io()->error("No artifact name, why take a screenshot?");
         }
 
-        // old way, actually openn  Debatable, use symfony open:local --path
+        // old way, actually open  Debatable, use symfony open:local --path
 //        $cmd = sprintf('xdg-open %s >/dev/null 2>&1 || open %s >/dev/null 2>&1 || true', escapeshellarg($url), escapeshellarg($url));
 //        (new Bash($cmd, 'Open in browser'))->execute($ctx, $dryRun);
     }

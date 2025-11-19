@@ -29,20 +29,7 @@ final class Bullet extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
-
-        $helper =  ArtifactHelper::fromTaskContext(task(), $ctx);
-        // source is relative to context working directory
-        // asName is relative to artifact root
-        $sourceFilename = $ctx->workingDirectory . '/' . $this->sourcePath;
-        if (file_exists($sourceFilename)) {
-            $content = file_get_contents($sourceFilename);
-            $artifactFilename = $helper->save($this->sourcePath, $content);
-//            dd($artifactFilename, $this->sourcePath, $this->asName);
-            io()->writeln($artifactFilename . " written");
-        } else {
-            $content = run("cat $sourceFilename does not exist");
-        }
-//        $source = $ctx->workingDirectory . '/' . $this->sourcePath;
+        // no-op
     }
 
     public function viewTemplate(): string
