@@ -17,17 +17,16 @@
 {#        </div>#}
 {#    </div>#}
 {% elseif action.style == 'callout' %}
-<div class="callout-row">
-
-    {% for msg in action.msg %}
-    <div class="callout-pill callout-pill--ok fragment">
-        {#  add color class for warning, success? #}
-        {{ ux_icon('mdi:checkbox-marked-circle-outline') }}
-        <!-- check-circle icon -->
-        <span>{{ msg }}</span>
+    <div class="my-3">
+        {% for msg in action.msg %}
+        <div class="alert alert-success fragment">
+            <div class="alert-icon">
+                {{ ux_icon('mdi:checkbox-marked-circle-outline') }}
+            </div>
+            <span class="alert-description text-success">{{ msg }}</span>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 {% else %}
 Missing action.style in {{ _self }}
 {% endif %}

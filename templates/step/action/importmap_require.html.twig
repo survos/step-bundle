@@ -7,12 +7,12 @@
         <p class="mb-3 mt-0 text-start">{{ note }}</p>
         {% endif %}
         {% if packages is defined and packages %}
-        <ul class="mb-2">
+        <ul class="mb-3">
             {% if packages is iterable and packages|length > 0 %}
             {% for key,val in packages %}
             {% if key is same as(loop.index0) %}
             <li>
-                <code>{{ val }}</code>
+                <pre><code class="language-{{ action.highlightLanguage|default('bash') }}" data-trim data-noescape>{{ val }}</code></pre>
             </li>
             {% else %}
             <li>

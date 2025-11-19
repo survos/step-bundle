@@ -145,6 +145,7 @@
     display: block;
     font-size: 24px;
     line-height: 1.5;
+    list-style-type: disc;
     margin: 0;
     padding-left: 64px;
     text-align: start;
@@ -162,6 +163,13 @@
 
 .action {
     margin-top: 16px;
+    text-align: start;
+}
+
+.action ul {
+    list-style-type: square;
+    margin: 0;
+    padding: 0 1rem;
 }
 
 .slide-shell img {
@@ -262,7 +270,7 @@
 }
 
 ul.slide-bullets li.fragment.custom {
-    opacity: 0.25;
+    opacity: 0.125;
     transition: opacity 0.25s ease;
 }
 
@@ -283,4 +291,8 @@ ul.slide-bullets li.fragment.custom.current-fragment {
 .reveal.overview .slides section.present, .reveal.overview .slides section:hover {
     outline: 10px solid rgba(60, 43, 36, 1);
     outline-offset: 10px;
+}
+
+.slide .alert {
+    --tblr-alert-bg: color-mix(in srgb, var(--tblr-alert-color) 25%, transparent);
 }
