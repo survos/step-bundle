@@ -38,8 +38,28 @@ final class SurvosStepBundle extends AbstractBundle
             ->setPublic(true)
             ->setAutowired(true)
             ->setAutoconfigured(true)
-            ->setArgument('$projectDir', '%kernel.project_dir%'), [CastorStepExporter::class, CastorLogLocator::class]);
+            ->setArgument('$projectDir', '%kernel.project_dir%'),
+            [CastorStepExporter::class, CastorLogLocator::class]);
 
+
+        $builder->autowire(CastorController::class)
+            ->setPublic(true)
+            ->setAutowired(true)
+            ->setAutoconfigured(false) // if you turn this off…
+            ->setArgument('$projectDir', '%kernel.project_dir%')
+            ->setArgument('$exporter', new Reference(CastorStepExporter::class))
+            ->addTag('controller.service_arguments')
+            ->addTag('container.service_subscriber'); // <--- ✅ correct tag
+
+//        $builder->autowire(CastorController::class)
+//            ->setPublic(true)
+//            ->setAutowired(true)
+//            ->setAutoconfigured(true)
+//            ->setArgument('$projectDir', '%kernel.project_dir%')
+//            ->setArgument('$exporter', new Reference(CastorStepExporter::class))
+//            ->addTag('container.service_arguments')
+//            ->addTag('controller.service_subscriber');
+//
         // Controllers
         array_map(fn(string $class) => $builder->autowire($class)
             ->setPublic(true)
@@ -47,7 +67,7 @@ final class SurvosStepBundle extends AbstractBundle
             ->setAutoconfigured(true)
             ->addTag('controller.service_arguments')
             ->addTag('controller.service_subscriber')
-        , [CastorController::class, CastorLogController::class]);
+        , [CastorLogController::class]);
 
         // inside SurvosStepBundle::loadExtension()
         $builder->autowire(StepRuntimeExtension::class)

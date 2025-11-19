@@ -22,7 +22,7 @@ final class CastorController extends AbstractController
 {
     public function __construct(
         private readonly CastorStepExporter $exporter,
-        #[Autowire('%kernel.project_dir%)')] private string $projectDir,
+        #[Autowire('%kernel.project_dir%')] private string $projectDir,
     ) {}
 
     #[Route('/steps', name: 'survos_step_index', methods: ['GET'])]
