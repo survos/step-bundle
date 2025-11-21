@@ -35,7 +35,7 @@
 <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
     <div class="slides">
         {# Optional intro slide #}
-        {% if false %}
+        {% if true %}
         <section data-next-hint="Explain this step">
             <div class="slide-shell">
                 <header class="slide-header">
@@ -69,6 +69,9 @@
                 </div>
                 <div class="slide-footer"></div>
             </div>
+            <aside class="notes">
+                Shhh, these are your private notes
+            </aside>
         </section>
         {% endif %}
 
