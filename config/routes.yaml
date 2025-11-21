@@ -1,5 +1,4 @@
 survos_step:
-  prefix: /step
   type: attribute
   resource:
     path: '@SurvosStepBundle/src/Controller/'

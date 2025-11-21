@@ -18,6 +18,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/slideshow')]
 final class CastorController extends AbstractController
 {
     public function __construct(
@@ -25,7 +26,7 @@ final class CastorController extends AbstractController
         #[Autowire('%kernel.project_dir%')] private string $projectDir,
     ) {}
 
-    #[Route('/steps', name: 'survos_step_index', methods: ['GET'])]
+    #[Route('/', name: 'survos_step_index', methods: ['GET'])]
     public function index(): Response
     {
         $slideshows = $this->exporter->listSlideshows();
@@ -54,7 +55,7 @@ final class CastorController extends AbstractController
     }
 
 
-    #[Route('/steps/{code}.json', name: 'survos_step_json', methods: ['GET'])]
+    #[Route('/json/{code}.json', name: 'survos_step_json', methods: ['GET'])]
     public function castorJson(string $code): JsonResponse
     {
         $deck = $this->exporter->exportSlides($code);
@@ -67,8 +68,8 @@ final class CastorController extends AbstractController
 
 // file: src/Controller/StepSlidesController.php — flatten to slides[]
 
-    #[Route('/slides/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
-    #[Route('/slides-overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
+    #[Route('/show/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
+    #[Route('/overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
     public function slides(Request $request, string $code,
         DebugActionRenderer $debugActionRenderer,
         RevealActionRenderer $revealActionRenderer,
