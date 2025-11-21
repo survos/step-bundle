@@ -37,9 +37,10 @@ final class StepRuntimeExtension extends AbstractExtension
     public function renderAction(
         array $context,
         AbstractAction $action,
+        array $options = [],
         ?ActionRendererInterface $renderer = null
     ): string {
         $renderer ??= $this->defaultRenderer;
-        return $renderer->render($action, $context);
+        return $renderer->render($action, $options, $context);
     }
 }

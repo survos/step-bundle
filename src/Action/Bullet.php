@@ -20,6 +20,7 @@ final class Bullet extends AbstractAction
     ) {
         $this->msg = is_array($msg) ? $msg : [$msg];
     }
+    public ?bool $noop = true;
 
     public function summary(): string
     {

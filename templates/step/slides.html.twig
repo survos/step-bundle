@@ -3,46 +3,47 @@
 
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.css" />
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.css"/>
 
-        <title>{{ code|default('Steps') }} — Slides</title>
+    <title>{{ code|default('Steps') }} — Slides</title>
 
-        <!-- Reveal theme CSS -->
-        <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
-        <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/theme/white.css" id="theme">
+    <!-- Reveal theme CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/theme/white.css" id="theme">
 
-        {# External slideshow CSS #}
-        <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">
+    {# External slideshow CSS #}
+    <link rel="stylesheet" href="{{ asset('bundles/survosstep/slides.css') }}">
 
-        {% block javascripts %}
-{#            <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.js"></script>#}
-{#            <script type="module">#}
-{#                console.log("Player");#}
+    {% block javascripts %}
+        {#            <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.0/dist/bundle/asciinema-player.min.js"></script> #}
+        {#            <script type="module"> #}
+        {#                console.log("Player"); #}
 
-{#                // Create player#}
-{#            </script>#}
+        {#                // Create player #}
+        {#            </script> #}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
+    {% endblock %}
+</head>
 
-    <body>
+<body>
 
-        {% set _sc = '@survos/step-bundle/reveal' %}
-        <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
-            <div class="slides">
-                {# Optional intro slide #}
-                <section data-next-hint="Explain this step">
-                    <div class="slide-shell">
-                        <header class="slide-header">
-                            <h2 class="slide-task">Create a Symfony Web App</h2>
-                            <div class="slide-step">bash</div>
-                        </header>
-                        <div class="slide-content">
-                            <div class="action action-generic card mb-3">
-                                <div class="card-body">
+{% set _sc = '@survos/step-bundle/reveal' %}
+<div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
+    <div class="slides">
+        {# Optional intro slide #}
+        <section data-next-hint="Explain this step">
+            <div class="slide-shell">
+                <header class="slide-header">
+                    <h2 class="slide-task">Create a Symfony Web App</h2>
+                    <div class="slide-step">bash</div>
+                </header>
+                <div class="slide-content">
+                    <div class="action action-generic card mb-3">
+                        <div class="card-body">
                                     <pre>
                                         <code class="language-bash" data-trim data-noescape>
                                             symfony new {{ code }}-demo --webapp --version=7.3
@@ -52,106 +53,117 @@
                                             open https://{{ code }}.wip
                                         </code>
                                     </pre>
-                                </div>
-                            </div>
-                            <div class="action action-generic card">
-                                <div class="card-header">
-                                    <span class="fw-bold">Player Demo</span>
-                                </div>
-                                <div class="card-body">
-                                    <div id="demo"></div>
-                                </div>
-                            </div>
-
-{#                            <asciinema-player src="/test.cast"></asciinema-player>#}
                         </div>
-                        <div class="slide-footer"></div>
                     </div>
-                </section>
+                    <div class="action action-generic card">
+                        <div class="card-header">
+                            <span class="fw-bold">Player Demo</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="demo"></div>
+                        </div>
+                    </div>
 
-                {# Real slides (flattened server-side) #}
-                {% for slide in slides|default([]) %}
-                {% set slideTitle = slide.title|default(slide.task.description) %}
-                {% set taskName   = slide.task_name|default(code) %}
-                {% set __task_name  = taskName %}
-                {% set __step_title = slideTitle %}
-                <section data-task-name="{{ taskName|e('html_attr') }}" data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
-                    <div class="slide-shell">
-                        <header class="slide-header">
-                            <h2 class="slide-task">{{ taskName }}</h2>
-                            <div class="slide-step">{{ slideTitle }}</div>
-                        </header>
-                        <div class="slide-content">
-                            {% set step = slide.step %}
-                            {% set task = slide.task %}
-                            {% if slide.description %}
+                    {#                            <asciinema-player src="/test.cast"></asciinema-player> #}
+                </div>
+                <div class="slide-footer"></div>
+            </div>
+        </section>
+
+        {# Real slides (flattened server-side) #}
+        {% for slide in slides|default([]) %}
+            {% set slideTitle = slide.title|default(slide.task.description) %}
+            {% set taskName   = slide.task_name|default(code) %}
+            {% set __task_name  = taskName %}
+            {% set __step_title = slideTitle %}
+            <section data-task-name="{{ taskName|e('html_attr') }}"
+                     data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
+                <div class="slide-shell">
+                    <header class="slide-header">
+                        <h2 class="slide-task">{{ taskName }}</h2>
+                        <div class="slide-step">{{ slideTitle }}</div>
+                    </header>
+                    <div class="slide-content">
+                        {% set step = slide.step %}
+                        {% set task = slide.task %}
+                        {% if slide.description %}
                             <p class="slide-description">{{ slide.description }}</p>
-                            {% endif %}
-                            {% if slide.bullets %}
+                        {% endif %}
+                        {% if slide.bullets %}
                             <ul class="slide-bullets">
                                 {% for b in slide.bullets %}
-                                <li class="fragment custom">{{ b }}</li>
+                                    <li class="fragment custom">{{ b }}</li>
                                 {% endfor %}
                             </ul>
-                            {% endif %}
+                        {% endif %}
 
-                            {% if step and step.actions %}
+                        {% if step and step.actions %}
                             {% for a in step.actions %}
-                            {# removed stray debug label: {{ a|short_class }} #}
-                            <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} fragment">
-                                {{ render_action(a)|raw }}
-                            </div>
+                                Step {{ loop.index }} {{ a|short_class }}
+                                {{ render_action(a, {loop: loop})|raw }}
+{#                                {% if a.noop %}#}
+{#                                {% else %}#}
+{#                                    <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} {{ loop.index > 1 ? 'fragment' }}">#}
+{#                                        {{ render_action(a)|raw }}#}
+{#                                    </div>#}
+{#                                {% endif %}#}
                             {% endfor %}
-                            {% endif %}
-                        </div>
-                        <footer class="slide-footer"></footer>
+                        {% endif %}
                     </div>
-                </section>
-                {% endfor %}
-            </div>
-        </div>
+                    <footer class="slide-footer"></footer>
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+</div>
 
-        {# HUD inside controller scope #}
-        <div class="slide-hud">
-            {% if app is defined %}
-            <a href="{{ path('app_home') }}" class="hud-link">Home</a>
-            {% else %}
-            <span class="hud-link">Home</span>
-            {% endif %}
-            <span class="hud-sep">|</span>
-            <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="{{ json_url ?? '#' }}" target="_blank" class="hud-link">JSON (deck)</a>
-            <span class="hud-sep">|</span>
-            <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON (slide)</a>
-            <span class="hud-sep">|</span>
-            <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
-            <span class="hud-sep">*</span>
-            <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
-            <button type="button" class="hud-link toggle-overview" title="Toggle Overview Mode" onclick="toggleSlidesOverview()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256">
-	                <path fill="currentColor" d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16M40 88h80v80H40Zm96-16V56h32v16Zm-16 0H88V56h32Zm0 112v16H88v-16Zm16 0h32v16h-32Zm0-16V88h80v80Zm80-96h-32V56h32ZM72 56v16H40V56ZM40 184h32v16H40Zm176 16h-32v-16h32z" />
-                </svg>
-            </button>
-            <button type="button" class="hud-link start-over" title="Start Over" onclick="slideStartOver()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-	                <path fill="currentColor" d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6c0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93c0-4.42-3.58-8-8-8m-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34A8 8 0 0 0 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91" />
-                </svg>
-            </button>
-            <span class="next-hint">
+{# HUD inside controller scope #}
+<div class="slide-hud">
+    {% if app is defined %}
+        <a href="{{ path('app_home') }}" class="hud-link">Home</a>
+    {% else %}
+        <span class="hud-link">Home</span>
+    {% endif %}
+    <span class="hud-sep">|</span>
+    <a {{ stimulus_target(_sc, 'jsonDeckLink') }} href="{{ json_url ?? '#' }}" target="_blank" class="hud-link">JSON
+        (deck)</a>
+    <span class="hud-sep">|</span>
+    <a {{ stimulus_target(_sc, 'jsonSlideLink') }} href="#" target="_blank" class="hud-link" style="display:none">JSON
+        (slide)</a>
+    <span class="hud-sep">|</span>
+    <span {{ stimulus_target(_sc, 'codeLabel') }} class="hud-label">{{ code }}</span>
+    <span class="hud-sep">*</span>
+    <span {{ stimulus_target(_sc, 'stepLabel') }} class="hud-label">intro</span>
+    <button type="button" class="hud-link toggle-overview" title="Toggle Overview Mode"
+            onclick="toggleSlidesOverview()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256">
+            <path fill="currentColor"
+                  d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16M40 88h80v80H40Zm96-16V56h32v16Zm-16 0H88V56h32Zm0 112v16H88v-16Zm16 0h32v16h-32Zm0-16V88h80v80Zm80-96h-32V56h32ZM72 56v16H40V56ZM40 184h32v16H40Zm176 16h-32v-16h32z"/>
+        </svg>
+    </button>
+    <button type="button" class="hud-link start-over" title="Start Over" onclick="slideStartOver()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="currentColor"
+                  d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6c0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93c0-4.42-3.58-8-8-8m-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34A8 8 0 0 0 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91"/>
+        </svg>
+    </button>
+    <span class="next-hint">
                 next ▶ {{ slide.next_hint|default('Explain this step') }}
                 <span class="arrow">›</span>
             </span>
-        </div>
+</div>
 
-        <script>
-            function slideStartOver() {
-                Reveal.slide(0, 0);
-                Reveal.sync();
-            }
-            function toggleSlidesOverview() {
-                Reveal.toggleOverview();
-            }
-        </script>
+<script>
+    function slideStartOver() {
+        Reveal.slide(0, 0);
+        Reveal.sync();
+    }
 
-    </body>
+    function toggleSlidesOverview() {
+        Reveal.toggleOverview();
+    }
+</script>
+
+</body>
 
 </html>

@@ -1,6 +1,8 @@
 {# file: templates/step/action/bash.html.twig #}
-<div class="action action-bash card">
-    <div class="card-body">
+
+<div class="action action-bash card {{ options.loop.index > 1 ? 'fragment' }}">
+    <h3>Loop Index: {{ options.loop.index }}</h3>
+    <div class="card-body ">
         {% if action.note %}
         <p class="mb-3 mt-0 text-start">{{ action.note }}</p>
         {% endif %}

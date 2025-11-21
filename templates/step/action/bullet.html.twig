@@ -1,4 +1,6 @@
 {# file: templates/step/action/bullet.html.twig #}
+<div class="action action-bash card {{ options.loop.index > 1 ? 'fragment' }}">
+
 {% if action.style == 'list' %}
 
     <ul class="slide-bullets">
@@ -32,3 +34,4 @@
 {% else %}
 Missing action.style in {{ _self }}
 {% endif %}
+</div>

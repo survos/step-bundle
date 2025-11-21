@@ -13,7 +13,7 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
         protected readonly string $projectDir,
     ) {}
 
-    public function render(AbstractAction $action, array $context): string
+    public function render(AbstractAction $action, array $options, array $context): string
     {
         // Enrich action data based on type
         $renderData = $this->enrichRenderData($context, $action);
@@ -35,6 +35,7 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
         // Render with renderer-specific wrapper
         $html = $this->twig->render($template, $renderData + [
             'action' => $action,
+            'options' => $options,
             'renderer' => $this->getName(),
         ]);
         return $html;
