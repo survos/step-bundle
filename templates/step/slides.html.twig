@@ -101,7 +101,7 @@
 
                         {% if step and step.actions %}
                             {% for a in step.actions %}
-                                Step {{ loop.index }} {{ a|short_class }}
+                                {#Step {{ loop.index }} {{ a|short_class }}#}
                                 <div class="{{ loop.index > 1 ? 'fragment' }}">
                                 {{ render_action(a, {
                                     fade: loop.index > 1,

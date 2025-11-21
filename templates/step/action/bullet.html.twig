@@ -1,5 +1,5 @@
 {# file: templates/step/action/bullet.html.twig #}
-<div class="action action-bash card">
+<div class="">
 
 {% if action.style == 'list' %}
 
@@ -7,7 +7,7 @@
         Render these with size {{ action.size }}
         {% for b in action.msg %}
             {% if b %}
-            <li class=" {{ action.fade ? 'fragment' }} custom">{{ b|raw }}</li>
+            <li class="bullet-fs-{{action.size}} {{ action.fade ? 'fragment' }} custom">{{ b|raw }}</li>
             {% endif %}
         {% endfor %}
     </ul>
