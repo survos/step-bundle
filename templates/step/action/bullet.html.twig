@@ -3,7 +3,9 @@
 
     <ul class="slide-bullets">
         {% for b in action.msg %}
-            <li class=" {{ action.fade ? 'class="fragment"' }} custom">{{ b }}</li>
+            {% if b %}
+            <li class=" {{ action.fade ? 'class="fragment"' }} custom">{{ b|raw }}</li>
+            {% endif %}
         {% endfor %}
     </ul>
 
