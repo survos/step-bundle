@@ -17,6 +17,7 @@ final class Bullet extends AbstractAction
         public string|array $msg = [],
         public bool $fade=true,
         public ?string $style='list', // li?
+        public int $size= 3,
     ) {
         $this->msg = is_array($msg) ? $msg : [$msg];
     }

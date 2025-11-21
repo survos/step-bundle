@@ -35,6 +35,7 @@
 <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
     <div class="slides">
         {# Optional intro slide #}
+        {% if false %}
         <section data-next-hint="Explain this step">
             <div class="slide-shell">
                 <header class="slide-header">
@@ -69,6 +70,7 @@
                 <div class="slide-footer"></div>
             </div>
         </section>
+        {% endif %}
 
         {# Real slides (flattened server-side) #}
         {% for slide in slides|default([]) %}
@@ -100,7 +102,12 @@
                         {% if step and step.actions %}
                             {% for a in step.actions %}
                                 Step {{ loop.index }} {{ a|short_class }}
-                                {{ render_action(a, {loop: loop})|raw }}
+                                <div class="{{ loop.index > 1 ? 'fragment' }}">
+                                {{ render_action(a, {
+                                    fade: loop.index > 1,
+                                    loop: loop})|raw }}
+
+                                </div>
 {#                                {% if a.noop %}#}
 {#                                {% else %}#}
 {#                                    <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} {{ loop.index > 1 ? 'fragment' }}">#}
