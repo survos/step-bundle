@@ -81,7 +81,7 @@
                   <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
 {#                    {{ dump(_context, a) }}#}
                     <code>{{ a|short_class }}</code>
-                    {{ render_action(a, renderer)|raw }}
+                    {{ render_action(a, {loop: loop}, renderer)|raw }}
                   </div>
                 {% endfor %}
               {% else %}

@@ -14,6 +14,7 @@ final class ComposerRequire extends AbstractAction
         public array $packages,
         public bool $dev = false,
         public ?string $note = null,
+        public ?string $description = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
     ) {}

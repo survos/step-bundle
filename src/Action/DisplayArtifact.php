@@ -22,6 +22,7 @@ final class DisplayArtifact extends AbstractAction
         public ?string $step = null, // defaults to current step
         public ?string $lang = null,
         public ?string $note = null,
+        public ?bool $fade = null,
     ) {
 //        dd($this, $this->highlightLanguage);
     }

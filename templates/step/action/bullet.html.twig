@@ -1,13 +1,12 @@
 {# file: templates/step/action/bullet.html.twig #}
-<div class="">
+<div class="slide-shell">
 
 {% if action.style == 'list' %}
 
     <ul class="slide-bullets">
-        Render these with size {{ action.size }}
         {% for b in action.msg %}
             {% if b %}
-            <li class="bullet-fs-{{action.size}} {{ action.fade ? 'fragment' }} custom">{{ b|raw }}</li>
+            <li class="bullets-fs-{{action.size}} {{ action.fade ? 'fragment' }} custom">{{ b|raw }}</li>
             {% endif %}
         {% endfor %}
     </ul>

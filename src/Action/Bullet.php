@@ -15,11 +15,12 @@ final class Bullet extends AbstractAction
 {
     public function __construct(
         public string|array $msg = [],
-        public bool $fade=true,
+        public ?bool $fade=null,
         public ?string $style='list', // li?
         public int $size= 3,
     ) {
         $this->msg = is_array($msg) ? $msg : [$msg];
+        $this->fade ??= true;
     }
     public ?bool $noop = true;
 

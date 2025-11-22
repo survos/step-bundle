@@ -13,10 +13,12 @@ final class Bash extends AbstractAction
 {
     public function __construct(
         public ?string $command=null,
+        public ?string $description =null,
         public ?string $note = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
-        public bool $displayOnly = false, // for the slide but not the run
+        public bool $display = true, // display the slide
+        public bool $run = true, // run the actions
         public array $commands=[], // to put them all on one slide
     ) {
         if ($command) {

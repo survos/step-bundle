@@ -3,6 +3,7 @@
 
 namespace Survos\StepBundle\Action;
 
+use phpDocumentor\Reflection\Types\Self_;
 use Survos\StepBundle\Service\ArtifactLocator;
 
 abstract class AbstractAction implements ExecutableAction, RendersWithTwig
@@ -16,9 +17,14 @@ abstract class AbstractAction implements ExecutableAction, RendersWithTwig
     public ?ArtifactLocator $artifactLocator = null;
     public ?string $artifactId { get => property_exists($this, "a") ? $this->a : null; }
     public ?bool $noop = null;
-    public bool $fade=true;
+    public ?bool $fade=null;
 
     public ?string $wrapperClass { get => sprintf("action action-%s %s", $this->highlightLanguage, $this->fade ? 'fragment' : ''); }
 
+    public function setFade(bool $fade): static
+    {
+        $this->fade = $fade;
+        return $this;
+    }
 
 }
