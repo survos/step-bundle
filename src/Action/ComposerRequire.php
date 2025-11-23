@@ -17,6 +17,8 @@ final class ComposerRequire extends AbstractAction
         public ?string $description = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
+        public bool $display = true, // display the slide
+        public bool $run = true, // run the actions
     ) {}
 
     public function toCommand(): string
