@@ -10,7 +10,7 @@ use Survos\StepBundle\Action\AbstractAction;
  * A Step contains ordered Actions and presentation info.
  */
 #[Attribute(Attribute::TARGET_FUNCTION|Attribute::IS_REPEATABLE)]
-final class Step
+final class Step implements \Stringable
 {
     /**
      * @param list<string> $bullets
@@ -39,5 +39,11 @@ final class Step
     public function hasContent(): bool
     {
         return $this->description !== '' || $this->bullets !== [] || $this->actions !== [] || $this->notes !== [];
+    }
+
+    public function __toString(): string
+    {
+        return $this->title . $this->description;
+        // TODO: Implement __toString() method.
     }
 }
