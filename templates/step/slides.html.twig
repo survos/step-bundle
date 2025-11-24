@@ -37,37 +37,51 @@
         {# Optional intro slide #}
         {% if true %}
             <section data-next-hint="Explain this step">
-                <div class="slide-shell">
-                    <header class="slide-header">
-                        <h2 class="slide-task">Create a Symfony Web App</h2>
-                        <div class="slide-step">bash</div>
-                    </header>
-                    <div class="slide-content">
-                        <div class="action action-generic card mb-3">
-                            <div class="card-body">
-                                    <pre>
-                                        <code class="language-bash" data-trim data-noescape>
-                                            symfony new {{ code }}-demo --webapp --version=7.3
-                                            cd {{ code }}-demo
-                                            symfony proxy:domain:attach {{ code }}
-                                            symfony server:start -d
-                                            open https://{{ code }}.wip
-                                        </code>
-                                    </pre>
+                <div class="slide-wrapper">
+                <div class="slide-container">
+                    <div class="slide-shell">
+                        <header class="slide-header">
+                            <h2 class="slide-task">Create a Symfony Web App</h2>
+                            <div class="slide-step">bash</div>
+                        </header>
+                        <div class="slide-content">
+                            <div class="action action-generic card mb-3">
+                                <div class="card-body">
+                                        <pre>
+                                            <code class="language-bash" data-trim data-noescape>
+                                                symfony new {{ code }}-demo --webapp --version=7.3
+                                                cd {{ code }}-demo
+                                                symfony proxy:domain:attach {{ code }}
+                                                symfony server:start -d
+                                                open https://{{ code }}.wip
+                                            </code>
+                                        </pre>
+                                </div>
                             </div>
-                        </div>
-                        <div class="action action-generic card">
-                            <div class="card-header">
-                                <span class="fw-bold">Player Demo</span>
+                            <div class="action action-generic card">
+                                <div class="card-header">
+                                    <span class="fw-bold">Player Demo</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="demo"></div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div id="demo"></div>
-                            </div>
-                        </div>
 
-                        {#                            <asciinema-player src="/test.cast"></asciinema-player> #}
+                            {#                            <asciinema-player src="/test.cast"></asciinema-player> #}
+                        </div>
+                        <div class="slide-footer"></div>
                     </div>
-                    <div class="slide-footer"></div>
+                    <div class="slide-aside">
+                        <ul class="slide-bullets">
+                            <li class="fragment custom">Step 1</li>
+                            <li class="fragment custom">Step 2</li>
+                            <li class="fragment custom">Step 3</li>
+                            <li class="fragment custom">Step 4</li>
+                            <li class="fragment custom">Step 5</li>
+                            <li class="fragment custom">Step 6</li>
+                        </ul>
+                    </div>
+                </div>
                 </div>
             </section>
         {% endif %}
@@ -80,62 +94,84 @@
         {% set __step_title = slideTitle %}
         <section data-task-name="{{ taskName|e('html_attr') }}"
                  data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
-            <div class="slide-shell">
-                <header class="slide-header">
-                    <h2 class="slide-task">{{ taskName }}</h2>
-                    <div class="slide-step">{{ slideTitle }}</div>
-                </header>
-                <div class="slide-content">
-                    {% set step = slide.step %}
-                    {% set task = slide.task %}
-                    {% if slide.description %}
-                        <p class="slide-description">{{ slide.description }}</p>
-                    {% endif %}
-                    {% if slide.bullets %}
-                        <ul class="slide-bullets">
-                            {% for b in slide.bullets %}
-                                <li class="fragment custom">{{ b }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
 
-                    {% if step and step.actions %}
-                        {% for a in step.actions %}
+            <div class="slide-container">
 
-                        {% if a.display is defined %}
-                            {% set display = a.display %}
-                        {% else %}
-                            {% set display = true %}
+                <div class="slide-shell">
+                    <header class="slide-header">
+                        <h2 class="slide-task">{{ taskName }}</h2>
+                        <div class="slide-step">{{ slideTitle }}</div>
+                    </header>
+                    <div class="slide-content">
+                        {% set step = slide.step %}
+                        {% set task = slide.task %}
+                        {% if slide.description %}
+                            <p class="slide-description">{{ slide.description }}</p>
                         {% endif %}
-                        {% if display %}
-                        {# Step {{ loop.index }} {{ a|short_class }} #}
-                        {% set fade = loop.index > 1 %}
-                        {# it's in abstract, so this isn't right #}
-                        {% if a.fade is not null %}
-                            {% set fade = a.fade %}
-                        {% else %}
-
+                        {% if slide.bullets %}
+                            <ul class="slide-bullets">
+                                {% for b in slide.bullets %}
+                                    <li class="fragment custom">{{ b }}</li>
+                                {% endfor %}
+                            </ul>
                         {% endif %}
 
-                        {#                                <code>{{ a|short_class }}</code> #}
+                        {% if step and step.actions %}
+                            {% for a in step.actions %}
+                            {% if a.display is defined %}
+                                {% set display = a.display %}
+                            {% else %}
+                                {% set display = true %}
+                            {% endif %}
+                            {% if display %}
+                            {# Step {{ loop.index }} {{ a|short_class }} #}
+                            {% set fade = loop.index > 1 %}
+                            {# it's in abstract, so this isn't right #}
+                            {% if a.fade is not null %}
+                                {% set fade = a.fade %}
+                            {% else %}
 
-                        <div class="{{ fade ? 'fragment' }}">
-                            {{ render_action(a, {
-                                loop: loop})|raw }}
+                            {% endif %}
 
-                        </div>
-                        {#                                {% if a.noop %} #}
-                        {#                                {% else %} #}
-                        {#                                    <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} {{ loop.index > 1 ? 'fragment' }}"> #}
-                        {#                                        {{ render_action(a)|raw }} #}
-                        {#                                    </div> #}
-                        {#                                {% endif %} #}
-                    {% endif %}
-                    {% endfor %}
-                    {% endif %}
+                            {#                                <code>{{ a|short_class }}</code> #}
+
+                            <div class="{{ fade ? 'fragment' }}">
+                                {{ render_action(a, {
+                                    loop: loop})|raw }}
+
+                            </div>
+                            {#                                {% if a.noop %} #}
+                            {#                                {% else %} #}
+                            {#                                    <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }} {{ loop.index > 1 ? 'fragment' }}"> #}
+                            {#                                        {{ render_action(a)|raw }} #}
+                            {#                                    </div> #}
+                            {#                                {% endif %} #}
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    <footer class="slide-footer"></footer>
                 </div>
-                <footer class="slide-footer"></footer>
+
+                <div class="slide-aside">
+                    <ul class="slide-bullets">
+                        {% if slide.bullets %}
+                            {% for b in slide.bullets %}
+                                <li>{{ b }}</li>
+                            {% endfor %}
+                            {% set step = slide.step %}
+                            {% set task = slide.task %}
+                            {% if step and step.actions %}
+                                {% for a in step.actions %}
+                                <li>{{ a.lang ?? a.language ?? a.type ?? 'text' }}</li>
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+
             </div>
+
             <aside class="notes">
                 Notes for {{ step }}
             </aside>
