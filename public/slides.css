@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap');
 
 /* Reveal */
 :root {
@@ -61,7 +61,7 @@
 .reveal .code-wrapper {
     background-color: transparent;
     box-shadow: none;
-    font-size: 1rem;
+    font-size: 1em;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -103,7 +103,7 @@
 }
 
 .slide-shell h2.slide-task {
-    font-family: Bricolage Grotesque, Georgia, Times New Roman, Times, serif;
+    font-family: Libre Baskerville, Georgia, Times New Roman, Times, serif;
     font-size: 48px;
     font-weight: 900;
     margin: 0;
@@ -201,8 +201,28 @@
 }
 
 .action {
+    font-size: 16px;
     margin-top: 16px;
     text-align: start;
+}
+
+.action.code-fs-1 {
+    font-size: 1em;
+}
+.action.code-fs-2 {
+    font-size: 1.2em;
+}
+.action.code-fs-3 {
+    font-size: 1.4em;
+}
+.action.code-fs-4 {
+    font-size: 1.6em;
+}
+.action.code-fs-5 {
+    font-size: 1.8em;
+}
+.action.code-fs-6 {
+    font-size: 2em;
 }
 
 .action ul {
@@ -338,7 +358,9 @@ ul.slide-bullets li.fragment.custom.current-fragment {
 
 .slide-container {
     display: grid;
-    grid-template-columns: auto 256px;
+    grid-template-columns: auto;
+    margin: 0 auto;
+    max-width: 85vw;
 }
 
 .slide-aside {
