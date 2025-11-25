@@ -4,6 +4,7 @@
 namespace Survos\StepBundle\Controller;
 
 use Survos\StepBundle\Renderer\DebugActionRenderer;
+use Survos\StepBundle\Renderer\MarkdownActionRenderer;
 use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -70,13 +71,29 @@ final class CastorController extends AbstractController
 
     #[Route('/show/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
     #[Route('/overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
+    #[Route('/markdown/{code}', name: 'survos_step_markdown', methods: ['GET'])]
     public function slides(Request $request, string $code,
         DebugActionRenderer $debugActionRenderer,
         RevealActionRenderer $revealActionRenderer,
+        MarkdownActionRenderer $markdownActionRenderer,
         RequestStack $requestStack,
         #[MapQueryParameter] bool $debug=false
     ): Response
     {
+        switch ($route = $request->get('_route')) {
+            case 'survos_step_slideshow':
+                $renderer = $revealActionRenderer;
+                $template = '@SurvosStep/step/slides.html.twig';
+                break;
+            case 'survos_step_slides':
+                $renderer = $debugActionRenderer;
+                $template = '@SurvosStep/step/debug.html.twig';
+                break;
+            case 'survos_step_markdown':
+                $renderer = $markdownActionRenderer;
+                $template = '@SurvosStep/step/md.html.twig';
+                break;
+        }
         if ($request->get('_route') === 'survos_step_slideshow') {
             $renderer = $revealActionRenderer;
             $template = '@SurvosStep/step/slides.html.twig';
@@ -85,6 +102,8 @@ final class CastorController extends AbstractController
             $template = '@SurvosStep/step/debug.html.twig';
 
         }
+
+//        $template = sprintf('slides/%s.html.twig', $code);
         $deck = $this->exporter->exportSlides($code);
         $slides = $deck['slides'] ?? [];
 

@@ -1,0 +1,154 @@
+{# file: templates/step/debug.html.twig — clear debug view with per-slide artifacts listed and inlined #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>[DEBUG] {{ code }} — Slides</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
+  <link href="{{ asset('bundles/survosstep/steps.css') }}" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>[DEBUG] Slides for <span class="badge vertical-align-middle">{{ code }}</span></h1>
+    <div>
+      <a href="{{ path('app_home') }}" target="_blank" class="badge">Home</a>
+      <a href="{{ json_url }}" target="_blank" class="badge">Deck JSON</a>
+      <a href="{{ path('survos_step_slides', {code: code}) }}" target="_blank" class="badge">
+        <span class="badge">{{ slides|length }} slides</span>
+      </a>
+    </div>
+  </div>
+
+    {% app %}
+
+  {% for slide in slides %}
+    {# now we can use the DTOs, which are the metadata #}
+    {% set step = slide.step %}
+    {% set task = slide.task %}
+
+    {% set slideTitle = slide.title|default(task.description) %}
+    {% set taskName   = slide.task_name|default(code) %}
+    {# Provide context for artifact resolver used by render_action() #}
+    {% set __task_name  = taskName %}
+    {% set __step_title = slideTitle %}
+
+    <section class="slide" id="slide-{{ loop.index }}">
+      <header>
+        <h2>
+          <div>{{ loop.index }}.</div>
+          <div>
+            <div>{{ task.name }}</div>
+            <div class="task-description">{{ slideTitle }}</div>
+          </div>
+        </h2>
+{#          {{ dump(task, step) }}#}
+        <div>
+          <span class="pill">{{ taskName }}</span>
+          <span class="pill">{{ step.actions|length }} actions</span>
+          <span class="pill">{{ slide.artifacts|length }} files</span>
+        </div>
+      </header>
+
+      <div class="body">
+          {#{{ dump(slide) }}#}
+        {% if slide.description %}
+          <div class="panel"><header>Description</header><div class="content">{{ slide.description }}</div></div>
+        {% endif %}
+        {% if slide.bullets %}
+          <div class="panel"><header>Bullets</header>
+            <div class="content"><ul class="bullets">{% for b in slide.bullets %}<li>{{ b }}</li>{% endfor %}</ul></div>
+          </div>
+        {% endif %}
+
+        <div class="cols">
+          <div class="panel">
+            <header>Rendered Actions</header>
+            <div class="content">
+{#                php?#}
+{#              <pre><code class="language-php">#}
+{#function hello() {#}
+{#    echo "Hello World!";#}
+{#}#}
+{#</code></pre>#}
+
+{#              <pre><code class="language-javascript">#}
+{#const greeting = "Hello World!";#}
+{#console.log(greeting);#}
+{#</code></pre>#}
+                {#{{ dump(step.bullets) }}#}
+              {% if step.actions %}
+                {% for a in step.actions %}
+                  <div class="action action-{{ (a.lang ?? a.language ?? a.type ?? 'text')|lower }}">
+{#                    {{ dump(_context, a) }}#}
+                    <code>{{ a|short_class }}</code>
+                    {{ render_action(a, {loop: loop}, renderer)|raw }}
+                  </div>
+                {% endfor %}
+              {% else %}
+                <em>No step actions.</em>
+              {% endif %}
+            </div>
+          </div>
+
+        <div class="panel">
+          <header>Artifacts on Disk ({{ slide.artifacts|length }})</header>
+          <div class="content">
+            {% if slide.artifacts|length == 0 %}
+              <em>No artifacts for this slide.</em>
+            {% else %}
+
+              {% for f in slide.artifacts %}
+                <details>
+                  <summary>
+                    <a href="{{ f.path }}" target="_blank" rel="noopener">{{ f.name }}</a>
+                    <span class="pill">{{ (f.size/1024)|number_format(1) }} KB</span>
+                    <span class="pill">{{ f.mtime|date('H:i:s') }}</span>
+                  </summary>
+                  {#{% if f.contents is not null %}
+                    <pre><code class="language-text">{{ f.contents }}</code></pre>
+                  {% endif %}#}
+                  {% if f.contents is not null %}
+                    {# Detect file extension #}
+                    {% set ext = f.name|split('.')|last|lower %}
+
+                    {# Determine MIME type #}
+                    {% if ext == 'png' %}
+                      {% set mime = 'image/png' %}
+                    {% elseif ext in ['jpg', 'jpeg'] %}
+                      {% set mime = 'image/jpeg' %}
+                    {% else %}
+                      {% set mime = 'text/plain' %}
+                    {% endif %}
+
+                    {# Render image or text depending on type #}
+                    {% if mime starts with 'image/' %}
+                      {% if f.contents is not empty %}
+                        <img src="{{ f.contents|data_uri(mime) }}" alt="{{ f.name }}">
+                      {% endif %}
+                    {% else %}
+                      <pre><code class="language-text">{{ f.contents }}</code></pre>
+                    {% endif %}
+                  {% endif %}
+                </details>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+  {% endfor %}
+</div>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      hljs.highlightAll();
+    });
+  </script>
+
+</body>
+</html>

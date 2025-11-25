@@ -71,16 +71,6 @@
                         </div>
                         <div class="slide-footer"></div>
                     </div>
-                    <div class="slide-aside">
-                        <ul class="slide-bullets">
-                            <li class="fragment custom">Step 1</li>
-                            <li class="fragment custom">Step 2</li>
-                            <li class="fragment custom">Step 3</li>
-                            <li class="fragment custom">Step 4</li>
-                            <li class="fragment custom">Step 5</li>
-                            <li class="fragment custom">Step 6</li>
-                        </ul>
-                    </div>
                 </div>
                 </div>
             </section>
@@ -108,7 +98,8 @@
                         {% if slide.description %}
                             <p class="slide-description">{{ slide.description }}</p>
                         {% endif %}
-                        {% if slide.bullets %}
+                        {# bullets are now on side! #}
+                        {% if false and slide.bullets %}
                             <ul class="slide-bullets">
                                 {% for b in slide.bullets %}
                                     <li class="fragment custom">{{ b }}</li>
@@ -157,15 +148,8 @@
                     <ul class="slide-bullets">
                         {% if slide.bullets %}
                             {% for b in slide.bullets %}
-                                <li>{{ b }}</li>
+                                <li class="fragment custom">{{ b }}</li>
                             {% endfor %}
-                            {% set step = slide.step %}
-                            {% set task = slide.task %}
-                            {% if step and step.actions %}
-                                {% for a in step.actions %}
-                                <li>{{ a.lang ?? a.language ?? a.type ?? 'text' }}</li>
-                                {% endfor %}
-                            {% endif %}
                         {% endif %}
                     </ul>
                 </div>

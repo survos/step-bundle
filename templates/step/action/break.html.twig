@@ -1,0 +1,5 @@
+</section>
+
+{% set taskName = 'split' %}
+    <section data-task-name="{{ taskName|e('html_attr') }}"
+             data-next-hint="{{ slide.next_hint|default('Explain this step') }}">

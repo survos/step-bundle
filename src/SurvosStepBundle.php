@@ -6,6 +6,7 @@ use Survos\CoreBundle\Traits\HasAssetMapperTrait;
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
 use Survos\StepBundle\Renderer\DebugActionRenderer;
+use Survos\StepBundle\Renderer\MarkdownActionRenderer;
 use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\ArtifactLocator;
 use Survos\StepBundle\Service\CastorLogLocator;
@@ -94,7 +95,7 @@ final class SurvosStepBundle extends AbstractBundle
         $builder    ->setDefinition(ArtifactLocator::class, $def);
 
 
-        foreach ([DebugActionRenderer::class, RevealActionRenderer::class] as $class) {
+        foreach ([DebugActionRenderer::class, MarkdownActionRenderer::class ,RevealActionRenderer::class] as $class) {
             $builder->autowire($class)
                 ->setArgument('$projectDir', '%kernel.project_dir%')
                 ->setPublic(true)

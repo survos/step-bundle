@@ -35,7 +35,7 @@
     <a href="{{ path('survos_castor_logs_index') }}">Logs</a>
 
 
-    {% for html in ['easyadmin','example','ordered-elements'] %}
+    {% for html in ['easyadmin','example','ordered-elements','amsterdam','slides/meili-amsterdam'] %}
       <a href="/{{ html }}.html" target="_blank">{{ html }}</a>
     {% endfor %}
 
@@ -50,6 +50,7 @@
             &nbsp;—&nbsp;
             <a href="{{ path('survos_step_slideshow', { code: s.code }) }}">Slideshow</a>
             &nbsp;—&nbsp;
+            <a href="{{ path('survos_step_markdown', { code: s.code }) }}">As Documention</a>
             <a href="{{ path('survos_step_slides', { code: s.code }) }}">Overview</a>
             <a href="{{ path('survos_step_slides', { debug: true, code: s.code }) }}">Overview/Debug</a>
             &nbsp;|&nbsp;
