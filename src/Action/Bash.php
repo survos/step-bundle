@@ -18,9 +18,11 @@ final class Bash extends AbstractAction
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
         public bool $display = true, // display the slide
+        public ?int $size = null,
         public bool $run = true, // run the actions
         public array $commands=[], // to put them all on one slide
     ) {
+        $this->size ??= 3;
         if ($command) {
             $this->commands = [$command];
         }

@@ -16,7 +16,9 @@ final class DisplayCode extends AbstractAction
         public ?string $note = null,
         public ?string $content = null,
         public ?bool $fade = null,
+        public ?int $size = null,
     ) {
+        $this->size ??= 3;
 //        dd($this, $this->highlightLanguage);
     }
     public string $highlightLanguage { get => $this->lang; }

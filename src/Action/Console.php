@@ -37,8 +37,10 @@ final class Console extends AbstractAction
         public string $phpBinary = 'php',
         public bool $autoNoInteraction = true,
         public ?string $postfix = null, // e.g. >> 'env.local'
+        public ?int $size=null,
     ) {
         $this->args = array_values($args);
+        $this->size ??= 3;
 //        $this->normalizeNoInteraction();
     }
 
