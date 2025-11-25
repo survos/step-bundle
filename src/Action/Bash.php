@@ -45,6 +45,9 @@ final class Bash extends AbstractAction
         }
         try {
             foreach ($this->commands as $command) {
+                if (!$this->run) {
+                    continue;
+                }
 //                run($command, context: $execCtx);
                 // artifact doesn't work right if multiple commands are run in one slide
                 $output = run($command, context: $execCtx, callback: fn($type, $buffer) => io()->write($buffer));
