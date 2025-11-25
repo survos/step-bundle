@@ -21,7 +21,7 @@ final class Bullet extends AbstractAction
     ) {
         $this->msg = is_array($msg) ? $msg : [$msg];
         $this->fade ??= true;
-        $this->size ??= (8-count($this->msg));
+        $this->size ??= max(1, 7-count($this->msg));
     }
     public ?bool $noop = true;
 
