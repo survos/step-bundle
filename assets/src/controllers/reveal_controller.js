@@ -50,6 +50,24 @@ export default class extends Controller {
       window.addEventListener('resize', () => {
         window.setTimeout(() => { this._autoFit(); this._updateHud(); }, 60);
       });
+
+      this.deck.on('fragmentshown', (event) => {
+        const fragment = event.fragment;
+        fragment.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        });
+      });
+
+      this.deck.on('slidechanged', (event) => {
+        const currentSlide = event.currentSlide;
+        currentSlide.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+      });
     });
 
     window.Reveal = this.deck;
