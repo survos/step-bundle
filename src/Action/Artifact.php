@@ -17,8 +17,11 @@ final class Artifact extends AbstractAction
         public string $sourcePath,        // e.g. "src/Controller/AppController.php" (relative to working dir)
         public string $asName,            // e.g. "AppController.php"
         public string $type = 'text/plain',
-        public ?string $note = null
-    ) {}
+        public ?string $note = null,
+        public ?int $size = null,
+    ) {
+        $this->size ??= 3;
+    }
 
     public function summary(): string
     {

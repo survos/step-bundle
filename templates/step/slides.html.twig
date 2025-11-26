@@ -35,7 +35,7 @@
 <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
     <div class="slides">
         {# Optional intro slide #}
-        {% if true %}
+        {% if false %}
             <section data-next-hint="Explain this step">
                 <div class="slide-wrapper">
                 <div class="slide-container">
@@ -168,7 +168,7 @@
 </div>
 
 {# HUD inside controller scope #}
-<div class="slide-hud">
+<div class="slide-hud" style="display:none">
     {% if app is defined %}
         <a href="{{ path('app_home') }}" class="hud-link">Home</a>
     {% else %}

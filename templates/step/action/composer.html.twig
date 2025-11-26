@@ -5,7 +5,7 @@
         <span class="badge badge-pill bg-warning text-dark">dev</span>
         {% endif %}
     </div>
-    <div class="card-body">
+    <div class="card-body code-fs-{{action.size}}">
         {% if note %}
         <p class="mb-3 mt-0 text-start">{{ note }}</p>
         {% endif %}
@@ -15,7 +15,10 @@
         {% for p in packages %}composer req {{ dev ? '-dev' }} {{ p }}
         {% endfor %}
         {% endset %}
-        <pre><code class="language-{{ lang|default('bash') }}" data-trim data-noescape>{{ code }}</code></pre>
+        <pre><code class="language-{{ lang|default('bash') }}
+                   "
+
+                   data-trim data-noescape>{{ code }}</code></pre>
 {#      <ul class="mb-2">#}
 {#          {% for p in packages %}#}
 {#          <li><code>composer req {{ dev ? '-dev' }} {{ p }}</code></li>#}

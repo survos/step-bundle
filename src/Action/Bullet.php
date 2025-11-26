@@ -18,10 +18,12 @@ final class Bullet extends AbstractAction
         public ?bool $fade=null,
         public ?string $style='list', // li?
         public ?int $size= null,
+        public ?string $header= null,
     ) {
         $this->msg = is_array($msg) ? $msg : [$msg];
         $this->fade ??= true;
         $this->size ??= max(1, 7-count($this->msg));
+//        dd(count($this->msg), $this->size);
     }
     public ?bool $noop = true;
 

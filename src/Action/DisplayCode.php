@@ -59,10 +59,13 @@ final class DisplayCode extends AbstractAction
 //        dd($this);
 
         if ($this->path) {
+            assert(file_exists($this->path), "Missing $this->path");
             if (!file_exists($this->path)) {
                 $code = "File $this->path does not exist. maybe run castor?";
             } else {
                 $code = file_get_contents($this->path);
+                $code = str_replace('<?php', '', $code);
+                $code = trim($code);
             }
         } else {
             $code = $this->content;

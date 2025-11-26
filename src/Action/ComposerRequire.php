@@ -19,7 +19,11 @@ final class ComposerRequire extends AbstractAction
         public ?string $a = null, // artifact ID
         public bool $display = true, // display the slide
         public bool $run = true, // run the actions
-    ) {}
+        public ?int $size = null,
+    )
+    {
+        $this->size ??= max(1, 7 - count($this->packages));
+    }
 
     public function toCommand(): string
     {

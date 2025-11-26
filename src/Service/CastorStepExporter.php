@@ -349,7 +349,7 @@ final class CastorStepExporter
     {
         $finder = (new Finder())
             ->files()
-            ->in(($this->projectDir ?? '') . '/castor')
+            ->in(($this->projectDir ?? '') . '/conference')
             ->name($this->glob ?? '*.castor.php')
             ->depth('== ' . $this->depth);
 

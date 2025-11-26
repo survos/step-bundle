@@ -2,10 +2,10 @@
 <div class="action action-bash card code-fs-{{action.size}}">
     <div class="card-body">
         {% if note %}
-        <p class="mb-3 mt-0 text-start">{{ note }}</p>
+        <i class="mb-3 mt-0 text-start">{{ note }}</i>
         {% endif %}
         {% if action.path %}
-        <div class="mb-3">{{ action.artifactLocator.relative(action.project, action.path) }}</div>
+{#        <div class="mb-3">{{ action.artifactLocator.relative(action.project, action.path) }}</div>#}
 {#        {{ dump(action.artifactLocator.publishPath(action.path)) }}#}
         {% endif %}
         <pre><code class="language-{{ lang|default('text') }}" data-trim data-noescape>{{ code }}</code></pre>

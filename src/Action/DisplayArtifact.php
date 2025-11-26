@@ -23,8 +23,9 @@ final class DisplayArtifact extends AbstractAction
         public ?string $lang = null,
         public ?string $note = null,
         public ?bool $fade = null,
+        public ?int $size = null,
     ) {
-//        dd($this, $this->highlightLanguage);
+        $this->size ??= 3;
     }
 
 
