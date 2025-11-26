@@ -24,10 +24,7 @@
 }
 
 .reveal .slides > section {
-    padding-bottom: 96px;
-    padding-left: 32px;
-    padding-right: 32px;
-    padding-top: 8px;
+    padding: 32px 96px;
 }
 
 .reveal.overview .slides > section {
@@ -43,10 +40,10 @@
 }
 
 .reveal .controls {
-    bottom: 60px;
+    bottom: 24px;
     color: #222222;
     font-size: 8px;
-    right: 16px;
+    right: 24px;
 }
 
 .reveal .controls .navigate-down {
@@ -91,7 +88,7 @@
 }
 
 .slide-shell .slide-header {
-    margin-top: 16px;
+    margin-top: 0;
 }
 
 .slide-shell .slide-content {
