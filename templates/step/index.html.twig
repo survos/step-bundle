@@ -31,6 +31,12 @@
   <div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
     <h1>Available Castor Runners</h1>
 
+      {% for dir in ['conference'] %}
+          <a href="{{ path('survos_step_slideshow', {code: dir}) }}">
+              DIR {{ dir }}
+          </a>
+      {% endfor %}
+
     <a href="{{ path('run_castor') }}">Interactive Run Castor</a>
     <a href="{{ path('survos_castor_logs_index') }}">Logs</a>
 

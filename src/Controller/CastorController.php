@@ -9,6 +9,7 @@ use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\CastorStepExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -104,8 +105,23 @@ final class CastorController extends AbstractController
         }
 
 //        $template = sprintf('slides/%s.html.twig', $code);
-        $deck = $this->exporter->exportSlides($code);
-        $slides = $deck['slides'] ?? [];
+
+        $dir = $this->projectDir . DIRECTORY_SEPARATOR . $code;
+        if (is_dir($dir)) {
+            $slides = [];
+            foreach (new Finder()->in($dir)->files()->sortByName() as $file) {
+                $deck = $this->exporter->exportSlides($file->getBasename('.castor.php'),
+                    $file->getRealPath()
+                );
+                foreach ($deck['slides'] as $slide) {
+                    $slides[] = $slide;
+                }
+//                $slides = array_merge($slides, $deck['slides'] ?? []);
+            }
+        } else {
+            $deck = $this->exporter->exportSlides($code);
+            $slides = $deck['slides'] ?? [];
+        }
 
         return $this->render($template, [
             'renderer' => $renderer,

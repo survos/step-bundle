@@ -351,7 +351,9 @@ final class CastorStepExporter
             ->files()
             ->in(($this->projectDir ?? '') . '/conference')
             ->name($this->glob ?? '*.castor.php')
-            ->depth('== ' . $this->depth);
+            ->depth('== ' . $this->depth)
+            ->sortByName()
+        ;
 
         return iterator_to_array($finder, false);
     }
