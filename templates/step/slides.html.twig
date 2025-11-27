@@ -35,13 +35,19 @@
 <div class="reveal" {{ stimulus_controller(_sc, { code: code, jsonUrl: json_url, theme: 'light' }) }}>
     <div class="slides">
         {# Optional intro slide #}
-        <section class="title-slide">
-            <div style="text-align: center;">
-                <img src="{{ asset('sfcon_logo.svg') }}" style="background-color: black; max-width: 400px; height: auto; margin-bottom: 2em;" alt="SymfonyCon Amsterdam 2025" />
-                <h1 style="font-size: 1.6em; font-weight: bold; color: #333; line-height: 1.3; margin-bottom: 0.5em;">
-                    Keyword, Facet and Semantic Searching<br>with Meilisearch and Symfony
-                </h1>
-                <p style="font-size: 1.3em; color: #666; margin-top: 1em;">Tac Tacelosky</p>
+        <section class="intro-slide">
+            <div class="slide-wrapper">
+                <div class="slide-container">
+                    <div class="slide-shell">
+                        <div class="slide-content">
+                            <img src="{{ asset('sfcon_logo.svg') }}" style="background-color: black; height: auto; margin-bottom: 48px; max-width: 400px;" alt="SymfonyCon Amsterdam 2025" />
+                            <h1 style="color: #333333; font-family: Libre Baskerville, Georgia; font-size: 42px; font-weight: 900; line-height: 1.75; letter-spacing: 1px;">
+                                Keyword, Facet and Semantic Searching<br>with Meilisearch and Symfony
+                            </h1>
+                            <p style="color: #666666; font-size: 24px; font-weight: 300; letter-spacing: 1px; margin-top: 48px; text-transform: uppercase;">Tac Tacelosky</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         {% if false %}
@@ -96,7 +102,9 @@
         {% set __step_title = slideTitle %}
         <section data-task-name="{{ taskName|e('html_attr') }}"
                  data-next-hint="{{ slide.next_hint|default('Explain this step') }}">
-
+            <div class="sfcon-logo">
+                <img src="{{ asset('sfcon_logo.svg') }}" style="background: black; height: auto; margin: 0; max-width: 128px;" />
+            </div>
             <div class="slide-container">
 
                 <div class="slide-shell">
@@ -180,18 +188,48 @@
         </section>
         {% endfor %}
         <section>
-            <h1>THANK YOU</h1>
-            <div class="contact-info">
-                <p><span class="label">SymfonyConnect:</span> @tacman</p>
-                <p><span class="label">Slack:</span> @Tac</p>
-                <p><span class="label">Email:</span> <a href="mailto:tacman@gmail.com">tacman@gmail.com</a></p>
-                <div class="links">
-                    <p><span class="label">Demo:</span> <a href="https://meili.survos.com">https://meili.survos.com</a></p>
-                    <p><span class="label">Repo:</span> <a href="https://github.com/survos-sites/meili">https://github.com/survos-sites/meili</a></p>
+            <div class="slide-wrapper">
+                <div class="slide-container">
+                    <div class="slide-shell">
+                        <div class="slide-header">
+                            <h1 style="font-family: Georgia, serif; font-size: 64px; font-weight: 900;">THANK YOU</h1>
+                        </div>
+                        <div class="slide-content">
+                            <div class="contact-info">
+                                <div class="contact-info-item">
+                                    <span class="item-label">SymfonyConnect:</span>
+                                    <span class="item-value">@tacman</span>
+                                </div>
+                                <div class="contact-info-item">
+                                    <span class="item-label">Slack:</span>
+                                    <span class="item-value">@Tac</span>
+                                </div>
+                                <div class="contact-info-item">
+                                    <span class="item-label">Email:</span>
+                                    <span class="item-value">
+                                        <a href="mailto:tacman@gmail.com">tacman@gmail.com</a>
+                                    </span>
+                                </div>
+                                <div class="contact-info-item">
+                                    <span class="item-label">Demo:</span>
+                                    <span class="item-value">
+                                        <a href="https://meili.survos.com" target="_blank">https://meili.survos.com</a>
+                                    </span>
+                                </div>
+                                <div class="contact-info-item">
+                                    <span class="item-label">Repo:</span>
+                                    <span class="item-value">
+                                        <a href="https://github.com/survos-sites/meili" target="_blank">https://github.com/survos-sites/meili</a>
+                                    </span>
+                                </div>
+                            </div>
+                            <img src="{{ asset('sfcon_logo.svg') }}" style="background: black; height: auto; margin-top: 48px; max-width: 192px;" />
+                        </div>
+                    </div>
                 </div>
             </div>
-            <img src="{{ asset('sfcon_logo.svg') }}" />
         </section>
+
     </div>
 
 </div>

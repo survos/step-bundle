@@ -428,3 +428,26 @@ ul.slide-bullets li.fragment.custom.current-fragment {
 /*    width: auto;*/
 /*    opacity: 0.7;*/
 /*}*/
+
+.contact-info {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 24px;
+    margin-top: 48px;
+}
+
+.contact-info-item {
+    display: flex;
+    font-size: 20px;
+    gap: 6px;
+}
+
+.reveal .slides > section > .sfcon-logo {
+    display: inline-flex;
+    position: absolute;
+    right: 32px;
+    top: 32px;
+    width: 128px;
+}
