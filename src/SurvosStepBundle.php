@@ -46,7 +46,6 @@ final class SurvosStepBundle extends AbstractBundle
         $builder->autowire(CastorController::class)
             ->setPublic(true)
             ->setAutowired(true)
-            ->setAutoconfigured(false) // if you turn this off…
             ->setArgument('$projectDir', '%kernel.project_dir%')
             ->setArgument('$exporter', new Reference(CastorStepExporter::class))
             ->addTag('controller.service_arguments')

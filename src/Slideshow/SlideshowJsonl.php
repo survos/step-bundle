@@ -82,7 +82,7 @@ final class SlideshowJsonl
         $code ??= self::slideshowCode();
         if (!isset(self::$writers[$code])) {
             $path = self::filePath($code);
-            self::$writers[$code] = JsonlWriter::open($path, createDirs: true);
+            self::$writers[$code] = JsonlWriter::open($path);
             if (self::debug()) { \fwrite(\STDERR, "[sjl] writer opened: {$path}\n"); }
             \register_shutdown_function(static function () use ($code): void {
                 if (isset(self::$writers[$code])) {

@@ -81,7 +81,7 @@ final class CastorController extends AbstractController
         #[MapQueryParameter] bool $debug=false
     ): Response
     {
-        switch ($route = $request->get('_route')) {
+        switch ($route = $request->attributes->get('_route')) {
             case 'survos_step_slideshow':
                 $renderer = $revealActionRenderer;
                 $template = '@SurvosStep/step/slides.html.twig';
@@ -95,7 +95,7 @@ final class CastorController extends AbstractController
                 $template = '@SurvosStep/step/md.html.twig';
                 break;
         }
-        if ($request->get('_route') === 'survos_step_slideshow') {
+        if ($request->attributes->get('_route') === 'survos_step_slideshow') {
             $renderer = $revealActionRenderer;
             $template = '@SurvosStep/step/slides.html.twig';
         } else {
