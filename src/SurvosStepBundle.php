@@ -2,6 +2,7 @@
 
 namespace Survos\StepBundle;
 
+use Survos\CoreBundle\HasAssetMapperInterface;
 use Survos\CoreBundle\Traits\HasAssetMapperTrait;
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
@@ -20,11 +21,11 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-final class SurvosStepBundle extends AbstractBundle
+final class SurvosStepBundle extends AbstractBundle implements HasAssetMapperInterface
 {
-    const string NAME = 'step'; // @todo use this for getPaths()
+    use HasAssetMapperTrait;
 
-    use HasAssetMapperTrait; // this creates a dependency on core-bundle!  Maybe just repeat it here?
+    public const ASSET_NAMESPACE = '@survos/step';
     protected string $extensionAlias = 'survos_step';
 
     /**
@@ -119,16 +120,7 @@ final class SurvosStepBundle extends AbstractBundle
             ->end()
         ;
     }
-
-    /**
-     * @return array<string>
-     */
-    public function getPaths(): array
-    {
-        if ($dir = realpath(__DIR__ . '/../assets/')) {
-            if (!file_exists($dir)) {
-                throw new \RuntimeException(sprintf('The directory "%s" does not exist.', $dir));
-            }
+}
         }
         return [$dir => '@survos/step'];
     }
