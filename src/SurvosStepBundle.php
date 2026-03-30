@@ -2,8 +2,7 @@
 
 namespace Survos\StepBundle;
 
-use Survos\CoreBundle\HasAssetMapperInterface;
-use Survos\CoreBundle\Traits\HasAssetMapperTrait;
+use Survos\CoreBundle\Bundle\AssetMapperBundle;
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
 use Survos\StepBundle\Renderer\DebugActionRenderer;
@@ -19,13 +18,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
-
-final class SurvosStepBundle extends AbstractBundle implements HasAssetMapperInterface
+final class SurvosStepBundle extends AssetMapperBundle
 {
-    use HasAssetMapperTrait;
-
-    public const ASSET_NAMESPACE = '@survos/step';
+    public const ASSET_PACKAGE = 'step';
     protected string $extensionAlias = 'survos_step';
 
     /**
@@ -120,9 +115,4 @@ final class SurvosStepBundle extends AbstractBundle implements HasAssetMapperInt
             ->end()
         ;
     }
-}
-        }
-        return [$dir => '@survos/step'];
-    }
-
 }
