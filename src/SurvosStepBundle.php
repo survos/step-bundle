@@ -2,7 +2,7 @@
 
 namespace Survos\StepBundle;
 
-use Survos\CoreBundle\Bundle\AssetMapperBundle;
+use Survos\Kit\AbstractUxBundle;
 use Survos\StepBundle\Controller\CastorController;
 use Survos\StepBundle\Controller\CastorLogController;
 use Survos\StepBundle\Renderer\DebugActionRenderer;
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
-final class SurvosStepBundle extends AssetMapperBundle
+final class SurvosStepBundle extends AbstractUxBundle
 {
     public const ASSET_PACKAGE = 'step';
     protected string $extensionAlias = 'survos_step';

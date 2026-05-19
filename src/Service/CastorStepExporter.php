@@ -9,7 +9,7 @@ use Castor\Attribute\AsTask;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionFunction;
-use Survos\CoreBundle\Service\SurvosUtils;
+
 use Survos\StepBundle\Metadata\Step;
 use Survos\StepBundle\Action\{
     ComposerRequire,
@@ -168,7 +168,7 @@ final class CastorStepExporter
                         'step'       => $step,
                         'actions'    => [],
                         'task'       => $asTask,
-                        'sparseStep' => SurvosUtils::removeNullsAndEmptyArrays($step),
+                        'sparseStep' => array_filter($step, fn($v) => $v !== null && $v !== '' && $v !== []),
 
                         'task_name'   => $taskName,
                         'function'    => $rf->getName(),
@@ -197,7 +197,7 @@ final class CastorStepExporter
                         'step'       => $subStep,
                         'actions'    => $chunkActions,
                         'task'       => $asTask,
-                        'sparseStep' => SurvosUtils::removeNullsAndEmptyArrays($subStep),
+                        'sparseStep' => array_filter($subStep, fn($v) => $v !== null && $v !== '' && $v !== []),
 
                         'task_name'   => $taskName,
                         'function'    => $rf->getName(),
