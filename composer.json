@@ -25,7 +25,6 @@
         ]
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
         "symfony/panther": "^2.2"
     }
 }
