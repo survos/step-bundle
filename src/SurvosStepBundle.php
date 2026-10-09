@@ -21,7 +21,6 @@ use Symfony\Component\DependencyInjection\Reference;
 // Symfony\Component\HttpKernel\Bundle\Bundle <-- Flex auto-registration marker (see Survos\Kit\AbstractSurvosBundle)
 final class SurvosStepBundle extends AbstractUxBundle
 {
-    public const ASSET_PACKAGE = 'step';
     protected string $extensionAlias = 'survos_step';
 
     /**

@@ -1,5 +1,5 @@
 {
-  "name": "@survos/step",
+  "name": "@survos/step-bundle",
   "description": "slideshow using reveal.js and attributes on castor tasks.",
   "license": "MIT",
   "version": "1.1",
