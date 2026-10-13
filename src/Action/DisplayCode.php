@@ -1,9 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
-use function Castor\{io, context};
+
+use function Castor\context;
+use function Castor\io;
 
 /**
  * Show code from a path (presentational).
@@ -11,7 +15,7 @@ use function Castor\{io, context};
 final class DisplayCode extends AbstractAction
 {
     public function __construct(
-        public ?string $path=null,
+        public ?string $path = null,
         public ?string $lang = null,
         public ?string $note = null,
         public ?string $content = null,
@@ -19,26 +23,26 @@ final class DisplayCode extends AbstractAction
         public ?int $size = null,
     ) {
         $this->size ??= 3;
-//        dd($this, $this->highlightLanguage);
+        //        dd($this, $this->highlightLanguage);
     }
     public string $highlightLanguage { get => $this->lang; }
 
     public function summary(): string
     {
-        return sprintf('Show %s', $this->path??$this->content);
+        return sprintf('Show %s', $this->path ?? $this->content);
     }
 
     public function toCommand(): ?string
     {
+        //        if (!file_exists($this->path)) {
+        //            io()->writeln(sprintf("Display contents of %s when it exists", $this->path)));
+        //        }
+        // //        return "cat $this->path";
+        //        io()->writeln(sprintf('Display: %s', $this->path));
+        //        $code = file_get_contents($this->path);
+        //        io()->writeln($code);
+        return $this->path ? 'cat '.$this->path : $this->content;
 
-//        if (!file_exists($this->path)) {
-//            io()->writeln(sprintf("Display contents of %s when it exists", $this->path)));
-//        }
-////        return "cat $this->path";
-//        io()->writeln(sprintf('Display: %s', $this->path));
-//        $code = file_get_contents($this->path);
-//        io()->writeln($code);
-        return $this->path ? 'cat ' . $this->path: $this->content;
         // @todo: figure out slide formatting v. console output
         return $code;
     }
@@ -46,17 +50,18 @@ final class DisplayCode extends AbstractAction
     public function execute(Context $ctx, bool $dryRun = false): void
     {
         // No side-effects; presentational.
-        io()->writeln(sprintf('Display: %s', $this->path??$this->content));
+        io()->writeln(sprintf('Display: %s', $this->path ?? $this->content));
     }
 
-    public function viewTemplate(): string {
+    public function viewTemplate(): string
+    {
         return 'display_code.html.twig';
     }
 
     public function viewContext(): array
     {
-//        dd(context()->workingDirectory());
-//        dd($this);
+        //        dd(context()->workingDirectory());
+        //        dd($this);
 
         if ($this->path) {
             assert(file_exists($this->path), "Missing $this->path");

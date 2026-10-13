@@ -1,6 +1,9 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // file: src/Step/ActionDebug.php
+
 namespace Survos\StepBundle\Step;
 
 use function Castor\context;
@@ -20,9 +23,9 @@ final class ActionDebug
     {
         $ctx = \function_exists('Castor\context') ? context() : null;
 
-        $taskName   = $ctx && \method_exists($ctx, 'getTaskName') ? (string)$ctx->getTaskName() : null;
-        $slideshow  = $_ENV['SLIDESHOW']      ?? \getenv('SLIDESHOW')      ?: null;
-        $workingDir = $_ENV['WORKING_DIR']    ?? \getenv('WORKING_DIR')    ?: \getcwd();
+        $taskName = $ctx && \method_exists($ctx, 'getTaskName') ? (string) $ctx->getTaskName() : null;
+        $slideshow = $_ENV['SLIDESHOW'] ?? \getenv('SLIDESHOW') ?: null;
+        $workingDir = $_ENV['WORKING_DIR'] ?? \getenv('WORKING_DIR') ?: \getcwd();
         $castorFile = self::guessCastorFile($slideshow);
 
         $hasFetcher = \function_exists('_actions_from_current_task');
@@ -39,7 +42,7 @@ final class ActionDebug
             ));
         } else {
             // fallback to stderr
-            \fwrite(\STDERR, "[action] task={$taskName} castor={$castorFile} slideshow={$slideshow} cwd={$workingDir} fetcher=" . ($hasFetcher ? 'present' : 'missing') . "\n");
+            \fwrite(\STDERR, "[action] task={$taskName} castor={$castorFile} slideshow={$slideshow} cwd={$workingDir} fetcher=".($hasFetcher ? 'present' : 'missing')."\n");
         }
 
         if (!$hasFetcher) {
@@ -51,6 +54,7 @@ final class ActionDebug
             $actions = _actions_from_current_task();
         } catch (\Throwable $e) {
             \fwrite(\STDERR, "[action] fetcher threw: {$e->getMessage()}\n");
+
             return [];
         }
 
@@ -58,12 +62,12 @@ final class ActionDebug
 
         if (\function_exists('Castor\io')) {
             io()->writeln(sprintf('DEBUG[action]: fetched %d action(s)', $n));
-            foreach (\array_slice((array)$actions, 0, 3, true) as $i => $a) {
-                io()->writeln('DEBUG[action] ['.$i.'] ' . (\is_string($a) ? $a : \json_encode($a, \JSON_UNESCAPED_SLASHES)));
+            foreach (\array_slice((array) $actions, 0, 3, true) as $i => $a) {
+                io()->writeln('DEBUG[action] ['.$i.'] '.(\is_string($a) ? $a : \json_encode($a, \JSON_UNESCAPED_SLASHES)));
             }
         }
 
-        return (array)$actions;
+        return (array) $actions;
     }
 
     /**
@@ -78,7 +82,7 @@ final class ActionDebug
         }
 
         $included = \get_included_files();
-        $candidates = \array_values(\array_filter($included, static fn($f) => \str_ends_with($f, '.castor.php')));
+        $candidates = \array_values(\array_filter($included, static fn ($f) => \str_ends_with($f, '.castor.php')));
 
         if (!$candidates) {
             return null;

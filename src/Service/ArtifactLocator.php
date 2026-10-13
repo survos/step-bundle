@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Survos\StepBundle\Service;
 
 use Symfony\Component\Filesystem\Path;
@@ -12,11 +15,11 @@ final class ArtifactLocator
     public function __construct(
         ?KernelInterface $kernel = null,
         ?string $projectDir = null,
-        string $subpath = 'public/artifacts'
+        string $subpath = 'public/artifacts',
     ) {
         // Priority: explicit projectDir → Kernel → env/const/helpers → getcwd()
         $this->projectDir = $projectDir
-            ?? ($kernel?->getProjectDir())
+            ?? $kernel?->getProjectDir()
             ?? (getenv('STEPS_PROJECT_DIR') ?: null)
             ?? (defined('STEPS_PROJECT_DIR') ? STEPS_PROJECT_DIR : null)
             ?? (function_exists('steps_project_dir') ? steps_project_dir() : null)
@@ -53,6 +56,7 @@ final class ArtifactLocator
     {
         return Path::join($this->projectDir, $this->subpath, $projectCode, ltrim($rel, '/'));
     }
+
     public function relative(string $projectCode, string $rel): string
     {
         return str_replace('public', '',
@@ -68,6 +72,7 @@ final class ArtifactLocator
     public function read(string $projectCode, string $rel): ?string
     {
         $abs = $this->absolute($projectCode, $rel);
+
         return is_file($abs) ? file_get_contents($abs) : null;
     }
 
@@ -78,6 +83,7 @@ final class ArtifactLocator
         if (false === file_put_contents($abs, $contents)) {
             throw new \RuntimeException("Failed to write artifact: $abs");
         }
+
         return $abs;
     }
 
@@ -93,9 +99,9 @@ final class ArtifactLocator
         // hack!
         return $this->subpath;
     }
+
     public function publicPath(): string
     {
         return $this->projectDir;
     }
-
 }

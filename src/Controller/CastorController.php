@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 // File: src/Controller/CastorController.php
 
 namespace Survos\StepBundle\Controller;
@@ -15,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,7 +27,8 @@ final class CastorController extends AbstractController
     public function __construct(
         private readonly CastorStepExporter $exporter,
         #[Autowire('%kernel.project_dir%')] private string $projectDir,
-    ) {}
+    ) {
+    }
 
     #[Route('/', name: 'survos_step_index', methods: ['GET'])]
     public function index(): Response
@@ -42,7 +44,7 @@ final class CastorController extends AbstractController
     public function runCastor(): Response
     {
         $process = new Process(['castor', 'foo:bar']);
-//        $process->setWorkingDirectory($this->projectDir);
+        //        $process->setWorkingDirectory($this->projectDir);
         $process->setTimeout(300); // 5 minutes timeout
 
         $process->run();
@@ -53,9 +55,8 @@ final class CastorController extends AbstractController
 
         $output = $process->getOutput();
 
-        return new Response('Task executed: ' . $output);
+        return new Response('Task executed: '.$output);
     }
-
 
     #[Route('/json/{code}.json', name: 'survos_step_json', methods: ['GET'])]
     public function castorJson(string $code): JsonResponse
@@ -68,7 +69,7 @@ final class CastorController extends AbstractController
         ]);
     }
 
-// file: src/Controller/StepSlidesController.php — flatten to slides[]
+    // file: src/Controller/StepSlidesController.php — flatten to slides[]
 
     #[Route('/show/{code}', name: 'survos_step_slideshow', methods: ['GET'])]
     #[Route('/overview/{code}', name: 'survos_step_slides', methods: ['GET'])]
@@ -78,9 +79,8 @@ final class CastorController extends AbstractController
         RevealActionRenderer $revealActionRenderer,
         MarkdownActionRenderer $markdownActionRenderer,
         RequestStack $requestStack,
-        #[MapQueryParameter] bool $debug=false
-    ): Response
-    {
+        #[MapQueryParameter] bool $debug = false,
+    ): Response {
         switch ($route = $request->attributes->get('_route')) {
             case 'survos_step_slideshow':
                 $renderer = $revealActionRenderer;
@@ -95,18 +95,17 @@ final class CastorController extends AbstractController
                 $template = '@SurvosStep/step/md.html.twig';
                 break;
         }
-        if ($request->attributes->get('_route') === 'survos_step_slideshow') {
+        if ('survos_step_slideshow' === $request->attributes->get('_route')) {
             $renderer = $revealActionRenderer;
             $template = '@SurvosStep/step/slides.html.twig';
         } else {
             $renderer = $debugActionRenderer;
             $template = '@SurvosStep/step/debug.html.twig';
-
         }
 
-//        $template = sprintf('slides/%s.html.twig', $code);
+        //        $template = sprintf('slides/%s.html.twig', $code);
 
-        $dir = $this->projectDir . DIRECTORY_SEPARATOR . $code;
+        $dir = $this->projectDir.DIRECTORY_SEPARATOR.$code;
         if (is_dir($dir)) {
             $slides = [];
             foreach (new Finder()->in($dir)->files()->sortByName() as $file) {
@@ -116,7 +115,7 @@ final class CastorController extends AbstractController
                 foreach ($deck['slides'] as $slide) {
                     $slides[] = $slide;
                 }
-//                $slides = array_merge($slides, $deck['slides'] ?? []);
+                //                $slides = array_merge($slides, $deck['slides'] ?? []);
             }
         } else {
             $deck = $this->exporter->exportSlides($code);
@@ -125,12 +124,11 @@ final class CastorController extends AbstractController
 
         return $this->render($template, [
             'renderer' => $renderer,
-            'code'     => (string)($deck['code'] ?? $code),
-            'slides'   => array_values($slides),
+            'code' => (string) ($deck['code'] ?? $code),
+            'slides' => array_values($slides),
             'debug' => $debug,
             'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
-            'deck'     => $deck,
+            'deck' => $deck,
         ]);
     }
-
 }

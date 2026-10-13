@@ -1,10 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
 use Survos\StepBundle\Util\ArtifactHelper;
-use function Castor\{io,run,task};
+
+use function Castor\io;
+use function Castor\run;
+use function Castor\task;
 
 /**
  * Run a shell command.
@@ -12,15 +17,15 @@ use function Castor\{io,run,task};
 final class Bash extends AbstractAction
 {
     public function __construct(
-        public ?string $command=null,
-        public ?string $description =null,
+        public ?string $command = null,
+        public ?string $description = null,
         public ?string $note = null,
         public ?string $cwd = null,
         public ?string $a = null, // artifact ID
         public bool $display = true, // display the slide
         public ?int $size = null,
         public bool $run = true, // run the actions
-        public array $commands=[], // to put them all on one slide
+        public array $commands = [], // to put them all on one slide
     ) {
         $this->size ??= 3;
         if ($command) {
@@ -41,6 +46,7 @@ final class Bash extends AbstractAction
         $execCtx = $this->cwd ? $ctx->withWorkingDirectory($this->cwd) : $ctx;
         if ($dryRun) {
             io()->writeln(sprintf('<comment>DRY</comment> (%S) $ %s', $execCtx->workingDirectory, $this->command));
+
             return;
         }
         try {
@@ -48,32 +54,32 @@ final class Bash extends AbstractAction
                 if (!$this->run) {
                     continue;
                 }
-//                run($command, context: $execCtx);
+                //                run($command, context: $execCtx);
                 // artifact doesn't work right if multiple commands are run in one slide
-                $output = run($command, context: $execCtx, callback: fn($type, $buffer) => io()->write($buffer));
+                $output = run($command, context: $execCtx, callback: fn ($type, $buffer) => io()->write($buffer));
                 // @todo: move this to castor listener
                 $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
                 if ($this->a) {
                     $artifactLocation = $helper->save($this->a, $output->getOutput());
-                    io()->writeln($artifactLocation . " written");
+                    io()->writeln($artifactLocation.' written');
                 }
             }
-
-
         } catch (\Throwable $e) {
             io()->writeln($e->getMessage());
             io()->error($command);
-            exit();
+            exit;
         }
-
     }
 
-//    public function toCommand(): string
-//    {
-//        return $this->command;
-//    }
+    //    public function toCommand(): string
+    //    {
+    //        return $this->command;
+    //    }
 
-    public function viewTemplate(): string { return 'bash.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'bash.html.twig';
+    }
 
     public function viewContext(): array
     {

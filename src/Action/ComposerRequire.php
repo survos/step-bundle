@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
 
 /**
- * composer require ... (dev or prod)
+ * composer require ... (dev or prod).
  */
 final class ComposerRequire extends AbstractAction
 {
@@ -20,8 +22,7 @@ final class ComposerRequire extends AbstractAction
         public bool $display = true, // display the slide
         public bool $run = true, // run the actions
         public ?int $size = null,
-    )
-    {
+    ) {
         $this->size ??= max(1, 7 - count($this->packages));
     }
 
@@ -49,7 +50,10 @@ final class ComposerRequire extends AbstractAction
         new Bash($cmd, $this->note)->execute($ctx, $dryRun);
     }
 
-    public function viewTemplate(): string { return 'composer.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'composer.html.twig';
+    }
 
     public function viewContext(): array
     {
@@ -59,7 +63,7 @@ final class ComposerRequire extends AbstractAction
             'packages' => $this->packages,
             'dev' => $this->dev,
             'note' => $this->note,
-            'cwd'  => $this->cwd,
+            'cwd' => $this->cwd,
         ];
     }
 }

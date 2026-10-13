@@ -1,11 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
 use Survos\StepBundle\Util\ArtifactHelper;
-use function Castor\{io, context, task};
 use Symfony\Component\Panther\Client;
+
+use function Castor\io;
+use function Castor\task;
 
 /**
  * Minimal "open URL" action.
@@ -20,7 +24,8 @@ final class BrowserVisit extends AbstractAction
         public int $sleep = 1,
         public ?string $a = null,
         public bool $displayOnly = false,
-    ) {}
+    ) {
+    }
 
     public function summary(): string
     {
@@ -32,7 +37,7 @@ final class BrowserVisit extends AbstractAction
         if ($this->displayOnly) {
             return;
         }
-        $settings =  [
+        $settings = [
             '--window-size=1024,2048',
         ];
         if ($this->host && str_contains($this->host, '.wip')) {
@@ -44,32 +49,34 @@ final class BrowserVisit extends AbstractAction
             null,
             $settings,
         );
-        $url = $this->host . $this->path;
-//        $host = parse_url($url, PHP_URL_HOST);
+        $url = $this->host.$this->path;
+        //        $host = parse_url($url, PHP_URL_HOST);
         io()->warning($url);
         $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
         if ($this->a) {
             $client->request('GET', $url);
             sleep($this->sleep); // Wait 2 seconds for content to load
-//            $artifactLocation = $helper->save($this->a, $output->getOutput());
+            //            $artifactLocation = $helper->save($this->a, $output->getOutput());
             $artifactLocation = artifact_path($this->a);
             $response = $client->takeScreenshot($artifactLocation);
-//            dd $artifactLocation);
-            io()->writeln($artifactLocation . " written");
-        } else {
-            // could just be for slideshow, e.g. open api keys
-//            io()->error("No artifact name, why take a screenshot?");
+            //            dd $artifactLocation);
+            io()->writeln($artifactLocation.' written');
         }
+        // could just be for slideshow, e.g. open api keys
+        //            io()->error("No artifact name, why take a screenshot?");
 
         // old way, actually open  Debatable, use symfony open:local --path
-//        $cmd = sprintf('xdg-open %s >/dev/null 2>&1 || open %s >/dev/null 2>&1 || true', escapeshellarg($url), escapeshellarg($url));
-//        (new Bash($cmd, 'Open in browser'))->execute($ctx, $dryRun);
+        //        $cmd = sprintf('xdg-open %s >/dev/null 2>&1 || open %s >/dev/null 2>&1 || true', escapeshellarg($url), escapeshellarg($url));
+        //        (new Bash($cmd, 'Open in browser'))->execute($ctx, $dryRun);
     }
 
-    public function viewTemplate(): string { return 'browser_visit.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'browser_visit.html.twig';
+    }
 
     public function viewContext(): array
     {
-        return ['url' => ($this->host ? rtrim($this->host, '/') : '') . $this->path, 'note' => $this->note];
+        return ['url' => ($this->host ? rtrim($this->host, '/') : '').$this->path, 'note' => $this->note];
     }
 }

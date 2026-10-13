@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle;
 
@@ -18,6 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
+
 // Symfony\Component\HttpKernel\Bundle\Bundle <-- Flex auto-registration marker (see Survos\Kit\AbstractSurvosBundle)
 final class SurvosStepBundle extends AbstractUxBundle
 {
@@ -31,13 +34,12 @@ final class SurvosStepBundle extends AbstractUxBundle
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         // Service that finds castor files and exports steps JSON
-        array_map(fn($class) => $builder->autowire($class)
+        array_map(fn ($class) => $builder->autowire($class)
             ->setPublic(true)
             ->setAutowired(true)
             ->setAutoconfigured(true)
             ->setArgument('$projectDir', '%kernel.project_dir%'),
             [CastorStepExporter::class, CastorLogLocator::class]);
-
 
         $builder->autowire(CastorController::class)
             ->setPublic(true)
@@ -47,30 +49,29 @@ final class SurvosStepBundle extends AbstractUxBundle
             ->addTag('controller.service_arguments')
             ->addTag('container.service_subscriber'); // <--- ✅ correct tag
 
-//        $builder->autowire(CastorController::class)
-//            ->setPublic(true)
-//            ->setAutowired(true)
-//            ->setAutoconfigured(true)
-//            ->setArgument('$projectDir', '%kernel.project_dir%')
-//            ->setArgument('$exporter', new Reference(CastorStepExporter::class))
-//            ->addTag('container.service_arguments')
-//            ->addTag('controller.service_subscriber');
-//
+        //        $builder->autowire(CastorController::class)
+        //            ->setPublic(true)
+        //            ->setAutowired(true)
+        //            ->setAutoconfigured(true)
+        //            ->setArgument('$projectDir', '%kernel.project_dir%')
+        //            ->setArgument('$exporter', new Reference(CastorStepExporter::class))
+        //            ->addTag('container.service_arguments')
+        //            ->addTag('controller.service_subscriber');
+        //
         // Controllers
-        array_map(fn(string $class) => $builder->autowire($class)
+        array_map(fn (string $class) => $builder->autowire($class)
             ->setPublic(true)
             ->setAutowired(true)
             ->setAutoconfigured(true)
             ->addTag('controller.service_arguments')
-            ->addTag('controller.service_subscriber')
-        , [CastorLogController::class]);
+            ->addTag('controller.service_subscriber'), [CastorLogController::class]);
 
         // inside SurvosStepBundle::loadExtension()
         $builder->autowire(StepRuntimeExtension::class)
             ->setArgument('$projectDir', '%kernel.project_dir%')
             ->addTag('twig.extension');
 
-// You can make this configurable; hard-code for brevity
+        // You can make this configurable; hard-code for brevity
         $subpath = 'public/artifacts';
 
         $def = new Definition(ArtifactLocator::class);
@@ -87,22 +88,20 @@ final class SurvosStepBundle extends AbstractUxBundle
         $def->setAutowired(false);    // not used because we’re using a factory
         $def->setAutoconfigured(true);
 
-        $builder    ->setDefinition(ArtifactLocator::class, $def);
+        $builder->setDefinition(ArtifactLocator::class, $def);
 
-
-        foreach ([DebugActionRenderer::class, MarkdownActionRenderer::class ,RevealActionRenderer::class] as $class) {
+        foreach ([DebugActionRenderer::class, MarkdownActionRenderer::class, RevealActionRenderer::class] as $class) {
             $builder->autowire($class)
                 ->setArgument('$projectDir', '%kernel.project_dir%')
                 ->setPublic(true)
                 ->setAutowired(true)
                 ->addTag('survos_step.action_renderer');
         }
-//        $builder->autowire(ArtifactHelper::class)
-//            ->setArgument('$projectDir', '%kernel.project_dir%')
-//            ->setPublic(true)
-//            ->setAutowired(true)
-//            ->addTag('survos_step.action_renderer');
-
+        //        $builder->autowire(ArtifactHelper::class)
+        //            ->setArgument('$projectDir', '%kernel.project_dir%')
+        //            ->setPublic(true)
+        //            ->setAutowired(true)
+        //            ->addTag('survos_step.action_renderer');
     }
 
     public function configure(DefinitionConfigurator $definition): void

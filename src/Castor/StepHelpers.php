@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // file: src/Castor/StepHelpers.php  (or wherever you keep it)
 use Survos\StepBundle\Metadata\Step;
@@ -26,7 +28,7 @@ function _actions_from_current_task(): array
             try {
                 $ref = new ReflectionMethod($frame['class'], $frame['function']);
                 break;
-            } catch (\ReflectionException) {
+            } catch (ReflectionException) {
                 // keep looking
             }
         }
@@ -36,7 +38,7 @@ function _actions_from_current_task(): array
             try {
                 $ref = new ReflectionFunction($frame['function']);
                 break;
-            } catch (\ReflectionException) {
+            } catch (ReflectionException) {
                 // keep looking
             }
         }

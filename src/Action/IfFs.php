@@ -1,20 +1,23 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // file: src/Action/IfFs.php
+
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
 use Symfony\Component\Filesystem\Path;
+
 use function Castor\fs;
 
 /**
  * Contract (informal): any Action class may implement toCommand(Context): string|array|null
  * - string|array => run via Castor\run()
- * - null         => skip (condition not met)
+ * - null         => skip (condition not met).
  */
 interface ToCommandConvertible
 {
-    /** @return string|array|null */
     public function toCommand(Context $ctx): string|array|null;
 }
 
@@ -25,13 +28,15 @@ abstract class AbstractFsGuard implements ToCommandConvertible
 {
     public function __construct(
         protected readonly object $inner,
-        protected readonly string $path
-    ) {}
+        protected readonly string $path,
+    ) {
+    }
 
     /** Convert relative path to absolute, based on the Castor context workingDirectory. */
     protected function abs(Context $ctx): string
     {
         $wd = $ctx->workingDirectory ?? getcwd();
+
         return Path::isAbsolute($this->path) ? $this->path : rtrim($wd, '/').'/'.$this->path;
     }
 
@@ -48,6 +53,7 @@ abstract class AbstractFsGuard implements ToCommandConvertible
         if (method_exists($this->inner, 'toCommand')) {
             /** @var string|array|null $spec */
             $spec = $this->inner->toCommand($ctx);
+
             return $spec;
         }
 
@@ -92,15 +98,21 @@ final class IfDirEmpty extends AbstractFsGuard
             return true;
         }
         $dh = @opendir($absPath);
-        if (!$dh) { return true; }
+        if (!$dh) {
+            return true;
+        }
         try {
             while (false !== ($e = readdir($dh))) {
-                if ($e === '.' || $e === '..') { continue; }
+                if ('.' === $e || '..' === $e) {
+                    continue;
+                }
+
                 return false;
             }
         } finally {
             @closedir($dh);
         }
+
         return true;
     }
 }
@@ -110,17 +122,25 @@ final class IfDirNotEmpty extends AbstractFsGuard
 {
     protected function passes(string $absPath): bool
     {
-        if (!is_dir($absPath)) { return false; }
+        if (!is_dir($absPath)) {
+            return false;
+        }
         $dh = @opendir($absPath);
-        if (!$dh) { return false; }
+        if (!$dh) {
+            return false;
+        }
         try {
             while (false !== ($e = readdir($dh))) {
-                if ($e === '.' || $e === '..') { continue; }
+                if ('.' === $e || '..' === $e) {
+                    continue;
+                }
+
                 return true;
             }
         } finally {
             @closedir($dh);
         }
+
         return false;
     }
 }

@@ -40,6 +40,7 @@ final class YamlUtil
                 $a[$k] = $v;
             }
         }
+
         return $a;
     }
 }

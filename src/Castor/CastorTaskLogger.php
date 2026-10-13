@@ -1,27 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // file lives in bundle, but Castor requires global functions with attributes.
+
 namespace Survos\StepBundle\Castor;
 
 use Castor\Attribute\AsListener;
-use Castor\Event\BeforeExecuteTaskEvent;
+use Castor\Event\AfterBootEvent;
 use Castor\Event\AfterExecuteTaskEvent;
+use Castor\Event\BeforeExecuteTaskEvent;
 use Castor\Event\ProcessCreatedEvent;
 use Castor\Event\ProcessStartEvent;
 use Castor\Event\ProcessTerminateEvent;
-use Castor\Event\AfterBootEvent;
 use Symfony\Component\Uid\Uuid;
-use Survos\JsonlBundle\IO\JsonlWriter;
 
-if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
-
+if (false && !function_exists(__NAMESPACE__.'\\castor_after_boot')) {
     /**
      * Ensure slideshow row exists (optional). Will no-op if container/EM unavailable.
      */
     #[AsListener(AfterBootEvent::class, priority: 0)]
     function castor_after_boot(AfterBootEvent $event): void
     {
-
         $slideshowCode = $_ENV['SLIDESHOW'] ?? getenv('SLIDESHOW') ?: null;
         $slideshowClass = $_ENV['SLIDESHOW_CLASS'] ?? getenv('SLIDESHOW_CLASS') ?: null;
         if (!$slideshowCode || !$slideshowClass || !class_exists($slideshowClass) || !is_subclass_of($slideshowClass, BaseSlideshow::class)) {
@@ -33,7 +33,7 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
             $existing = $repo->findOneBy(['code' => $slideshowCode]);
             if (!$existing) {
                 /** @var BaseSlideshow $row */
-                $row = new $slideshowClass($slideshowCode, strtoupper($slideshowCode) . ' Slideshow', 'Auto-created by Castor');
+                $row = new $slideshowClass($slideshowCode, strtoupper($slideshowCode).' Slideshow', 'Auto-created by Castor');
                 $em->persist($row);
                 $em->flush();
             }
@@ -49,10 +49,12 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
     function castor_before_execute(BeforeExecuteTaskEvent $event): void
     {
         $logger = CastorKernelBridge::logger();
-        $logger->error("We made it to " . __FUNCTION__);
+        $logger->error('We made it to '.__FUNCTION__);
 
         $em = CastorKernelBridge::em();
-        if (!$em) { return; }
+        if (!$em) {
+            return;
+        }
 
         $taskRunClass = $_ENV['TASKRUN_CLASS'] ?? getenv('TASKRUN_CLASS') ?: null;
         if (!$taskRunClass || !class_exists($taskRunClass) || !is_subclass_of($taskRunClass, BaseTaskRun::class)) {
@@ -74,7 +76,7 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
         ], JSON_UNESCAPED_SLASHES);
 
         $envJson = json_encode([
-            'SLIDESHOW'   => $_ENV['SLIDESHOW'] ?? getenv('SLIDESHOW') ?: null,
+            'SLIDESHOW' => $_ENV['SLIDESHOW'] ?? getenv('SLIDESHOW') ?: null,
             'WORKING_DIR' => $_ENV['WORKING_DIR'] ?? getenv('WORKING_DIR') ?: getcwd(),
         ], JSON_UNESCAPED_SLASHES);
 
@@ -111,7 +113,9 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
     function castor_after_execute(AfterExecuteTaskEvent $event): void
     {
         $em = CastorKernelBridge::em();
-        if (!$em) { return; }
+        if (!$em) {
+            return;
+        }
 
         $taskRunClass = $_ENV['TASKRUN_CLASS'] ?? getenv('TASKRUN_CLASS') ?: null;
         if (!$taskRunClass || !class_exists($taskRunClass) || !is_subclass_of($taskRunClass, BaseTaskRun::class)) {
@@ -120,7 +124,9 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
 
         $cmd = $event->getTaskCommand();
         $runId = $cmd->__taskRunId ?? null;
-        if (!$runId) { return; }
+        if (!$runId) {
+            return;
+        }
 
         try {
             $repo = $em->getRepository($taskRunClass);
@@ -164,7 +170,9 @@ if (false && !function_exists(__NAMESPACE__ . '\\castor_after_boot')) {
     function castor_log_process_phase(string $phase, ?string $cmdline, ?int $exit): void
     {
         $em = CastorKernelBridge::em();
-        if (!$em) { return; }
+        if (!$em) {
+            return;
+        }
 
         $taskProcessClass = $_ENV['TASKPROCESS_CLASS'] ?? getenv('TASKPROCESS_CLASS') ?: null;
         if (!$taskProcessClass || !class_exists($taskProcessClass) || !is_subclass_of($taskProcessClass, BaseTaskProcess::class)) {

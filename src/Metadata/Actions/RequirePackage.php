@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Metadata\Actions;
 
@@ -17,12 +19,12 @@ final class RequirePackage
     public ?string $comment = null;
 
     private ?string $_constraint = null;
-    public ?string $constraint { get => $this->_constraint; set => $this->_constraint = $value !== null ? trim($value) : null; }
+    public ?string $constraint { get => $this->_constraint; set => $this->_constraint = null !== $value ? trim($value) : null; }
 
     public function __construct(string $package, ?string $comment = null, ?string $constraint = null)
     {
-        $this->package    = $package;
-        $this->comment    = $comment;
+        $this->package = $package;
+        $this->comment = $comment;
         $this->constraint = $constraint;
     }
 

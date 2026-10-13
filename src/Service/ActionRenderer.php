@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Service;
 
@@ -7,7 +9,9 @@ use Twig\Environment;
 
 final class ActionRenderer
 {
-    public function __construct(private readonly Environment $twig) {}
+    public function __construct(private readonly Environment $twig)
+    {
+    }
 
     /**
      * @param array<string,mixed> $context
@@ -21,7 +25,7 @@ final class ActionRenderer
 
         $tpl = $action->viewTemplate();
         if (!str_starts_with($tpl, '@')) {
-            $tpl = '@SurvosStep/step/action/' . ltrim($tpl, '/');
+            $tpl = '@SurvosStep/step/action/'.ltrim($tpl, '/');
         }
 
         $loader = $this->twig->getLoader();

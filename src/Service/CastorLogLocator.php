@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Service;
 
@@ -12,11 +14,12 @@ final class CastorLogLocator
     {
         $dir = $_ENV['SLIDESHOW_OUT_DIR'] ?? getenv('SLIDESHOW_OUT_DIR')
             ?: $_ENV['CASTOR_LOG_DIR'] ?? getenv('CASTOR_LOG_DIR')
-            ?: $this->projectDir . '/.castor/slideshows';
+            ?: $this->projectDir.'/.castor/slideshows';
 
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
         }
+
         return $dir;
     }
 
@@ -25,29 +28,32 @@ final class CastorLogLocator
     {
         $dir = $this->logDir();
         $rows = [];
-        foreach (glob($dir . '/*.jsonl') ?: [] as $path) {
+        foreach (glob($dir.'/*.jsonl') ?: [] as $path) {
             $code = basename($path, '.jsonl');
             $rows[] = [
-                'code'  => $code,
-                'path'  => $path,
-                'size'  => @filesize($path) ?: 0,
+                'code' => $code,
+                'path' => $path,
+                'size' => @filesize($path) ?: 0,
                 'mtime' => @filemtime($path) ?: 0,
             ];
         }
-        usort($rows, fn($a, $b) => $b['mtime'] <=> $a['mtime']);
+        usort($rows, fn ($a, $b) => $b['mtime'] <=> $a['mtime']);
+
         return $rows;
     }
 
     public function pathFor(string $code): string
     {
-        return $this->logDir() . '/' . $code . '.jsonl';
+        return $this->logDir().'/'.$code.'.jsonl';
     }
 
     /** Tail N lines efficiently without loading whole file. */
     public function tail(string $file, int $lines = 300): array
     {
         $f = @fopen($file, 'rb');
-        if (!$f) { return []; }
+        if (!$f) {
+            return [];
+        }
 
         $buffer = '';
         $chunkSize = 4096;
@@ -59,19 +65,24 @@ final class CastorLogLocator
 
         while ($lineCount <= $lines && -$pos < $fileSize) {
             $pos -= $chunkSize;
-            if (fseek($f, max(0, $pos), SEEK_END) !== 0) {
+            if (0 !== fseek($f, max(0, $pos), SEEK_END)) {
                 fseek($f, 0);
             }
             $read = fread($f, $chunkSize);
-            if ($read === false) { break; }
-            $buffer = $read . $buffer;
+            if (false === $read) {
+                break;
+            }
+            $buffer = $read.$buffer;
             $lineCount = substr_count($buffer, "\n");
-            if (ftell($f) === 0) { break; }
+            if (0 === ftell($f)) {
+                break;
+            }
         }
         fclose($f);
 
         $arr = explode("\n", trim($buffer));
         $arr = array_slice($arr, -$lines);
+
         return $arr;
     }
 }

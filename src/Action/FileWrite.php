@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
 use Survos\StepBundle\Util\ArtifactHelper;
 use Survos\StepBundle\Util\PathUtil;
+
 use function Castor\io;
 use function Castor\task;
 
@@ -18,7 +21,8 @@ final class FileWrite extends AbstractAction
         public string $content,
         public ?string $note = null,
         public ?string $a = null,
-    ) {}
+    ) {
+    }
 
     public function summary(): string
     {
@@ -27,9 +31,10 @@ final class FileWrite extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
-        $abs = PathUtil::absPath($this->path, (string)$ctx->workingDirectory);
+        $abs = PathUtil::absPath($this->path, (string) $ctx->workingDirectory);
         if ($dryRun) {
-            io()->writeln(sprintf("<comment>DRY</comment> write %s (%d bytes)", $abs, \strlen($this->content)));
+            io()->writeln(sprintf('<comment>DRY</comment> write %s (%d bytes)', $abs, \strlen($this->content)));
+
             return;
         }
         PathUtil::ensureDir(\dirname($abs));
@@ -38,12 +43,14 @@ final class FileWrite extends AbstractAction
         if ($this->a) {
             $helper = ArtifactHelper::fromTaskContext(task(), $ctx);
             $artifactLocation = $helper->save($this->a, $this->content);
-            io()->writeln($artifactLocation . " written");
+            io()->writeln($artifactLocation.' written');
         }
-
     }
 
-    public function viewTemplate(): string { return 'display_code.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'display_code.html.twig';
+    }
 
     public function viewContext(): array
     {
@@ -58,6 +65,7 @@ final class FileWrite extends AbstractAction
     public static function guessLangFromPath(string $path): string
     {
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
         return match ($ext) {
             'php' => 'php',
             'yml', 'yaml' => 'yaml',

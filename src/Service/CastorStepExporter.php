@@ -1,22 +1,18 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /**
- * file: src/Service/CastorStepExporter.php — unified "slides" naming, slide-level artifacts with /artifacts URLs
+ * file: src/Service/CastorStepExporter.php — unified "slides" naming, slide-level artifacts with /artifacts URLs.
  */
 
 namespace Survos\StepBundle\Service;
 
 use Castor\Attribute\AsTask;
-use ReflectionAttribute;
-use ReflectionClass;
-use ReflectionFunction;
-
+use Survos\StepBundle\Action\ComposerRequire;
+use Survos\StepBundle\Action\ImportmapRequire;
+use Survos\StepBundle\Action\RequirePackage;
+use Survos\StepBundle\Action\SplitSlide;
 use Survos\StepBundle\Metadata\Step;
-use Survos\StepBundle\Action\{
-    ComposerRequire,
-    ImportmapRequire,
-    RequirePackage,
-    SplitSlide
-};
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -36,11 +32,12 @@ final class CastorStepExporter
 
     public function artifactsDir(string $projectName): string
     {
-        return self::ARTIFACT_ROOT . $projectName . '/';
+        return self::ARTIFACT_ROOT.$projectName.'/';
     }
 
     /**
      * List available castor files as slideshows.
+     *
      * @return array<int, array{code:string,path:string}>
      */
     public function listSlideshows(): array
@@ -53,12 +50,14 @@ final class CastorStepExporter
                 'path' => $file->getRealPath() ?: '',
             ];
         }
+
         return $out;
     }
 
     /**
      * Export a castor file into a slideshow payload:
      * ['code'=>..., 'path'=>..., 'slides'=>[ ['task_name'=>..., 'title'=>..., 'actions'=>[], 'artifacts'=>[] ], ... ] ]
+     *
      * @return array{code:string,path:string,slides:list<array<string,mixed>>}
      */
     public function exportSlides(?string $code = null, ?string $file = null): array
@@ -71,41 +70,41 @@ final class CastorStepExporter
         // Include the castor file and detect only the functions it declares, then walk through those.
         $before = get_defined_functions()['user'] ?? [];
         require_once $file;
-        $after  = get_defined_functions()['user'] ?? [];
+        $after = get_defined_functions()['user'] ?? [];
         $newFns = array_values(array_diff($after, $before));
 
         // Keep only functions declared in THIS file and capture their declaration order
         $declared = [];
         foreach ($newFns as $fnName) {
-            $rf = new ReflectionFunction($fnName);
+            $rf = new \ReflectionFunction($fnName);
             if (realpath((string) $rf->getFileName()) === realpath($file)) {
                 $declared[] = [
-                    'rf'    => $rf,
+                    'rf' => $rf,
                     'order' => $rf->getStartLine() ?? \PHP_INT_MAX,
                 ];
             }
         }
 
         // Sort by source-order (start line) to preserve "as written" order
-        usort($declared, static fn(array $a, array $b) => $a['order'] <=> $b['order']);
+        usort($declared, static fn (array $a, array $b) => $a['order'] <=> $b['order']);
 
         $slides = [];
         foreach ($declared as $entry) {
-            /** @var ReflectionFunction $rf */
+            /** @var \ReflectionFunction $rf */
             $rf = $entry['rf'];
 
-            $taskAttrs = $rf->getAttributes(AsTask::class, ReflectionAttribute::IS_INSTANCEOF);
-            $stepAttrs = $rf->getAttributes(Step::class,    ReflectionAttribute::IS_INSTANCEOF);
-            if ($taskAttrs === [] || $stepAttrs === []) {
+            $taskAttrs = $rf->getAttributes(AsTask::class, \ReflectionAttribute::IS_INSTANCEOF);
+            $stepAttrs = $rf->getAttributes(Step::class, \ReflectionAttribute::IS_INSTANCEOF);
+            if ([] === $taskAttrs || [] === $stepAttrs) {
                 continue;
             }
 
             /** @var AsTask $asTask */
-            $asTask   = $taskAttrs[0]->newInstance();
+            $asTask = $taskAttrs[0]->newInstance();
             $taskName = $asTask->name ?? $rf->getName();
 
             /** @var list<Step> $steps */
-            $steps = array_map(static fn(ReflectionAttribute $a) => $a->newInstance(), $stepAttrs);
+            $steps = array_map(static fn (\ReflectionAttribute $a) => $a->newInstance(), $stepAttrs);
 
             // Append steps in the same order they are declared on the function
             foreach ($steps as $step) {
@@ -122,8 +121,8 @@ final class CastorStepExporter
                 foreach ($step->actions as $action) {
                     // SplitSlide acts as a control marker: start a new chunk/slide
                     if ($action instanceof SplitSlide) {
-                        if ($chunks[$currentChunkIndex] !== []) {
-                            $currentChunkIndex++;
+                        if ([] !== $chunks[$currentChunkIndex]) {
+                            ++$currentChunkIndex;
                             $chunks[$currentChunkIndex] = [];
                             $chunkArtifacts[$currentChunkIndex] = [];
                         }
@@ -131,7 +130,7 @@ final class CastorStepExporter
                     }
 
                     // Normal action: enrich + attach artifacts
-                    $action->project         = $project;
+                    $action->project = $project;
                     $action->artifactLocator = $this->artifactLocator;
 
                     $chunks[$currentChunkIndex][] = $action;
@@ -143,10 +142,10 @@ final class CastorStepExporter
                         $action->artifact = $content;
 
                         $chunkArtifacts[$currentChunkIndex][] = [
-                            'name'     => $artifactName,
-                            'mtime'    => null, // @todo
-                            'size'     => $content ? \strlen($content) : 0,
-                            'path'     => $this->artifactLocator?->absolute($action->project, $artifactName),
+                            'name' => $artifactName,
+                            'mtime' => null, // @todo
+                            'size' => $content ? \strlen($content) : 0,
+                            'path' => $this->artifactLocator?->absolute($action->project, $artifactName),
                             'contents' => $content,
                         ];
                     }
@@ -156,7 +155,7 @@ final class CastorStepExporter
                 // produce a single slide with the original step and no actions/artifacts.
                 $allEmpty = true;
                 foreach ($chunks as $chunk) {
-                    if ($chunk !== []) {
+                    if ([] !== $chunk) {
                         $allEmpty = false;
                         break;
                     }
@@ -165,27 +164,27 @@ final class CastorStepExporter
                 if ($allEmpty) {
                     $step->actions = [];
                     $slides[] = [
-                        'step'       => $step,
-                        'actions'    => [],
-                        'task'       => $asTask,
-                        'sparseStep' => array_filter($step, fn($v) => $v !== null && $v !== '' && $v !== []),
+                        'step' => $step,
+                        'actions' => [],
+                        'task' => $asTask,
+                        'sparseStep' => array_filter($step, fn ($v) => null !== $v && '' !== $v && [] !== $v),
 
-                        'task_name'   => $taskName,
-                        'function'    => $rf->getName(),
-                        'title'       => $step->title,
+                        'task_name' => $taskName,
+                        'function' => $rf->getName(),
+                        'title' => $step->title,
                         'description' => $step->description,
-                        'bullets'     => \array_values($step->bullets),
-                        'website'     => $step->website,
-                        'image'       => $step->image,
-                        'notes'       => \array_values($step->notes),
-                        'artifacts'   => [],
+                        'bullets' => \array_values($step->bullets),
+                        'website' => $step->website,
+                        'image' => $step->image,
+                        'notes' => \array_values($step->notes),
+                        'artifacts' => [],
                     ];
                     continue;
                 }
 
                 // Create one slide per non-empty chunk (sub-step)
                 foreach ($chunks as $chunkIndex => $chunkActions) {
-                    if ($chunkActions === []) {
+                    if ([] === $chunkActions) {
                         continue;
                     }
 
@@ -194,28 +193,28 @@ final class CastorStepExporter
                     $subStep->actions = $chunkActions;
 
                     $slides[] = [
-                        'step'       => $subStep,
-                        'actions'    => $chunkActions,
-                        'task'       => $asTask,
-                        'sparseStep' => array_filter($subStep, fn($v) => $v !== null && $v !== '' && $v !== []),
+                        'step' => $subStep,
+                        'actions' => $chunkActions,
+                        'task' => $asTask,
+                        'sparseStep' => array_filter($subStep, fn ($v) => null !== $v && '' !== $v && [] !== $v),
 
-                        'task_name'   => $taskName,
-                        'function'    => $rf->getName(),
-                        'title'       => $step->title,
+                        'task_name' => $taskName,
+                        'function' => $rf->getName(),
+                        'title' => $step->title,
                         'description' => $step->description,
-                        'bullets'     => \array_values($step->bullets),
-                        'website'     => $step->website,
-                        'image'       => $step->image,
-                        'notes'       => \array_values($step->notes),
-                        'artifacts'   => $chunkArtifacts[$chunkIndex] ?? [],
+                        'bullets' => \array_values($step->bullets),
+                        'website' => $step->website,
+                        'image' => $step->image,
+                        'notes' => \array_values($step->notes),
+                        'artifacts' => $chunkArtifacts[$chunkIndex] ?? [],
                     ];
                 }
             }
         }
 
         return [
-            'code'   => $code,
-            'path'   => $file,
+            'code' => $code,
+            'path' => $file,
             'slides' => $slides, // already in declaration order (and split by SplitSlide)
         ];
     }
@@ -223,11 +222,11 @@ final class CastorStepExporter
     /** Discover ALL files under /public/artifacts/<safeTask>/<safeStep> (recursive). */
     private function findSlideArtifacts(string $task, string $stepTitle): array
     {
-        $root     = rtrim($this->projectDir ?? '', '/');
-        $pubRoot  = $root . '/public';
+        $root = rtrim($this->projectDir ?? '', '/');
+        $pubRoot = $root.'/public';
         $safeTask = $this->safe($task);
         $safeStep = $this->safe($stepTitle);
-        $dir      = "{$pubRoot}/artifacts/{$safeTask}/{$safeStep}";
+        $dir = "{$pubRoot}/artifacts/{$safeTask}/{$safeStep}";
 
         if (!is_dir($dir)) {
             return [];
@@ -248,18 +247,19 @@ final class CastorStepExporter
             $url = substr($abs, \strlen($pubRoot)); // map FS path to public URL; drops /public
             $url = str_replace(\DIRECTORY_SEPARATOR, '/', $url);
             if (!str_starts_with($url, '/')) {
-                $url = '/' . ltrim($url, '/');
+                $url = '/'.ltrim($url, '/');
             }
 
             $files[] = [
-                'path'     => $url,                       // /artifacts/...
-                'name'     => $f->getFilename(),
-                'size'     => $f->getSize(),
-                'mtime'    => date('c', $f->getMTime()),
+                'path' => $url,                       // /artifacts/...
+                'name' => $f->getFilename(),
+                'size' => $f->getSize(),
+                'mtime' => date('c', $f->getMTime()),
                 // optional: include contents for debug view
                 'contents' => @file_get_contents($abs) ?: null,
             ];
         }
+
         return $files;
     }
 
@@ -268,48 +268,50 @@ final class CastorStepExporter
      *
      * Flatten actions for JSON. We do NOT attach per-action artifacts here;
      * the slide-level artifacts (recursive) already include /files/<actionKey>/… content.
+     *
      * @param list<object> $actions
+     *
      * @return list<array<string,mixed>>
      */
     private function serializeActions(array $actions, string $taskName, string $stepTitle): array
     {
         $out = [];
-        $i   = 0;
+        $i = 0;
 
         foreach ($actions as $a) {
-            $i++;
-            $rc   = new ReflectionClass($a);
+            ++$i;
+            $rc = new \ReflectionClass($a);
             $type = $rc->getShortName();
-            $row  = ['type' => $type];
+            $row = ['type' => $type];
 
             if ($a instanceof ComposerRequire || $a instanceof ImportmapRequire) {
-                $row['cwd']  = $a->cwd ?? null;
+                $row['cwd'] = $a->cwd ?? null;
                 $row['note'] = $a->note ?? null;
-                $row['dev']  = $a instanceof ComposerRequire ? (bool) $a->dev : null;
+                $row['dev'] = $a instanceof ComposerRequire ? (bool) $a->dev : null;
 
                 $reqs = [];
                 foreach ($a->requires as $req) {
                     if ($req instanceof RequirePackage) {
                         $reqs[] = [
-                            'package'    => $req->package,
-                            'comment'    => $req->comment,
+                            'package' => $req->package,
+                            'comment' => $req->comment,
                             'constraint' => $req->constraint,
                         ];
                     } elseif (\is_array($req)) {
                         $reqs[] = [
-                            'package'    => $req['package'] ?? (string) ($req[0] ?? ''),
-                            'comment'    => $req['comment'] ?? null,
+                            'package' => $req['package'] ?? (string) ($req[0] ?? ''),
+                            'comment' => $req['comment'] ?? null,
                             'constraint' => $req['constraint'] ?? null,
                         ];
                     } else {
                         $reqs[] = [
-                            'package'    => (string) $req,
-                            'comment'    => null,
+                            'package' => (string) $req,
+                            'comment' => null,
                             'constraint' => null,
                         ];
                     }
                 }
-                $row['requires']  = $reqs;
+                $row['requires'] = $reqs;
                 $row['multiline'] = $a->asMultilineCommand();
                 $out[] = $row;
                 continue;
@@ -320,11 +322,11 @@ final class CastorStepExporter
                     $row[$prop] = '[closure]';
                     continue;
                 }
-                if (\is_scalar($val) || $val === null) {
+                if (\is_scalar($val) || null === $val) {
                     $row[$prop] = $val;
                 } elseif (\is_array($val)) {
                     $row[$prop] = array_map(
-                        static fn($v) => \is_scalar($v) || $v === null ? $v : '[object]',
+                        static fn ($v) => \is_scalar($v) || null === $v ? $v : '[object]',
                         $val
                     );
                 } else {
@@ -349,9 +351,9 @@ final class CastorStepExporter
     {
         $finder = (new Finder())
             ->files()
-            ->in(($this->projectDir ?? '') . '/conference')
+            ->in(($this->projectDir ?? '').'/conference')
             ->name($this->glob ?? '*.castor.php')
-            ->depth('== ' . $this->depth)
+            ->depth('== '.$this->depth)
             ->sortByName()
         ;
 
@@ -365,6 +367,7 @@ final class CastorStepExporter
                 return $file->getRealPath() ?: null;
             }
         }
+
         return null;
     }
 

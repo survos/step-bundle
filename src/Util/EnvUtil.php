@@ -13,7 +13,7 @@ final class EnvUtil
     public static function readEnvLocal(string $projectDir, string $envFilename = '.env.local'): array
     {
         $projectDir = rtrim($projectDir, '/');
-        $envFile = $projectDir . '/' . $envFilename;
+        $envFile = $projectDir.'/'.$envFilename;
 
         if (!is_dir($projectDir)) {
             throw new \RuntimeException("Project dir does not exist: $projectDir");
@@ -28,6 +28,7 @@ final class EnvUtil
                 $map[$m[1]] = $m[2];
             }
         }
+
         return $map;
     }
 
@@ -38,7 +39,7 @@ final class EnvUtil
     public static function writeEnvLocal(string $projectDir, array $pairs, string $envFilename = '.env.local'): void
     {
         $projectDir = rtrim($projectDir, '/');
-        $envFile = $projectDir . '/' . $envFilename;
+        $envFile = $projectDir.'/'.$envFilename;
 
         if (!is_dir($projectDir)) {
             throw new \RuntimeException("Project dir does not exist: $projectDir");
@@ -73,25 +74,25 @@ final class EnvUtil
         string $projectDir,
         array $spec,
         ?callable $ask = null,
-        string $envFilename = '.env.local'
+        string $envFilename = '.env.local',
     ): array {
         $existing = self::readEnvLocal($projectDir, $envFilename);
         $toWrite = [];
 
         foreach ($spec as $key => $cfg) {
-            $have = array_key_exists($key, $existing) && $existing[$key] !== '';
+            $have = array_key_exists($key, $existing) && '' !== $existing[$key];
             if ($have) {
                 continue;
             }
             $prompt = is_array($cfg) ? ($cfg['prompt'] ?? "Enter value for $key") : "Enter value for $key";
-            $hidden = is_array($cfg) ? (bool)($cfg['hidden'] ?? false) : false;
+            $hidden = is_array($cfg) ? (bool) ($cfg['hidden'] ?? false) : false;
 
             if (!$ask) {
                 throw new \RuntimeException("Missing $key and no prompt callback provided. ($prompt)");
             }
 
             $val = $ask($prompt, $hidden, $cfg['default'] ?? null);
-            if ($val === null || $val === '') {
+            if (null === $val || '' === $val) {
                 // Caller can decide if empty is acceptable; we skip writing empties here.
                 continue;
             }
@@ -120,25 +121,25 @@ final class EnvUtil
         string $pattern,
         string $replacement,
         string $filePath,
-        int $limit = -1
+        int $limit = -1,
     ): int {
         if (!is_file($filePath)) {
             throw new \RuntimeException("File does not exist: $filePath");
         }
 
         $content = file_get_contents($filePath);
-        if ($content === false) {
+        if (false === $content) {
             throw new \RuntimeException("Failed to read file: $filePath");
         }
 
         $newContent = preg_replace($pattern, $replacement, $content, $limit, $count);
 
-        if ($newContent === null) {
+        if (null === $newContent) {
             throw new \RuntimeException("preg_replace failed for pattern: $pattern");
         }
 
         if ($count > 0) {
-            if (file_put_contents($filePath, $newContent) === false) {
+            if (false === file_put_contents($filePath, $newContent)) {
                 throw new \RuntimeException("Failed to write file: $filePath");
             }
         }

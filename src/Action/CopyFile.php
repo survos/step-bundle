@@ -1,9 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
 use Castor\Context;
-use function Castor\{io,fs,context};
+
+use function Castor\context;
+use function Castor\fs;
+use function Castor\io;
 
 /**
  * Show code from a path (presentational).
@@ -12,20 +17,22 @@ final class CopyFile extends AbstractAction
 {
     public function __construct(
         public string $src,
-        public ?string $target
-    ) {}
+        public ?string $target,
+    ) {
+    }
 
     public function summary(): string
     {
         // @todo: check dirs!
-        $target = context()->workingDirectory . '/' . $this->target;
+        $target = context()->workingDirectory.'/'.$this->target;
         $targetDir = pathinfo($target, PATHINFO_DIRNAME);
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $targetDir));
             }
         }
-        return sprintf('cp %s %s', $this->src, $this->target, );
+
+        return sprintf('cp %s %s', $this->src, $this->target);
     }
 
     public function toCommand(): ?string
@@ -35,19 +42,23 @@ final class CopyFile extends AbstractAction
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
-        fs()->copy($this->src, $targetFile = context()->workingDirectory . '/' . $this->target);
-//        dd($this->src, $targetFile, file_get_contents($targetFile));
+        fs()->copy($this->src, $targetFile = context()->workingDirectory.'/'.$this->target);
+        //        dd($this->src, $targetFile, file_get_contents($targetFile));
         // No side-effects; presentational.
         io()->writeln(sprintf('Display: %s', realpath($targetFile)));
     }
 
-    public function viewTemplate(): string { return 'copy_file.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'copy_file.html.twig';
+    }
 
     public function viewContext(): array
     {
-        assert($this->src, "Empty path");
+        assert($this->src, 'Empty path');
         assert(file_exists($this->src), "Missing $this->src");
         $code = file_get_contents($this->src);
+
         return [
             'path' => $this->src,
             'code' => $code,

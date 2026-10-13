@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
@@ -14,12 +16,14 @@ final class ImportmapRequire extends AbstractAction
         public array $packages,
         public ?string $note = null,
         public ?string $cwd = null,
-    ) {}
+    ) {
+    }
 
     public function summary(): string
     {
         $names = array_keys(self::isAssoc($this->packages) ? $this->packages : array_fill_keys($this->packages, null));
-        return 'importmap: ' . implode(', ', $names);
+
+        return 'importmap: '.implode(', ', $names);
     }
 
     public function execute(Context $ctx, bool $dryRun = false): void
@@ -32,28 +36,31 @@ final class ImportmapRequire extends AbstractAction
         } else {
             $parts = $this->packages;
         }
-        $cmd = 'php bin/console importmap:require ' . implode(' ', array_map('escapeshellarg', $parts));
+        $cmd = 'php bin/console importmap:require '.implode(' ', array_map('escapeshellarg', $parts));
         (new Bash($cmd, $this->note, $this->cwd))->execute($ctx, $dryRun);
     }
 
-    public function viewTemplate(): string { return 'importmap_require.html.twig'; }
+    public function viewTemplate(): string
+    {
+        return 'importmap_require.html.twig';
+    }
 
     public function viewContext(): array
     {
         return [
-            'code' => 'bin/console importmap:require ' .
+            'code' => 'bin/console importmap:require '.
                       implode(' ', self::isAssoc($this->packages)
-                        ? array_map(fn($n,$v)=>$v?("$n@$v"):$n, array_keys($this->packages), $this->packages)
+                        ? array_map(fn ($n, $v) => $v ? ("$n@$v") : $n, array_keys($this->packages), $this->packages)
                         : $this->packages),
             'lang' => 'bash',
             'packages' => $this->packages,
             'note' => $this->note,
-            'cwd'  => $this->cwd,
+            'cwd' => $this->cwd,
         ];
     }
 
     private static function isAssoc(array $a): bool
     {
-        return $a !== [] && array_keys($a) !== range(0, count($a) - 1);
+        return [] !== $a && array_keys($a) !== range(0, count($a) - 1);
     }
 }

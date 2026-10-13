@@ -9,11 +9,12 @@ final class SnippetUtil
     /**
      * Returns a Markdown code fence with an optional title line.
      * Example:
-     *   io()->writeln(SnippetUtil::fenced($code, 'php', '__invoke example'));
+     *   io()->writeln(SnippetUtil::fenced($code, 'php', '__invoke example'));.
      */
     public static function fenced(string $code, string $language = 'php', ?string $title = null): string
     {
         $titleLine = $title ? "### {$title}\n\n" : '';
-        return $titleLine . "```{$language}\n{$code}\n```\n";
+
+        return $titleLine."```{$language}\n{$code}\n```\n";
     }
 }

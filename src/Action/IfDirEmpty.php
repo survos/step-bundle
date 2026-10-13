@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
@@ -11,15 +13,21 @@ final class IfDirEmpty extends AbstractFsGuard
             return true; // treat missing dir as empty for scaffolding
         }
         $dh = @opendir($absPath);
-        if (!$dh) { return true; }
+        if (!$dh) {
+            return true;
+        }
         try {
             while (false !== ($e = readdir($dh))) {
-                if ($e === '.' || $e === '..') { continue; }
+                if ('.' === $e || '..' === $e) {
+                    continue;
+                }
+
                 return false;
             }
         } finally {
             @closedir($dh);
         }
+
         return true;
     }
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Metadata\Actions;
 
@@ -22,11 +24,11 @@ final class Method extends Action
     public string $method { get => $this->_method; set => $this->_method = trim($value); }
 
     private string $_body;
-    public string $body { get => $this->_body; set => $this->_body = rtrim($value) . "\n"; }
+    public string $body { get => $this->_body; set => $this->_body = rtrim($value)."\n"; }
 
     public ?string $visibility = 'public'; // hint only; executor may honor
     public ?string $returnType = null;     // hint only
-    /** @var list<string> param snippets like "int $id", "string $name = null" */
+    /** @var list<string> param snippets like "int", "string = null" */
     public array $params = [];
 
     /**
@@ -44,9 +46,9 @@ final class Method extends Action
     ) {
         parent::__construct($note, $cwd);
         $this->targetFqcn = $targetFqcn;
-        $this->method     = $method;
-        $this->body       = $body;
-        $this->params     = $params;
+        $this->method = $method;
+        $this->body = $body;
+        $this->params = $params;
         $this->visibility = $visibility;
         $this->returnType = $returnType;
     }

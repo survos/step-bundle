@@ -13,33 +13,34 @@ final class PathUtil
     public static function absPath(string $path, string $base): string
     {
         $isAbsolute = str_starts_with($path, '/')
-            || (strlen($path) > 1 && ctype_alpha($path[0]) && $path[1] === ':');
+            || (strlen($path) > 1 && ctype_alpha($path[0]) && ':' === $path[1]);
 
         if ($isAbsolute) {
             return $path;
         }
 
-        $candidate = rtrim($base, '/\\') . DIRECTORY_SEPARATOR . $path;
+        $candidate = rtrim($base, '/\\').DIRECTORY_SEPARATOR.$path;
 
         $real = @realpath($candidate);
-        if ($real !== false) {
+        if (false !== $real) {
             return $real;
         }
 
         $normalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $candidate);
         $parts = [];
         foreach (explode(DIRECTORY_SEPARATOR, $normalized) as $seg) {
-            if ($seg === '' || $seg === '.') {
+            if ('' === $seg || '.' === $seg) {
                 continue;
             }
-            if ($seg === '..') {
+            if ('..' === $seg) {
                 array_pop($parts);
                 continue;
             }
             $parts[] = $seg;
         }
         $prefix = (str_starts_with($normalized, DIRECTORY_SEPARATOR)) ? DIRECTORY_SEPARATOR : '';
-        return $prefix . implode(DIRECTORY_SEPARATOR, $parts);
+
+        return $prefix.implode(DIRECTORY_SEPARATOR, $parts);
     }
 
     /**

@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Runtime;
 
 use Castor\Context;
-use function Castor\io;
 use Survos\StepBundle\Action\ExecutableAction;
+
+use function Castor\io;
 
 final class RunStep
 {

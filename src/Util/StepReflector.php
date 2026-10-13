@@ -1,4 +1,5 @@
 <?php
+
 // src/Util/StepReflector.php
 declare(strict_types=1);
 
@@ -6,7 +7,6 @@ namespace Survos\StepBundle\Util;
 
 use Castor\Attribute\AsTask;
 use Survos\StepBundle\Metadata\Step;
-use ReflectionFunction;
 
 final class StepReflector
 {
@@ -30,7 +30,7 @@ final class StepReflector
 
         $out = [];
         foreach ($newFunctions as $fn) {
-            $rf = new ReflectionFunction($fn);
+            $rf = new \ReflectionFunction($fn);
             if ($rf->getFileName() !== realpath($filepath)) {
                 continue; // ignore functions from other files pulled in by require
             }
@@ -47,7 +47,7 @@ final class StepReflector
                 /** @var AsTask $taskInst */
                 $taskInst = $taskAttrs[0]->newInstance();
                 $task = [
-                    'name'        => $taskInst->name ?? $rf->getName(),
+                    'name' => $taskInst->name ?? $rf->getName(),
                     'description' => $taskInst->description ?? '',
                 ];
             }
@@ -57,18 +57,18 @@ final class StepReflector
                 /** @var Step $stepInst */
                 $stepInst = $a->newInstance();
                 $steps[] = [
-                    'title'       => $stepInst->title,
-                    'bullets'     => $stepInst->bullets,
-                    'actions'     => $stepInst->actions,
-                    'website'     => $stepInst->website ?? null,
-                    'note'        => $stepInst->note ?? null,
+                    'title' => $stepInst->title,
+                    'bullets' => $stepInst->bullets,
+                    'actions' => $stepInst->actions,
+                    'website' => $stepInst->website ?? null,
+                    'note' => $stepInst->note ?? null,
                 ];
             }
 
             $out[] = [
-                'task'     => $task,
+                'task' => $task,
                 'function' => $rf->getName(),
-                'steps'    => $steps,
+                'steps' => $steps,
             ];
         }
 

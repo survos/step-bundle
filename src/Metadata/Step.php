@@ -1,24 +1,25 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Metadata;
 
-use Attribute;
 use Survos\StepBundle\Action\AbstractAction;
 
 /**
  * Neutral, renderer-agnostic step descriptor.
  * A Step contains ordered Actions and presentation info.
  */
-#[Attribute(Attribute::TARGET_FUNCTION|Attribute::IS_REPEATABLE)]
+#[\Attribute(\Attribute::TARGET_FUNCTION | \Attribute::IS_REPEATABLE)]
 final class Step implements \Stringable
 {
     /**
-     * @param list<string> $bullets
+     * @param list<string>         $bullets
      * @param list<AbstractAction> $actions
-     * @param list<string> $notes
+     * @param list<string>         $notes
      */
     public function __construct(
-        public string $title='', // get from AsTask if empty
+        public string $title = '', // get from AsTask if empty
         public string $description = '',
         public array $bullets = [],
         public array $actions = [],
@@ -32,18 +33,17 @@ final class Step implements \Stringable
             set(string|array $value) => is_string($value)
                 ? explode('|', $value)
                 : $value;
-        }
-
+        },
     ) {}
 
     public function hasContent(): bool
     {
-        return $this->description !== '' || $this->bullets !== [] || $this->actions !== [] || $this->notes !== [];
+        return '' !== $this->description || [] !== $this->bullets || [] !== $this->actions || [] !== $this->notes;
     }
 
     public function __toString(): string
     {
-        return $this->title . $this->description;
+        return $this->title.$this->description;
         // TODO: Implement __toString() method.
     }
 }

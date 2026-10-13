@@ -1,11 +1,14 @@
 <?php
+
 // src/Util/ArtifactWriter.php
 declare(strict_types=1);
 
 namespace Survos\StepBundle\Util;
 
 use Castor\Context;
-use function Castor\{context, task};
+
+use function Castor\context;
+use function Castor\task;
 
 final class ArtifactWriter
 {
@@ -15,7 +18,7 @@ final class ArtifactWriter
     public function __construct(?Context $ctx = null, ?string $slide = null)
     {
         $ctx = $ctx ?? context();
-        $wd  = (string)($ctx->workingDirectory ?? getcwd());
+        $wd = (string) ($ctx->workingDirectory ?? getcwd());
         if (!is_dir($wd)) {
             throw new \RuntimeException("Working directory not found: $wd");
         }
@@ -24,25 +27,26 @@ final class ArtifactWriter
         $taskName = null;
         try {
             $t = task();
-            $taskName = method_exists($t, 'getName') ? (string)$t->getName() : null;
-        } catch (\Throwable) { /* optional */ }
+            $taskName = method_exists($t, 'getName') ? (string) $t->getName() : null;
+        } catch (\Throwable) { /* optional */
+        }
 
         $this->slide = $this->safe($slide ?? $taskName ?? 'slide');
     }
 
     public function save(string $relName, string $contents, string $type): string
     {
-        [$root, $pub] = [$this->projectDir . '/var/castor-artifacts', $this->projectDir . '/public/artifacts'];
+        [$root, $pub] = [$this->projectDir.'/var/castor-artifacts', $this->projectDir.'/public/artifacts'];
         $this->ensureDir($root);
         $this->ensureDir($pub);
 
         $privDir = "$root/{$this->slide}";
-        $pubDir  = "$pub/{$this->slide}";
+        $pubDir = "$pub/{$this->slide}";
         $this->ensureDir($privDir);
         $this->ensureDir($pubDir);
 
         $privFile = "$privDir/$relName";
-        $pubFile  = "$pubDir/$relName";
+        $pubFile = "$pubDir/$relName";
         $this->ensureDir(\dirname($privFile));
         $this->ensureDir(\dirname($pubFile));
 
@@ -54,7 +58,10 @@ final class ArtifactWriter
         return "/artifacts/{$this->slide}/{$relName}";
     }
 
-    public function slide(): string { return $this->slide; }
+    public function slide(): string
+    {
+        return $this->slide;
+    }
 
     private function safe(string $s): string
     {
@@ -63,7 +70,9 @@ final class ArtifactWriter
 
     private function ensureDir(string $dir): void
     {
-        if (is_dir($dir)) return;
+        if (is_dir($dir)) {
+            return;
+        }
         if (!mkdir($dir, 0777, true) && !is_dir($dir)) {
             throw new \RuntimeException("Failed to create directory: $dir");
         }

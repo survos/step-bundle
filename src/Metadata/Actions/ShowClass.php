@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // src/Metadata/Actions/ShowClass.php
 
@@ -33,7 +35,7 @@ final class ShowClass extends Action
         ?string $cwd = null,
     ) {
         parent::__construct($note, $cwd);
-        $this->targetFqcn  = $targetFqcn;
+        $this->targetFqcn = $targetFqcn;
         $this->declarations = $declarations;
         $this->methods = $methods;
     }

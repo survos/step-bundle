@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Action;
 
@@ -37,27 +39,26 @@ final class Console extends AbstractAction
         public string $phpBinary = 'php',
         public bool $autoNoInteraction = true,
         public ?string $postfix = null, // e.g. >> 'env.local'
-        public ?int $size=null,
+        public ?int $size = null,
     ) {
         $this->args = array_values($args);
         $this->size ??= 3;
-//        $this->normalizeNoInteraction();
+        //        $this->normalizeNoInteraction();
     }
 
     public function toCommand(): ?string
     {
-        return $this->consolePath . ' ' . $this->command;
+        return $this->consolePath.' '.$this->command;
     }
 
     public function summary(): string
     {
         $prefix = $this->resolvePrefixForSummary();
-        $cmd    = $this->command;
-        $args   = implode(' ', array_map([$this, 'escapeArgForSummary'], $this->args));
+        $cmd = $this->command;
+        $args = implode(' ', array_map([$this, 'escapeArgForSummary'], $this->args));
 
         return trim(sprintf('%s %s %s', $prefix, $cmd, $args));
     }
-
 
     public function execute(Context $ctx, bool $dryRun = false): void
     {
@@ -67,7 +68,7 @@ final class Console extends AbstractAction
         // We join with escapeshellarg to avoid shell injection in preview/execute.
         $code = implode(' ', array_map('escapeshellarg', $argv));
         if ($this->postfix) {
-            $code .= ' ' . $this->postfix;
+            $code .= ' '.$this->postfix;
         }
         // Prefer running with env + cwd through Bash action (shared runner, unified logging).
         $bash = new Bash($code, $this->note, $this->cwd, a: $this->a);
@@ -82,13 +83,13 @@ final class Console extends AbstractAction
     public function viewContext(): array
     {
         return [
-            'code'   => $this->summary(),
-            'lang'   => 'bash',
-            'cmd'    => $this->command,
-            'args'   => $this->args,
-            'note'   => $this->note,
-            'cwd'    => $this->cwd,
-            'env'    => $this->env,
+            'code' => $this->summary(),
+            'lang' => 'bash',
+            'cmd' => $this->command,
+            'args' => $this->args,
+            'note' => $this->note,
+            'cwd' => $this->cwd,
+            'env' => $this->env,
             'prefer' => $this->prefer,
         ];
     }
@@ -101,7 +102,7 @@ final class Console extends AbstractAction
             return;
         }
         foreach ($this->args as $a) {
-            if ($a === '-n' || $a === '--no-interaction') {
+            if ('-n' === $a || '--no-interaction' === $a) {
                 return;
             }
         }
@@ -115,9 +116,9 @@ final class Console extends AbstractAction
         $wd = $ctx->workingDirectory ?? getcwd();
 
         $useSymfony = match ($this->prefer) {
-            'php'     => false,
+            'php' => false,
             'symfony' => true,
-            default   => $this->symfonyAvailable(),
+            default => $this->symfonyAvailable(),
         };
 
         if ($useSymfony) {
@@ -136,12 +137,13 @@ final class Console extends AbstractAction
 
     private function resolvePrefixForSummary(): string
     {
-        if ($this->prefer === 'php') {
+        if ('php' === $this->prefer) {
             return sprintf('%s %s', $this->phpBinary, $this->consolePath);
         }
-        if ($this->prefer === 'symfony' || $this->symfonyAvailable()) {
+        if ('symfony' === $this->prefer || $this->symfonyAvailable()) {
             return 'symfony console';
         }
+
         return sprintf('%s %s', $this->phpBinary, $this->consolePath);
     }
 
@@ -155,7 +157,8 @@ final class Console extends AbstractAction
     {
         $exit = 1;
         @exec('command -v symfony >/dev/null 2>&1', $_, $exit);
-        return $exit === 0;
+
+        return 0 === $exit;
     }
 
     private function resolveConsolePath(string $workingDir): string
@@ -163,12 +166,13 @@ final class Console extends AbstractAction
         if ($this->isAbsolutePath($this->consolePath)) {
             return $this->consolePath;
         }
+
         return rtrim($workingDir, '/').'/'.$this->consolePath;
     }
 
     private function isAbsolutePath(string $path): bool
     {
         return str_starts_with($path, '/')
-            || preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
+            || 1 === preg_match('#^[A-Za-z]:[\\\\/]#', $path);
     }
 }

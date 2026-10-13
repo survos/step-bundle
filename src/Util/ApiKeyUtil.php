@@ -22,7 +22,7 @@ final class ApiKeyUtil
         string $projectDir,
         ?callable $ask = null,
         ?callable $out = null,
-        ?array $override = null
+        ?array $override = null,
     ): array {
         $registry = self::getRegistry();
 
@@ -49,14 +49,14 @@ final class ApiKeyUtil
         // 2) Build ensure spec for EnvUtil
         $ensure = [];
         foreach ($spec['env'] as $envVar => $cfg) {
-            if ($cfg === true) {
+            if (true === $cfg) {
                 $ensure[$envVar] = ['prompt' => "Enter {$envVar}", 'hidden' => true];
             } elseif (is_string($cfg)) {
                 $ensure[$envVar] = ['prompt' => $cfg, 'hidden' => false];
             } elseif (is_array($cfg)) {
                 $ensure[$envVar] = [
                     'prompt' => $cfg['prompt'] ?? "Enter {$envVar}",
-                    'hidden' => (bool)($cfg['hidden'] ?? true),
+                    'hidden' => (bool) ($cfg['hidden'] ?? true),
                 ];
             } else {
                 throw new \InvalidArgumentException("Invalid env spec for {$envVar}");
@@ -75,7 +75,7 @@ final class ApiKeyUtil
      */
     public static function getRegistry(): array
     {
-        $defaultsPath = \dirname(__DIR__, 2) . '/resources/apikey/providers.php';
+        $defaultsPath = \dirname(__DIR__, 2).'/resources/apikey/providers.php';
         $registry = is_file($defaultsPath) ? (require $defaultsPath) : [];
 
         // Optional app override file: returns array just like defaults
@@ -100,7 +100,8 @@ final class ApiKeyUtil
     public static function getAppOverridePath(): ?string
     {
         // Conventional app-level path; safe to change to suit your monorepo
-        $candidate = \getcwd() . '/config/survos_step/apikey.php';
+        $candidate = \getcwd().'/config/survos_step/apikey.php';
+
         return $candidate;
     }
 }

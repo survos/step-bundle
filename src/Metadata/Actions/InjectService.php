@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Metadata\Actions;
 
@@ -24,7 +26,7 @@ final class InjectService extends Action
 
     private ?string $_varName;
     /** Variable name including `$` (executor may infer when null). */
-    public ?string $varName { get => $this->_varName; set => $this->_varName = $value !== null ? (str_starts_with($value, '$') ? $value : '$'.$value) : null; }
+    public ?string $varName { get => $this->_varName; set => $this->_varName = null !== $value ? (str_starts_with($value, '$') ? $value : '$'.$value) : null; }
 
     public function __construct(
         string $targetFqcn,
@@ -34,8 +36,8 @@ final class InjectService extends Action
         ?string $cwd = null,
     ) {
         parent::__construct($note, $cwd);
-        $this->targetFqcn  = $targetFqcn;
+        $this->targetFqcn = $targetFqcn;
         $this->serviceFqcn = $serviceFqcn;
-        $this->varName     = $varName;
+        $this->varName = $varName;
     }
 }

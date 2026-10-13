@@ -12,8 +12,8 @@ return [
     // ip2location-bundle
     'ip2location' => [
         'docs_url' => 'https://www.ip2location.io/dashboard',
-        'note'     => 'Generate an API key on the IP2Location dashboard. Ensure your plan allows the endpoints you intend to call.',
-        'env'      => [
+        'note' => 'Generate an API key on the IP2Location dashboard. Ensure your plan allows the endpoints you intend to call.',
+        'env' => [
             'IP2LOCATION_API_KEY' => [
                 'prompt' => 'Enter IP2LOCATION_API_KEY (hidden):',
                 'hidden' => true,
@@ -24,8 +24,8 @@ return [
     // bunny-bundle
     'bunny' => [
         'docs_url' => 'https://dash.bunny.net/account/api-key',
-        'note'     => 'Create a Standard API Key in Bunny.net dashboard. Consider read-only keys for CI.',
-        'env'      => [
+        'note' => 'Create a Standard API Key in Bunny.net dashboard. Consider read-only keys for CI.',
+        'env' => [
             'BUNNY_API_KEY' => [
                 'prompt' => 'Enter BUNNY_API_KEY (hidden):',
                 'hidden' => true,
@@ -36,9 +36,9 @@ return [
     // flickr-bundle
     'flickr' => [
         'docs_url' => 'https://www.flickr.com/services/api/keys/',
-//        'note'     => 'Create a key/secret on Flickr. For server-side apps, keep the secret safe.',
-        'env'      => [
-            'FLICKR_API_KEY'    => [
+        //        'note'     => 'Create a key/secret on Flickr. For server-side apps, keep the secret safe.',
+        'env' => [
+            'FLICKR_API_KEY' => [
                 'prompt' => 'Enter FLICKR_API_KEY (hidden):',
                 'hidden' => true,
             ],
@@ -66,5 +66,4 @@ return [
             // if you also want to ensure URL here, uncomment:
         ],
     ],
-
 ];

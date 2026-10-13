@@ -1,12 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 // file: src/Step/RunStep.php
+
 namespace Survos\StepBundle\Step;
 
-use Symfony\Component\Process\Process;
 use Castor\Context;
 use Survos\StepBundle\Action\AbstractAction;
-use Survos\StepBundle\Action\ToCommandConvertible;
+use Symfony\Component\Process\Process;
+
 use function Castor\io;
 use function Castor\run;
 
@@ -14,7 +17,6 @@ final class RunStep
 {
     /**
      * @param array<int, mixed> $actions
-     * @param Context $ctx
      */
     public static function run(array $actions, Context $ctx): void
     {
@@ -24,15 +26,16 @@ final class RunStep
             io()->writeln(sprintf('DEBUG[runstep]: %d action(s)', $n));
         }
 
-        if ($n === 0) {
+        if (0 === $n) {
             \fwrite(\STDERR, "[runstep] no actions\n");
+
             return;
         }
 
         $i = 0;
         foreach ($actions as $action) {
-            assert($action instanceof AbstractAction, "Invalid action");
-            $i++;
+            assert($action instanceof AbstractAction, 'Invalid action');
+            ++$i;
 
             dd($action);
 
@@ -41,7 +44,7 @@ final class RunStep
                 /** @var string|array|null $spec */
                 $spec = $action->toCommand($ctx);
                 // ack, wrong!
-                if ($spec === null) {
+                if (null === $spec) {
                     dd($action::class);
                     // Skipped by a guard (e.g., IfFileMissing)
                     io()->writeln("DEBUG[runstep] #{$i} skipped by guard");
@@ -67,20 +70,19 @@ final class RunStep
                 continue;
             }
 
-//            dd($action, $action::class);
+            //            dd($action, $action::class);
             \fwrite(\STDERR, "[runstep] skip action #{$i}: unrecognized shape\n");
         }
     }
 
-    /** @param string|array $cmd */
     private static function exec(string|array $cmd, Context $ctx, int $i, array $env = []): void
     {
         if (\function_exists('Castor\io')) {
             io()->writeln('DEBUG[runstep] #'.$i.' '.(\is_string($cmd) ? $cmd : \json_encode($cmd, \JSON_UNESCAPED_SLASHES)));
         }
         // why aren't artifacts created here?
-        run($cmd, $ctx, function(string $a, string $b, Process $process): void {
-            io()->writeln("$a $b " . $process->getExitCode());
+        run($cmd, $ctx, function (string $a, string $b, Process $process): void {
+            io()->writeln("$a $b ".$process->getExitCode());
         });
     }
 

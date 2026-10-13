@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 // src/Twig/StepRuntimeExtension.php
 
 namespace Survos\StepBundle\Twig;
@@ -25,22 +27,23 @@ final class StepRuntimeExtension extends AbstractExtension
         return [
             new TwigFunction('render_action', [$this, 'renderAction'], [
                 'is_safe' => ['html'],
-                'needs_context' => true
+                'needs_context' => true,
             ]),
         ];
     }
 
     /**
-     * @param array<string,mixed> $context
+     * @param array<string,mixed>          $context
      * @param ActionRendererInterface|null $renderer If null, uses default renderer
      */
     public function renderAction(
         array $context,
         AbstractAction $action,
         array $options = [],
-        ?ActionRendererInterface $renderer = null
+        ?ActionRendererInterface $renderer = null,
     ): string {
         $renderer ??= $this->defaultRenderer;
+
         return $renderer->render($action, $options, $context);
     }
 }

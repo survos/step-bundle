@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Renderer;
 
@@ -11,7 +13,8 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
     public function __construct(
         protected readonly Environment $twig,
         protected readonly string $projectDir,
-    ) {}
+    ) {
+    }
 
     public function render(AbstractAction $action, array $options, array $context): string
     {
@@ -24,12 +27,7 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
         // Verify template exists
         $loader = $this->twig->getLoader();
         if (!$loader->exists($template)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Template "%s" not found for action %s in renderer %s',
-                $template,
-                $action::class,
-                $this->getName()
-            ));
+            throw new \InvalidArgumentException(sprintf('Template "%s" not found for action %s in renderer %s', $template, $action::class, $this->getName()));
         }
 
         // Render with renderer-specific wrapper
@@ -38,7 +36,9 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
             'options' => $options,
             'renderer' => $this->getName(),
         ]);
+
         return $html;
+
         // only if debug is enabled?
         return $this->wrapOutput($html, $action, $template, $renderData);
     }
@@ -49,11 +49,11 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
      */
     protected function getTemplatePath(AbstractAction $action): string
     {
-        return '@SurvosStep/step/action/' . $action->viewTemplate();
+        return '@SurvosStep/step/action/'.$action->viewTemplate();
     }
 
     /**
-     * Wrap or modify the rendered output (for debug info, containers, etc.)
+     * Wrap or modify the rendered output (for debug info, containers, etc.).
      */
     protected function wrapOutput(string $html, AbstractAction $action, string $template, array $data): string
     {
@@ -71,7 +71,7 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
             // Load code from filesystem if needed
             if (empty($data['code']) && !empty($data['path'])) {
                 $code = $this->loadCodeFromPath($data['path']);
-                if ($code !== null) {
+                if (null !== $code) {
                     $data['code'] = $code;
                     if (empty($data['lang'])) {
                         $data['lang'] = $this->guessLang($data['path']);
@@ -92,19 +92,20 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
 
         $spec = substr($path, strlen('artifact:'));
         $parts = explode('::', $spec, 3);
-        if (count($parts) !== 3) {
+        if (3 !== count($parts)) {
             return $data;
         }
 
         [$stepTitle, $actionId, $fileName] = $parts;
-        $taskName = (string)($context['__task_name'] ?? $context['code'] ?? 'slide');
-        $stepTitle = (string)($context['__step_title'] ?? $stepTitle);
+        $taskName = (string) ($context['__task_name'] ?? $context['code'] ?? 'slide');
+        $stepTitle = (string) ($context['__step_title'] ?? $stepTitle);
 
         $safeTask = preg_replace('/[^A-Za-z0-9._-]+/', '-', $taskName) ?: 'slide';
         $safeStep = preg_replace('/[^A-Za-z0-9._-]+/', '-', $stepTitle) ?: 'step';
-        $safeAction = 'console-' . (preg_replace('/[^A-Za-z0-9._-]+/', '-', $actionId) ?: 'action');
+        $safeAction = 'console-'.(preg_replace('/[^A-Za-z0-9._-]+/', '-', $actionId) ?: 'action');
 
         $data['path'] = "/artifacts/{$safeTask}/{$safeStep}/files/{$safeAction}/{$fileName}";
+
         return $data;
     }
 
@@ -112,14 +113,15 @@ abstract class AbstractTwigRenderer implements ActionRendererInterface
     {
         $abs = null;
         if (str_starts_with($path, '/')) {
-            $abs = rtrim($this->projectDir, '/') . '/public' . $path;
+            $abs = rtrim($this->projectDir, '/').'/public'.$path;
         } elseif (is_file($path)) {
             $abs = $path;
         }
 
         if ($abs && is_file($abs)) {
             $content = @file_get_contents($abs);
-            return $content === false ? null : $content;
+
+            return false === $content ? null : $content;
         }
 
         return null;

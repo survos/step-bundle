@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Survos\StepBundle\Metadata\Actions;
 
@@ -31,6 +33,6 @@ final class AddUse extends Action
         parent::__construct($note, $cwd);
         $this->targetFqcn = $targetFqcn;
         $list = \is_array($imports) ? $imports : [$imports];
-        $this->imports = array_map(static fn($fqcn) => ltrim((string)$fqcn, '\\'), $list);
+        $this->imports = array_map(static fn ($fqcn) => ltrim((string) $fqcn, '\\'), $list);
     }
 }
