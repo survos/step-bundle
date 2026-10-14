@@ -43,7 +43,6 @@ final class Console extends AbstractAction
     ) {
         $this->args = array_values($args);
         $this->size ??= 3;
-        //        $this->normalizeNoInteraction();
     }
 
     public function toCommand(): ?string
@@ -96,18 +95,18 @@ final class Console extends AbstractAction
 
     // ---------- internals ----------
 
-    private function normalizeNoInteraction(): void
+    /**
+     * Whether to pass -n when running: commands such as make:migration and
+     * doctrine:migrations:migrate otherwise wait for an answer nobody can give.
+     * Decided at run time so slides show the command as written, without -n.
+     */
+    private function needsNoInteraction(): bool
     {
         if (!$this->autoNoInteraction) {
-            return;
+            return false;
         }
-        foreach ($this->args as $a) {
-            if ('-n' === $a || '--no-interaction' === $a) {
-                return;
-            }
-        }
-        // Add -n automatically for common interactive commands
-        $this->args[] = '-n';
+
+        return [] === array_intersect($this->args, ['-n', '--no-interaction']);
     }
 
     /** @return string[] tokenized argv like ["symfony","console","make:entity","Task","-n"] */
@@ -130,6 +129,9 @@ final class Console extends AbstractAction
 
         foreach ($this->args as $a) {
             $argv[] = $a;
+        }
+        if ($this->needsNoInteraction()) {
+            $argv[] = '-n';
         }
 
         return $argv;

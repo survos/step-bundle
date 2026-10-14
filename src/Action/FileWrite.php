@@ -21,7 +21,9 @@ final class FileWrite extends AbstractAction
         public string $content,
         public ?string $note = null,
         public ?string $a = null,
+        public ?int $size = null, // slide code size, as in DisplayCode
     ) {
+        $this->size ??= 3;
     }
 
     public function summary(): string
