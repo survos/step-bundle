@@ -152,7 +152,7 @@ final class Console extends AbstractAction
     private function escapeArgForSummary(string $arg): string
     {
         // nice-looking summary; keep simple if alnum/-, otherwise quote
-        return preg_match('/^[A-Za-z0-9._:-]+$/', $arg) ? $arg : escapeshellarg($arg);
+        return preg_match('/^[A-Za-z0-9._:=\/@,+-]+$/', $arg) ? $arg : escapeshellarg($arg);
     }
 
     private function symfonyAvailable(): bool

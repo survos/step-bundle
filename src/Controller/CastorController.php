@@ -9,6 +9,7 @@ use Survos\StepBundle\Renderer\DebugActionRenderer;
 use Survos\StepBundle\Renderer\MarkdownActionRenderer;
 use Survos\StepBundle\Renderer\RevealActionRenderer;
 use Survos\StepBundle\Service\CastorStepExporter;
+use Survos\StepBundle\Service\MarkdownDeckRenderer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\Finder;
@@ -98,6 +99,16 @@ final class CastorController extends AbstractController
         //        $template = sprintf('slides/%s.html.twig', $code);
 
         $deck = $this->exportCode($code);
+
+        if ('survos_step_markdown' === $route) {
+            // plain text, not text/markdown, so a browser shows it instead of downloading it
+            return new Response(
+                new MarkdownDeckRenderer()->render($deck, $request->getSchemeAndHttpHost()),
+                200,
+                ['Content-Type' => 'text/plain; charset=UTF-8'],
+            );
+        }
+
         $slides = $deck['slides'] ?? [];
 
         return $this->render($template, [
