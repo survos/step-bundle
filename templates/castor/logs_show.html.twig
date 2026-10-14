@@ -30,12 +30,12 @@
     </div>
     <div class="col-auto">
       <button class="btn btn-primary">Apply</button>
-      <a class="btn btn-outline-secondary" href="{{ path('survos_castor_logs_raw', {code: code}) }}">Raw</a>
+      {% if exists %}<a class="btn btn-outline-secondary" href="{{ path('survos_castor_logs_raw', {code: code}) }}">Raw</a>{% endif %}
     </div>
   </form>
 
   {% if entries is empty %}
-    <div class="alert alert-warning">No matching log entries.</div>
+    <div class="alert alert-warning">{% if exists %}No matching log entries.{% else %}No log yet: run this deck with castor to create one.{% endif %}</div>
   {% else %}
     <div class="card">
       <div class="list-group list-group-flush">

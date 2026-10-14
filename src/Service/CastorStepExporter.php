@@ -12,6 +12,7 @@ use Survos\StepBundle\Action\ComposerRequire;
 use Survos\StepBundle\Action\ImportmapRequire;
 use Survos\StepBundle\Action\RequirePackage;
 use Survos\StepBundle\Action\SplitSlide;
+use Survos\StepBundle\Metadata\Deck;
 use Survos\StepBundle\Metadata\Step;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\Finder;
@@ -58,7 +59,7 @@ final class CastorStepExporter
      * Export a castor file into a slideshow payload:
      * ['code'=>..., 'path'=>..., 'slides'=>[ ['task_name'=>..., 'title'=>..., 'actions'=>[], 'artifacts'=>[] ], ... ] ]
      *
-     * @return array{code:string,path:string,slides:list<array<string,mixed>>}
+     * @return array{code:string,path:string,meta:array<string,mixed>,slides:list<array<string,mixed>>}
      */
     public function exportSlides(?string $code = null, ?string $file = null): array
     {
@@ -89,9 +90,14 @@ final class CastorStepExporter
         usort($declared, static fn (array $a, array $b) => $a['order'] <=> $b['order']);
 
         $slides = [];
+        $meta = [];
         foreach ($declared as $entry) {
             /** @var \ReflectionFunction $rf */
             $rf = $entry['rf'];
+
+            foreach ($rf->getAttributes(Deck::class) as $deckAttr) {
+                $meta = (array) $deckAttr->newInstance();
+            }
 
             $taskAttrs = $rf->getAttributes(AsTask::class, \ReflectionAttribute::IS_INSTANCEOF);
             $stepAttrs = $rf->getAttributes(Step::class, \ReflectionAttribute::IS_INSTANCEOF);
@@ -215,6 +221,7 @@ final class CastorStepExporter
         return [
             'code' => $code,
             'path' => $file,
+            'meta' => $meta, // from #[Deck], [] when the file has none
             'slides' => $slides, // already in declaration order (and split by SplitSlide)
         ];
     }

@@ -73,6 +73,7 @@ class CastorLogController extends AbstractController
         return $this->render('@SurvosStep/castor/logs_show.html.twig', [
             'code' => $code,
             'path' => $path,
+            'exists' => is_file($path),
             'dir' => $this->locator->logDir(),
             'limit' => $limit,
             'filter' => $filter,

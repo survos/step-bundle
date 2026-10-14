@@ -61,7 +61,7 @@ final class CastorController extends AbstractController
     #[Route('/json/{code}.json', name: 'survos_step_json', methods: ['GET'])]
     public function castorJson(string $code): JsonResponse
     {
-        $deck = $this->exporter->exportSlides($code);
+        $deck = $this->exportCode($code);
 
         // Let clients cache briefly; server-side rendering uses the same exporter anyway.
         return $this->json($deck, 200, [
@@ -95,32 +95,10 @@ final class CastorController extends AbstractController
                 $template = '@SurvosStep/step/md.html.twig';
                 break;
         }
-        if ('survos_step_slideshow' === $request->attributes->get('_route')) {
-            $renderer = $revealActionRenderer;
-            $template = '@SurvosStep/step/slides.html.twig';
-        } else {
-            $renderer = $debugActionRenderer;
-            $template = '@SurvosStep/step/debug.html.twig';
-        }
-
         //        $template = sprintf('slides/%s.html.twig', $code);
 
-        $dir = $this->projectDir.DIRECTORY_SEPARATOR.$code;
-        if (is_dir($dir)) {
-            $slides = [];
-            foreach (new Finder()->in($dir)->files()->sortByName() as $file) {
-                $deck = $this->exporter->exportSlides($file->getBasename('.castor.php'),
-                    $file->getRealPath()
-                );
-                foreach ($deck['slides'] as $slide) {
-                    $slides[] = $slide;
-                }
-                //                $slides = array_merge($slides, $deck['slides'] ?? []);
-            }
-        } else {
-            $deck = $this->exporter->exportSlides($code);
-            $slides = $deck['slides'] ?? [];
-        }
+        $deck = $this->exportCode($code);
+        $slides = $deck['slides'] ?? [];
 
         return $this->render($template, [
             'renderer' => $renderer,
@@ -130,5 +108,30 @@ final class CastorController extends AbstractController
             'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
             'deck' => $deck,
         ]);
+    }
+
+    /**
+     * A code is either one deck (conference/<code>.castor.php) or a directory of decks (<project>/<code>/),
+     * whose slides are concatenated. Shared by the slideshow, overview, markdown and JSON routes, so they
+     * cannot disagree about what a code means.
+     *
+     * @return array{code:string,path:string,meta:array<string,mixed>,slides:list<array<string,mixed>>}
+     */
+    private function exportCode(string $code): array
+    {
+        $dir = $this->projectDir.DIRECTORY_SEPARATOR.$code;
+        if (!is_dir($dir)) {
+            return $this->exporter->exportSlides($code);
+        }
+
+        $slides = [];
+        foreach (new Finder()->in($dir)->files()->name('*.castor.php')->sortByName() as $file) {
+            $deck = $this->exporter->exportSlides($file->getBasename('.castor.php'), $file->getRealPath());
+            foreach ($deck['slides'] as $slide) {
+                $slides[] = $slide;
+            }
+        }
+
+        return ['code' => $code, 'path' => $dir, 'meta' => [], 'slides' => $slides];
     }
 }
