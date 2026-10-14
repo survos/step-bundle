@@ -23,6 +23,7 @@ abstract class AbstractAction implements ExecutableAction, RendersWithTwig
     public string $highlightLanguage = 'bash';
     public ?string $project = null; // e.g. ea, ezp, can come from _ENV or $request or CLI
     public ?ArtifactLocator $artifactLocator = null;
+    public ?string $artifact = null; // content read from the artifact, set by CastorStepExporter
     public ?string $artifactId { get => property_exists($this, 'a') ? $this->a : null; }
     public ?bool $noop = null;
     public ?bool $fade = null;

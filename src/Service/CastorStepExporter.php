@@ -167,7 +167,7 @@ final class CastorStepExporter
                         'step' => $step,
                         'actions' => [],
                         'task' => $asTask,
-                        'sparseStep' => array_filter($step, fn ($v) => null !== $v && '' !== $v && [] !== $v),
+                        'sparseStep' => array_filter(get_object_vars($step), fn ($v) => null !== $v && '' !== $v && [] !== $v),
 
                         'task_name' => $taskName,
                         'function' => $rf->getName(),
@@ -196,7 +196,7 @@ final class CastorStepExporter
                         'step' => $subStep,
                         'actions' => $chunkActions,
                         'task' => $asTask,
-                        'sparseStep' => array_filter($subStep, fn ($v) => null !== $v && '' !== $v && [] !== $v),
+                        'sparseStep' => array_filter(get_object_vars($subStep), fn ($v) => null !== $v && '' !== $v && [] !== $v),
 
                         'task_name' => $taskName,
                         'function' => $rf->getName(),
