@@ -25,7 +25,7 @@ final class DisplayCode extends AbstractAction
         $this->size ??= 3;
         //        dd($this, $this->highlightLanguage);
     }
-    public string $highlightLanguage { get => $this->lang; }
+    public string $highlightLanguage { get => $this->lang ?? ($this->path ? FileWrite::guessLangFromPath($this->path) : 'text'); }
 
     public function summary(): string
     {

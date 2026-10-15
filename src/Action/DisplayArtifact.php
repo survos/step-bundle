@@ -30,7 +30,7 @@ final class DisplayArtifact extends AbstractAction
         $this->size ??= 3;
     }
 
-    public string $highlightLanguage { get => $this->lang; }
+    public string $highlightLanguage { get => $this->lang ?? FileWrite::guessLangFromPath($this->path); }
 
     public function summary(): string
     {

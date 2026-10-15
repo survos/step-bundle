@@ -14,7 +14,8 @@
         "symfony/asset-mapper": "^8.1",
         "survos/jsonl-bundle": "^2.5",
         "symfony/framework-bundle": "^8.1",
-        "survos/kit-bundle": "^2.5"
+        "survos/kit-bundle": "^2.5",
+        "league/commonmark": "^2.7"
     },
     "autoload": {
         "psr-4": {

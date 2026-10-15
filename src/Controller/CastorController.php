@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace Survos\StepBundle\Controller;
 
+use League\CommonMark\CommonMarkConverter;
 use Survos\StepBundle\Renderer\DebugActionRenderer;
 use Survos\StepBundle\Renderer\MarkdownActionRenderer;
 use Survos\StepBundle\Renderer\RevealActionRenderer;
@@ -118,6 +119,31 @@ final class CastorController extends AbstractController
             'debug' => $debug,
             'json_url' => $this->generateUrl('survos_step_json', ['code' => $code]),
             'deck' => $deck,
+        ]);
+    }
+
+    /**
+     * The deck as an article: the Markdown of /slideshow/markdown/<code>, rendered, so the page and the text you
+     * paste into a blog cannot disagree.
+     */
+    #[Route('/article/{code}', name: 'survos_step_article', methods: ['GET'])]
+    public function article(string $code): Response
+    {
+        $deck = $this->exportCode($code);
+        $meta = $deck['meta'] ?? [];
+        $markdown = new MarkdownDeckRenderer()->render($deck);
+
+        // title, subtitle and author are laid out by the template; render only the body
+        $body = preg_replace('/\A---\n.*?\n---\n+# [^\n]*\n+(\*[^\n]*\*\n+)?/s', '', $markdown) ?? $markdown;
+        $converter = new CommonMarkConverter(['html_input' => 'allow', 'allow_unsafe_links' => false]);
+
+        return $this->render('@SurvosStep/step/article.html.twig', [
+            'code' => $code,
+            'title' => '' !== ($meta['title'] ?? '') ? $meta['title'] : ucwords(str_replace(['-', '_'], ' ', $code)),
+            'subtitle' => $meta['subtitle'] ?? null,
+            'author' => $meta['author'] ?? null,
+            'stepCount' => \count($deck['slides'] ?? []),
+            'html' => $converter->convert($body)->getContent(),
         ]);
     }
 
