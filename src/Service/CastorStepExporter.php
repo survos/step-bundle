@@ -68,22 +68,13 @@ final class CastorStepExporter
             throw new \RuntimeException("Slideshow '{$code}' $file not found");
         }
 
-        // Include the castor file and detect only the functions it declares, then walk through those.
-        $before = get_defined_functions()['user'] ?? [];
-        require_once $file;
-        $after = get_defined_functions()['user'] ?? [];
-        $newFns = array_values(array_diff($after, $before));
-
-        // Keep only functions declared in THIS file and capture their declaration order
+        // The functions this file declares, in source order (see declaredFunctions() for why this is not a diff).
         $declared = [];
-        foreach ($newFns as $fnName) {
-            $rf = new \ReflectionFunction($fnName);
-            if (realpath((string) $rf->getFileName()) === realpath($file)) {
-                $declared[] = [
-                    'rf' => $rf,
-                    'order' => $rf->getStartLine() ?? \PHP_INT_MAX,
-                ];
-            }
+        foreach ($this->declaredFunctions($file) as $rf) {
+            $declared[] = [
+                'rf' => $rf,
+                'order' => $rf->getStartLine() ?: \PHP_INT_MAX,
+            ];
         }
 
         // Sort by source-order (start line) to preserve "as written" order
@@ -224,6 +215,40 @@ final class CastorStepExporter
             'meta' => $meta, // from #[Deck], [] when the file has none
             'slides' => $slides, // already in declaration order (and split by SplitSlide)
         ];
+    }
+
+    /** @var array<string, list<\ReflectionFunction>> the functions each deck file declares, by real path */
+    private static array $declaredFunctions = [];
+
+    /**
+     * The functions declared in a deck file.
+     *
+     * A deck is plain PHP, so it can only be loaded once per process; a second require_once declares nothing. The
+     * old approach (diff get_defined_functions() around the require) therefore saw the functions on the first export
+     * only, and every later export in the same process silently produced a deck with no slides: long-lived workers
+     * and test runs. Scanning for the functions whose file is this one needs no diff, so it also works when
+     * something else (castor itself) loaded the file first; the result is remembered per file.
+     *
+     * @return list<\ReflectionFunction>
+     */
+    private function declaredFunctions(string $file): array
+    {
+        $key = realpath($file) ?: $file;
+        if (isset(self::$declaredFunctions[$key])) {
+            return self::$declaredFunctions[$key];
+        }
+
+        require_once $file;
+
+        $functions = [];
+        foreach (get_defined_functions()['user'] ?? [] as $name) {
+            $rf = new \ReflectionFunction($name);
+            if ($rf->getFileName() && (realpath($rf->getFileName()) ?: $rf->getFileName()) === $key) {
+                $functions[] = $rf;
+            }
+        }
+
+        return self::$declaredFunctions[$key] = $functions;
     }
 
     /** Discover ALL files under /public/artifacts/<safeTask>/<safeStep> (recursive). */
