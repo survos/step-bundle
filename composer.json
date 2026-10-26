@@ -24,8 +24,5 @@
         "files": [
             "src/Runtime/functions.php"
         ]
-    },
-    "require-dev": {
-        "symfony/panther": "^2.2"
     }
 }
